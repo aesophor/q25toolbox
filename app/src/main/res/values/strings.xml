@@ -27,6 +27,7 @@
     <string name="title_key_remap">Key Remap</string>
     <string name="title_ticker_notifications">Ticker Notifications</string>
     <string name="title_recents_tweaks">Recents UI Layout</string>
+    <string name="title_lang_switch">Shift+Space Language Switch</string>
     <string name="title_gboard_layout">Gboard Layout Patch</string>
 
 
@@ -47,6 +48,7 @@
     <string name="subtitle_key_remap">Map a spare key to Right Ctrl</string>
     <string name="subtitle_ticker_notifications">Scrolling status-bar banner instead of heads-up</string>
     <string name="subtitle_recents_tweaks">Two-row grid / masonry Overview via LSPosed</string>
+    <string name="subtitle_lang_switch">Cycle the keyboard\'s languages with Shift+Space</string>
     <string name="subtitle_gboard_layout">Unstick ALT, fix the $ key, add symbol &amp; emoji shortcuts</string>
 
 
@@ -62,6 +64,13 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S opens Gboard\'s symbol picker.\n2. SYM+A opens Gboard\'s emoji picker.</string>
     <string name="gboard_layout_tradeoff_title">Trade-offs</string>
     <string name="gboard_layout_tradeoff_body">1. You can no longer hold SYM to type symbols, only ALT is supported now.\n2. If ALT+Enter doesn\'t work, try SYM+Enter.\n3. SYM (ALT_RIGHT) is still sticky.\n4. Gboard only.</string>
+
+    <!-- Shift+Space Language Switch -->
+    <string name="lang_switch_permission_missing">Needs WRITE_SECURE_SETTINGS. Grant it once from a computer, then come back - it survives reboots and needs nothing left running:</string>
+    <string name="lang_switch_copy_command">Copy command</string>
+    <string name="lang_switch_grant_root">Grant with root</string>
+    <string name="lang_switch_one_language">The current keyboard only has one language enabled, so there is nothing to cycle. Add another in the keyboard\'s own settings.</string>
+    <string name="lang_switch_desc">Shift+Space switches to the next language of the keyboard you are using, wrapping around at the end. It cycles that keyboard\'s own languages (Gboard\'s English and Pinyin, for example), not between different keyboards.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Device</string>

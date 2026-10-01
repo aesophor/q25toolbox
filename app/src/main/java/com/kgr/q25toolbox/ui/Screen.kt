@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.kgr.q25toolbox.R
 
 sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes val subtitleRes: Int = 0) {
+    data object LanguageSwitch : Screen("language_switch", R.string.title_lang_switch, R.string.subtitle_lang_switch)
     data object GboardLayout : Screen("gboard_layout", R.string.title_gboard_layout, R.string.subtitle_gboard_layout)
     data object KeyRemap : Screen("key_remap", R.string.title_key_remap, R.string.subtitle_key_remap)
     data object WirelessAdb : Screen("wireless_adb", R.string.title_wireless_adb, R.string.subtitle_wireless_adb)
@@ -53,6 +54,7 @@ enum class AppTab(@StringRes val labelRes: Int) {
 /** Screens listed under the Keyboard tab. */
 val keyboardScreens = listOf(
     Screen.GboardLayout,
+    Screen.LanguageSwitch,
     Screen.KeyRemap,
     Screen.PinKeyboard,
     Screen.ImeBlock,
