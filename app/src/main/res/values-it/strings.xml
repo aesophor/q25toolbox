@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Ridimensionamento schermo per app</string>
     <string name="title_key_remap">Rimappa tasto</string>
+    <string name="title_gboard_layout">Patch layout Gboard</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Porta statica, sopravvive al riavvio</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Assegna un tasto libero a Ctrl Destro</string>
     <string name="title_ticker_notifications">Notifiche a ticker</string>
     <string name="subtitle_ticker_notifications">Banner scorrevole nella barra di stato invece degli avvisi a comparsa</string>
+    <string name="subtitle_gboard_layout">Sblocca ALT, sistema il tasto $, aggiunge scorciatoie per simboli ed emoji</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Inglese (USA), patch Gboard Q25</string>
+    <string name="gboard_layout_select_title">Seleziona il layout</string>
+    <string name="gboard_layout_select_body">Per applicare questa patch, imposta ogni lingua su \"Inglese (USA), patch Gboard Q25\".</string>
+    <string name="gboard_layout_open_settings">Apri impostazioni tastiera fisica</string>
+    <string name="gboard_layout_fixes_title">Cosa corregge</string>
+    <string name="gboard_layout_fixes_body">1. Corregge il problema di ALT_LEFT bloccato rimappando ALT_LEFT su FN. Ora puoi tenere premuto ALT per digitare simboli, e CANC non cancellerà più l\'intera riga per sbaglio.\n2. Sistema il tasto $.</string>
+    <string name="gboard_layout_shortcuts_title">Scorciatoie aggiuntive</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S apre il selettore di simboli di Gboard.\n2. SYM+A apre il selettore di emoji di Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Compromessi</string>
+    <string name="gboard_layout_tradeoff_body">1. Non puoi più tenere premuto SYM per digitare simboli, ora è supportato solo ALT.\n2. Se ALT+Invio non funziona, prova SYM+Invio.\n3. SYM (ALT_RIGHT) resta bloccato.\n4. Solo Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>

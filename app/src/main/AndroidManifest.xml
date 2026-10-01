@@ -72,6 +72,21 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- Advertises res/raw/keyboard_layout_en_us.kcm to the framework so it
+             can be picked under Settings -> Physical keyboard. Must stay
+             exported: the system reads the meta-data via PackageManager. -->
+        <receiver
+            android:name=".modules.KeyboardLayoutReceiver"
+            android:exported="true"
+            android:label="@string/keyboard_layouts_label">
+            <intent-filter>
+                <action android:name="android.hardware.input.action.QUERY_KEYBOARD_LAYOUTS" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.input.metadata.KEYBOARD_LAYOUTS"
+                android:resource="@xml/keyboard_layouts" />
+        </receiver>
+
         <receiver
             android:name=".modules.BesLoudnessReceiver"
             android:exported="false" />

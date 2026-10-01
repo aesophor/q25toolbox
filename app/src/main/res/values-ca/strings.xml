@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Escalat de pantalla per app</string>
     <string name="title_key_remap">Reassignar tecla</string>
+    <string name="title_gboard_layout">Pedaç de disposició de Gboard</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Port estàtic, sobreviu al reinici</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Assigna una tecla lliure a Ctrl Dret</string>
     <string name="title_ticker_notifications">Notificacions en cinta</string>
     <string name="subtitle_ticker_notifications">Bàner desplaçable a la barra d’estat en lloc d’emergents</string>
+    <string name="subtitle_gboard_layout">Desbloqueja ALT, arregla la tecla $, afegeix dreceres de símbols i emoji</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Anglès (EUA), pedaç Gboard Q25</string>
+    <string name="gboard_layout_select_title">Selecciona la disposició</string>
+    <string name="gboard_layout_select_body">Per aplicar aquest pedaç, configura cada idioma com a \"Anglès (EUA), pedaç Gboard Q25\".</string>
+    <string name="gboard_layout_open_settings">Obre la configuració del teclat físic</string>
+    <string name="gboard_layout_fixes_title">Què corregeix</string>
+    <string name="gboard_layout_fixes_body">1. Corregeix el problema d\'ALT_LEFT encallat reassignant ALT_LEFT a FN. Ara pots mantenir ALT premut per escriure símbols, i SUPR ja no esborrarà tota la línia per accident.\n2. Arregla la tecla $.</string>
+    <string name="gboard_layout_shortcuts_title">Dreceres addicionals</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S obre el selector de símbols de Gboard.\n2. SYM+A obre el selector d\'emoji de Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Limitacions</string>
+    <string name="gboard_layout_tradeoff_body">1. Ja no pots mantenir SYM premut per escriure símbols, només ALT.\n2. Si ALT+Retorn no funciona, prova SYM+Retorn.\n3. SYM (ALT_RIGHT) continua encallant-se.\n4. Només Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositiu</string>

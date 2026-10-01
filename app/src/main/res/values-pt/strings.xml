@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Escalonamento de tela por app</string>
     <string name="title_key_remap">Mapear tecla</string>
+    <string name="title_gboard_layout">Patch de layout do Gboard</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Porta estática, sobrevive ao reinício</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Atribui uma tecla livre ao Ctrl Direito</string>
     <string name="title_ticker_notifications">Notificações em ticker</string>
     <string name="subtitle_ticker_notifications">Faixa rolante na barra de status em vez de pop-ups</string>
+    <string name="subtitle_gboard_layout">Destrava o ALT, corrige a tecla $, adiciona atalhos de símbolos e emoji</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Inglês (EUA), patch Gboard Q25</string>
+    <string name="gboard_layout_select_title">Selecionar o layout</string>
+    <string name="gboard_layout_select_body">Para aplicar este patch, defina cada idioma como \"Inglês (EUA), patch Gboard Q25\".</string>
+    <string name="gboard_layout_open_settings">Abrir definições do teclado físico</string>
+    <string name="gboard_layout_fixes_title">O que corrige</string>
+    <string name="gboard_layout_fixes_body">1. Corrige o ALT_LEFT preso ao remapear ALT_LEFT para FN. Agora pode manter o ALT pressionado para digitar símbolos, e o DEL não apaga mais a linha inteira por acidente.\n2. Corrige a tecla $.</string>
+    <string name="gboard_layout_shortcuts_title">Atalhos adicionais</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S abre o seletor de símbolos do Gboard.\n2. SYM+A abre o seletor de emoji do Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Limitações</string>
+    <string name="gboard_layout_tradeoff_body">1. Já não é possível manter o SYM pressionado para digitar símbolos, apenas o ALT.\n2. Se ALT+Enter não funcionar, tente SYM+Enter.\n3. O SYM (ALT_RIGHT) continua preso.\n4. Apenas Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>

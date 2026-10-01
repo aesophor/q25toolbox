@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Bildschirmskalierung pro App</string>
     <string name="title_key_remap">Tastenbelegung</string>
+    <string name="title_gboard_layout">Gboard-Layout-Patch</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Statischer Port, übersteht Neustart</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Belegt eine freie Taste als rechte Strg-Taste</string>
     <string name="title_ticker_notifications">Ticker-Benachrichtigungen</string>
     <string name="subtitle_ticker_notifications">Laufendes Banner in der Statusleiste statt Heads-up</string>
+    <string name="subtitle_gboard_layout">Löst festhängendes ALT, repariert die $-Taste, fügt Symbol- &amp; Emoji-Kürzel hinzu</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Englisch (USA), Q25-Gboard-Patch</string>
+    <string name="gboard_layout_select_title">Layout auswählen</string>
+    <string name="gboard_layout_select_body">Um diesen Patch anzuwenden, stelle jede Sprache auf \"Englisch (USA), Q25-Gboard-Patch\" ein.</string>
+    <string name="gboard_layout_open_settings">Einstellungen für physische Tastatur öffnen</string>
+    <string name="gboard_layout_fixes_title">Was behoben wird</string>
+    <string name="gboard_layout_fixes_body">1. Behebt das festhängende ALT_LEFT, indem ALT_LEFT auf FN umgelegt wird. Jetzt kannst du ALT gedrückt halten, um Symbole zu tippen, und ENTF löscht nicht mehr versehentlich die ganze Zeile.\n2. Repariert die $-Taste.</string>
+    <string name="gboard_layout_shortcuts_title">Zusätzliche Tastenkürzel</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S öffnet die Symbolauswahl von Gboard.\n2. SYM+A öffnet die Emoji-Auswahl von Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Einschränkungen</string>
+    <string name="gboard_layout_tradeoff_body">1. SYM kann nicht mehr gehalten werden, um Symbole zu tippen, nur noch ALT.\n2. Falls ALT+Eingabe nicht funktioniert, versuche SYM+Eingabe.\n3. SYM (ALT_RIGHT) hängt weiterhin fest.\n4. Nur für Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Gerät</string>

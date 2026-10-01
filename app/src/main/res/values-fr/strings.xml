@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Mise à l\'échelle de l\'écran par app</string>
     <string name="title_key_remap">Mappage de touche</string>
+    <string name="title_gboard_layout">Correctif de disposition Gboard</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Port statique, survit au redémarrage</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Attribue une touche libre à Ctrl Droit</string>
     <string name="title_ticker_notifications">Notifications défilantes</string>
     <string name="subtitle_ticker_notifications">Bandeau défilant dans la barre d’état au lieu des popups</string>
+    <string name="subtitle_gboard_layout">Débloque ALT, corrige la touche $, ajoute des raccourcis symboles &amp; emoji</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Anglais (États-Unis), correctif Gboard Q25</string>
+    <string name="gboard_layout_select_title">Sélectionner la disposition</string>
+    <string name="gboard_layout_select_body">Pour appliquer ce correctif, réglez chaque langue sur \"Anglais (États-Unis), correctif Gboard Q25\".</string>
+    <string name="gboard_layout_open_settings">Ouvrir les paramètres du clavier physique</string>
+    <string name="gboard_layout_fixes_title">Ce qui est corrigé</string>
+    <string name="gboard_layout_fixes_body">1. Corrige le blocage de ALT_LEFT en le remappant sur FN. Vous pouvez maintenant maintenir ALT pour taper des symboles, et SUPPR n\'efface plus toute la ligne par accident.\n2. Corrige la touche $.</string>
+    <string name="gboard_layout_shortcuts_title">Raccourcis supplémentaires</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S ouvre le sélecteur de symboles de Gboard.\n2. SYM+A ouvre le sélecteur d\'emoji de Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Compromis</string>
+    <string name="gboard_layout_tradeoff_body">1. Vous ne pouvez plus maintenir SYM pour taper des symboles, seul ALT est pris en charge.\n2. Si ALT+Entrée ne fonctionne pas, essayez SYM+Entrée.\n3. SYM (ALT_RIGHT) reste bloquant.\n4. Gboard uniquement.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Appareil</string>

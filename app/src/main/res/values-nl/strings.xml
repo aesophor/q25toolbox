@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Schermschaling per app</string>
     <string name="title_key_remap">Toetstoewijzing</string>
+    <string name="title_gboard_layout">Gboard-indelingspatch</string>
 
 
     <!-- Screen Subtitles -->
@@ -44,7 +45,21 @@
     <string name="subtitle_key_remap">Wijs een reserve-toets toe aan Rechter Ctrl</string>
     <string name="title_ticker_notifications">Ticker-meldingen</string>
     <string name="subtitle_ticker_notifications">Schuivende banner in de statusbalk in plaats van pop-ups</string>
+    <string name="subtitle_gboard_layout">Maakt ALT los, repareert de $-toets, voegt symbool- &amp; emoji-sneltoetsen toe</string>
 
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Engels (VS), Q25 Gboard-patch</string>
+    <string name="gboard_layout_select_title">Selecteer de indeling</string>
+    <string name="gboard_layout_select_body">Stel elke taal in op \"Engels (VS), Q25 Gboard-patch\" om deze patch toe te passen.</string>
+    <string name="gboard_layout_open_settings">Instellingen fysiek toetsenbord openen</string>
+    <string name="gboard_layout_fixes_title">Wat het oplost</string>
+    <string name="gboard_layout_fixes_body">1. Lost het blijven hangen van ALT_LEFT op door ALT_LEFT naar FN te verplaatsen. Je kunt nu ALT ingedrukt houden om symbolen te typen, en DEL wist niet meer per ongeluk de hele regel.\n2. Repareert de $-toets.</string>
+    <string name="gboard_layout_shortcuts_title">Extra sneltoetsen</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S opent de symboolkiezer van Gboard.\n2. SYM+A opent de emojikiezer van Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Nadelen</string>
+    <string name="gboard_layout_tradeoff_body">1. Je kunt SYM niet meer ingedrukt houden om symbolen te typen, alleen ALT werkt nog.\n2. Werkt ALT+Enter niet, probeer dan SYM+Enter.\n3. SYM (ALT_RIGHT) blijft hangen.\n4. Alleen Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Apparaat</string>

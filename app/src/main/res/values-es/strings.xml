@@ -25,6 +25,7 @@
     <string name="title_besloudness">BesLoudness</string>
     <string name="title_app_scaling">Escalado de pantalla por app</string>
     <string name="title_key_remap">Reasignar tecla</string>
+    <string name="title_gboard_layout">Parche de distribución de Gboard</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Puerto estático, sobrevive al reinicio</string>
@@ -43,6 +44,20 @@
     <string name="subtitle_key_remap">Asigna una tecla libre a Ctrl Derecho</string>
     <string name="title_ticker_notifications">Notificaciones tipo ticker</string>
     <string name="subtitle_ticker_notifications">Banner deslizante en la barra de estado en vez de emergentes</string>
+    <string name="subtitle_gboard_layout">Desbloquea ALT, arregla la tecla $, añade atajos de símbolos y emoji</string>
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">Inglés (EE. UU.), parche Gboard Q25</string>
+    <string name="gboard_layout_select_title">Seleccionar la distribución</string>
+    <string name="gboard_layout_select_body">Para aplicar este parche, configura cada idioma como \"Inglés (EE. UU.), parche Gboard Q25\".</string>
+    <string name="gboard_layout_open_settings">Abrir ajustes del teclado físico</string>
+    <string name="gboard_layout_fixes_title">Qué corrige</string>
+    <string name="gboard_layout_fixes_body">1. Corrige el problema de ALT_LEFT bloqueado reasignando ALT_LEFT a FN. Ahora puedes mantener ALT para escribir símbolos, y SUPR ya no borrará toda la línea por accidente.\n2. Arregla la tecla $.</string>
+    <string name="gboard_layout_shortcuts_title">Atajos adicionales</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S abre el selector de símbolos de Gboard.\n2. SYM+A abre el selector de emoji de Gboard.</string>
+    <string name="gboard_layout_tradeoff_title">Limitaciones</string>
+    <string name="gboard_layout_tradeoff_body">1. Ya no puedes mantener SYM para escribir símbolos, solo ALT.\n2. Si ALT+Intro no funciona, prueba SYM+Intro.\n3. SYM (ALT_RIGHT) sigue bloqueándose.\n4. Solo Gboard.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>

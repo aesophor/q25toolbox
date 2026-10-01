@@ -27,6 +27,7 @@
     <string name="title_key_remap">Key Remap</string>
     <string name="title_ticker_notifications">Ticker Notifications</string>
     <string name="title_recents_tweaks">Recents UI Layout</string>
+    <string name="title_gboard_layout">Gboard Layout Patch</string>
 
 
     <!-- Screen Subtitles -->
@@ -46,7 +47,21 @@
     <string name="subtitle_key_remap">Map a spare key to Right Ctrl</string>
     <string name="subtitle_ticker_notifications">Scrolling status-bar banner instead of heads-up</string>
     <string name="subtitle_recents_tweaks">Two-row grid / masonry Overview via LSPosed</string>
+    <string name="subtitle_gboard_layout">Unstick ALT, fix the $ key, add symbol &amp; emoji shortcuts</string>
 
+
+    <!-- Gboard Layout Patch -->
+    <string name="keyboard_layouts_label">Q25 Toolbox</string>
+    <string name="keyboard_layout_en_us_label">English (US), Q25 Gboard Patch</string>
+    <string name="gboard_layout_select_title">Select the layout</string>
+    <string name="gboard_layout_select_body">To apply this patch, set every language to \"English (US), Q25 Gboard Patch\".</string>
+    <string name="gboard_layout_open_settings">Open Physical keyboard settings</string>
+    <string name="gboard_layout_fixes_title">What it fixes</string>
+    <string name="gboard_layout_fixes_body">1. Fixes the sticky ALT_LEFT problem by remapping ALT_LEFT to FN. Now you can hold alt to type symbols, and DEL will no longer erase the entire line by accident.\n2. Fixes the $ key.</string>
+    <string name="gboard_layout_shortcuts_title">Additional Shortcuts</string>
+    <string name="gboard_layout_shortcuts_body">1. SYM+S opens Gboard\'s symbol picker.\n2. SYM+A opens Gboard\'s emoji picker.</string>
+    <string name="gboard_layout_tradeoff_title">Trade-offs</string>
+    <string name="gboard_layout_tradeoff_body">1. You can no longer hold SYM to type symbols, only ALT is supported now.\n2. If ALT+Enter doesn\'t work, try SYM+Enter.\n3. SYM (ALT_RIGHT) is still sticky.\n4. Gboard only.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Device</string>
