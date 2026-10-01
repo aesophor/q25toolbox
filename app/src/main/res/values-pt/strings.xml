@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Escalonamento de tela por app</string>
     <string name="title_key_remap">Mapear tecla</string>
     <string name="title_gboard_layout">Patch de layout do Gboard</string>
+    <string name="title_lang_switch">Atalho de troca de idioma</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Porta estática, sobrevive ao reinício</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S abre o seletor de símbolos do Gboard.\n2. SYM+A abre o seletor de emoji do Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Limitações</string>
     <string name="gboard_layout_tradeoff_body">1. Já não é possível manter o SYM pressionado para digitar símbolos, apenas o ALT.\n2. Se ALT+Enter não funcionar, tente SYM+Enter.\n3. O SYM (ALT_RIGHT) continua preso.\n4. Apenas Gboard.</string>
+    <string name="subtitle_lang_switch">Alterna os idiomas do teclado com Shift+Espaço</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Precisa de WRITE_SECURE_SETTINGS. Conceda uma vez a partir de um computador e volte - mantém-se após reiniciar e nada precisa de ficar em execução:</string>
+    <string name="lang_switch_copy_command">Copiar comando</string>
+    <string name="lang_switch_grant_root">Conceder com root</string>
+    <string name="lang_switch_one_language">O teclado atual só tem um idioma ativado, por isso não há nada para alternar. Adicione outro nas definições do próprio teclado.</string>
+    <string name="lang_switch_desc">Shift+Espaço muda para o próximo idioma do teclado em uso e volta ao primeiro depois do último. Alterna entre os idiomas desse teclado (por exemplo, inglês e pinyin do Gboard), não entre teclados diferentes.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>

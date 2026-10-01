@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Mise à l\'échelle de l\'écran par app</string>
     <string name="title_key_remap">Mappage de touche</string>
     <string name="title_gboard_layout">Correctif de disposition Gboard</string>
+    <string name="title_lang_switch">Raccourci de changement de langue</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Port statique, survit au redémarrage</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S ouvre le sélecteur de symboles de Gboard.\n2. SYM+A ouvre le sélecteur d\'emoji de Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Compromis</string>
     <string name="gboard_layout_tradeoff_body">1. Vous ne pouvez plus maintenir SYM pour taper des symboles, seul ALT est pris en charge.\n2. Si ALT+Entrée ne fonctionne pas, essayez SYM+Entrée.\n3. SYM (ALT_RIGHT) reste bloquant.\n4. Gboard uniquement.</string>
+    <string name="subtitle_lang_switch">Parcourt les langues du clavier avec Maj+Espace</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Nécessite WRITE_SECURE_SETTINGS. Accordez-la une fois depuis un ordinateur, puis revenez - elle survit aux redémarrages et rien ne doit rester en cours d\'exécution :</string>
+    <string name="lang_switch_copy_command">Copier la commande</string>
+    <string name="lang_switch_grant_root">Accorder avec root</string>
+    <string name="lang_switch_one_language">Le clavier actuel n\'a qu\'une seule langue activée, il n\'y a donc rien à faire défiler. Ajoutez-en une autre dans les paramètres du clavier.</string>
+    <string name="lang_switch_desc">Maj+Espace passe à la langue suivante du clavier utilisé, et revient au début après la dernière. Seules les langues de ce clavier sont parcourues (par exemple l\'anglais et le pinyin de Gboard), pas les différents claviers.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Appareil</string>

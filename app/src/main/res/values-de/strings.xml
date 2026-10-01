@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Bildschirmskalierung pro App</string>
     <string name="title_key_remap">Tastenbelegung</string>
     <string name="title_gboard_layout">Gboard-Layout-Patch</string>
+    <string name="title_lang_switch">Sprachwechsel-Tastenkürzel</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Statischer Port, übersteht Neustart</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S öffnet die Symbolauswahl von Gboard.\n2. SYM+A öffnet die Emoji-Auswahl von Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Einschränkungen</string>
     <string name="gboard_layout_tradeoff_body">1. SYM kann nicht mehr gehalten werden, um Symbole zu tippen, nur noch ALT.\n2. Falls ALT+Eingabe nicht funktioniert, versuche SYM+Eingabe.\n3. SYM (ALT_RIGHT) hängt weiterhin fest.\n4. Nur für Gboard.</string>
+    <string name="subtitle_lang_switch">Wechselt die Tastatursprachen mit Umschalt+Leertaste</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Benötigt WRITE_SECURE_SETTINGS. Einmal von einem Computer aus erteilen und dann zurückkehren - die Berechtigung übersteht Neustarts, und es muss nichts weiterlaufen:</string>
+    <string name="lang_switch_copy_command">Befehl kopieren</string>
+    <string name="lang_switch_grant_root">Mit Root erteilen</string>
+    <string name="lang_switch_one_language">Für die aktuelle Tastatur ist nur eine Sprache aktiviert, es gibt also nichts zu wechseln. Füge in den Einstellungen der Tastatur eine weitere hinzu.</string>
+    <string name="lang_switch_desc">Umschalt+Leertaste wechselt zur nächsten Sprache der verwendeten Tastatur und beginnt am Ende wieder von vorn. Es werden die Sprachen dieser Tastatur durchlaufen (z. B. Englisch und Pinyin in Gboard), nicht verschiedene Tastaturen.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Gerät</string>

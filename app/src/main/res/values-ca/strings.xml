@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Escalat de pantalla per app</string>
     <string name="title_key_remap">Reassignar tecla</string>
     <string name="title_gboard_layout">Pedaç de disposició de Gboard</string>
+    <string name="title_lang_switch">Drecera de canvi d\'idioma</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Port estàtic, sobreviu al reinici</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S obre el selector de símbols de Gboard.\n2. SYM+A obre el selector d\'emoji de Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Limitacions</string>
     <string name="gboard_layout_tradeoff_body">1. Ja no pots mantenir SYM premut per escriure símbols, només ALT.\n2. Si ALT+Retorn no funciona, prova SYM+Retorn.\n3. SYM (ALT_RIGHT) continua encallant-se.\n4. Només Gboard.</string>
+    <string name="subtitle_lang_switch">Canvia entre els idiomes del teclat amb Maj+Espai</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Cal WRITE_SECURE_SETTINGS. Concedeix-lo una vegada des d\'un ordinador i torna - es manté després de reiniciar i no cal deixar res en execució:</string>
+    <string name="lang_switch_copy_command">Copia l\'ordre</string>
+    <string name="lang_switch_grant_root">Concedeix amb root</string>
+    <string name="lang_switch_one_language">El teclat actual només té un idioma activat, així que no hi ha res per canviar. Afegeix-ne un altre a la configuració del teclat.</string>
+    <string name="lang_switch_desc">Maj+Espai canvia al següent idioma del teclat que fas servir i torna al primer després de l\'últim. Recorre els idiomes d\'aquest teclat (per exemple, l\'anglès i el pinyin de Gboard), no teclats diferents.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositiu</string>

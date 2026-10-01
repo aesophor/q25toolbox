@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Ridimensionamento schermo per app</string>
     <string name="title_key_remap">Rimappa tasto</string>
     <string name="title_gboard_layout">Patch layout Gboard</string>
+    <string name="title_lang_switch">Scorciatoia cambio lingua</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Porta statica, sopravvive al riavvio</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S apre il selettore di simboli di Gboard.\n2. SYM+A apre il selettore di emoji di Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Compromessi</string>
     <string name="gboard_layout_tradeoff_body">1. Non puoi più tenere premuto SYM per digitare simboli, ora è supportato solo ALT.\n2. Se ALT+Invio non funziona, prova SYM+Invio.\n3. SYM (ALT_RIGHT) resta bloccato.\n4. Solo Gboard.</string>
+    <string name="subtitle_lang_switch">Scorre le lingue della tastiera con Maiusc+Spazio</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Richiede WRITE_SECURE_SETTINGS. Concedilo una volta da un computer, poi torna qui - resta dopo i riavvii e non serve lasciare nulla in esecuzione:</string>
+    <string name="lang_switch_copy_command">Copia comando</string>
+    <string name="lang_switch_grant_root">Concedi con root</string>
+    <string name="lang_switch_one_language">La tastiera attuale ha una sola lingua attiva, quindi non c\'è nulla da scorrere. Aggiungine un\'altra nelle impostazioni della tastiera.</string>
+    <string name="lang_switch_desc">Maiusc+Spazio passa alla lingua successiva della tastiera in uso, ricominciando dalla prima dopo l\'ultima. Scorre le lingue di quella tastiera (ad esempio inglese e pinyin di Gboard), non tastiere diverse.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>

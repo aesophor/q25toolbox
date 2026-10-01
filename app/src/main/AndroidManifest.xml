@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- Edge-gesture feedback: the Q25 vibrator has no predefined effects, so the system haptic is inaudible. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Shift+Space language switch. Not grantable from the UI; granted once over adb
+         (or su): pm grant com.kgr.q25toolbox android.permission.WRITE_SECURE_SETTINGS -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <!-- List launchable apps for the per-app keyboard-block picker. -->
     <queries>

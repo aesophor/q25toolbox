@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Schermschaling per app</string>
     <string name="title_key_remap">Toetstoewijzing</string>
     <string name="title_gboard_layout">Gboard-indelingspatch</string>
+    <string name="title_lang_switch">Sneltoets taalwissel</string>
 
 
     <!-- Screen Subtitles -->
@@ -60,6 +61,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S opent de symboolkiezer van Gboard.\n2. SYM+A opent de emojikiezer van Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Nadelen</string>
     <string name="gboard_layout_tradeoff_body">1. Je kunt SYM niet meer ingedrukt houden om symbolen te typen, alleen ALT werkt nog.\n2. Werkt ALT+Enter niet, probeer dan SYM+Enter.\n3. SYM (ALT_RIGHT) blijft hangen.\n4. Alleen Gboard.</string>
+    <string name="subtitle_lang_switch">Wissel tussen toetsenbordtalen met Shift+Spatie</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Vereist WRITE_SECURE_SETTINGS. Verleen het eenmalig vanaf een computer en kom dan terug - het blijft na herstarten behouden en er hoeft niets te blijven draaien:</string>
+    <string name="lang_switch_copy_command">Opdracht kopiëren</string>
+    <string name="lang_switch_grant_root">Verlenen met root</string>
+    <string name="lang_switch_one_language">Het huidige toetsenbord heeft maar één taal ingeschakeld, dus er valt niets te wisselen. Voeg er een toe in de instellingen van het toetsenbord.</string>
+    <string name="lang_switch_desc">Shift+Spatie schakelt naar de volgende taal van het toetsenbord dat je gebruikt en begint na de laatste weer vooraan. Het wisselt tussen de talen van dat toetsenbord (bijvoorbeeld Engels en Pinyin in Gboard), niet tussen verschillende toetsenborden.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Apparaat</string>

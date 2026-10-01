@@ -30,6 +30,7 @@ import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
 import com.kgr.q25toolbox.inputfix.CalculatorInputFix
 import com.kgr.q25toolbox.inputfix.ComposerEnterKeyHandler
+import com.kgr.q25toolbox.modules.InputLanguageController
 import com.kgr.q25toolbox.modules.AppScalingController
 import com.kgr.q25toolbox.modules.AutoFocusController
 import com.kgr.q25toolbox.modules.BatteryUsageController
@@ -76,6 +77,7 @@ class Q25AccessibilityService : AccessibilityService() {
         const val KEY_LOCKSCREEN_ENTER_OPENS_PIN = "lockscreen_enter_opens_pin" // Enter / pad centre -> open the PIN pad
         const val KEY_LOCKSCREEN_NAV_BLOCK = "lockscreen_nav_block_enabled" // swallow D-pad/Enter/Space/Tab while keyguard is up
         const val KEY_CALL_SCREEN_RECOVERY = "call_screen_recovery_enabled" // force-wake if still dark after a call ends
+        const val KEY_LANG_SWITCH = "lang_switch_enabled" // Shift+Space cycles the keyboard's languages
 
 
         // Our do-nothing IME: while it's active, physical key presses go straight
@@ -231,6 +233,8 @@ class Q25AccessibilityService : AccessibilityService() {
     // window event (a browser navigating within the same window, for one).
     private var noEditableWindowId = -1
     private var noEditableAtMs = 0L
+    // True while a Shift+Space we consumed is still held, so its ACTION_UP is swallowed too.
+    private var langSwitchConsumedDown = false
     private var prefs: SharedPreferences? = null
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -338,6 +342,7 @@ class Q25AccessibilityService : AccessibilityService() {
         prefs?.getBoolean(KEY_LOCKSCREEN_ENTER_OPENS_PIN, enterOpensPinDefault) ?: enterOpensPinDefault
     private fun lockscreenNavBlockEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_NAV_BLOCK, false) ?: false
     private fun callScreenRecoveryEnabled() = prefs?.getBoolean(KEY_CALL_SCREEN_RECOVERY, true) ?: true
+    private fun langSwitchEnabled() = prefs?.getBoolean(KEY_LANG_SWITCH, false) ?: false
 
 
     // ------------------------------------------------------- Foreground tracking
@@ -739,6 +744,23 @@ class Q25AccessibilityService : AccessibilityService() {
             // The on-screen nav button and gesture go straight to the launcher and cannot be intercepted.
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) openRecents()
             return true
+        }
+
+        // Shift+Space cycles the current keyboard's languages. The UP has to be swallowed
+        // too whenever its DOWN was consumed, or the app sees a lone key-up and (for Space)
+        // the IME can still commit a space.
+        if (kc == KeyEvent.KEYCODE_SPACE) {
+            if (event.action == KeyEvent.ACTION_UP) {
+                if (langSwitchConsumedDown) {
+                    langSwitchConsumedDown = false
+                    return true
+                }
+            } else if (event.isShiftPressed && event.repeatCount == 0 && langSwitchEnabled() &&
+                InputLanguageController.cycleSubtype(this)
+            ) {
+                langSwitchConsumedDown = true
+                return true
+            }
         }
 
         // IME suggestion shortcuts: Ctrl+W/E/R picks suggestion 1/2/3 from the keyboard's

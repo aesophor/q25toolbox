@@ -26,6 +26,7 @@
     <string name="title_app_scaling">Escalado de pantalla por app</string>
     <string name="title_key_remap">Reasignar tecla</string>
     <string name="title_gboard_layout">Parche de distribución de Gboard</string>
+    <string name="title_lang_switch">Atajo de cambio de idioma</string>
 
     <!-- Screen Subtitles -->
     <string name="subtitle_wireless_adb">Puerto estático, sobrevive al reinicio</string>
@@ -58,6 +59,14 @@
     <string name="gboard_layout_shortcuts_body">1. SYM+S abre el selector de símbolos de Gboard.\n2. SYM+A abre el selector de emoji de Gboard.</string>
     <string name="gboard_layout_tradeoff_title">Limitaciones</string>
     <string name="gboard_layout_tradeoff_body">1. Ya no puedes mantener SYM para escribir símbolos, solo ALT.\n2. Si ALT+Intro no funciona, prueba SYM+Intro.\n3. SYM (ALT_RIGHT) sigue bloqueándose.\n4. Solo Gboard.</string>
+    <string name="subtitle_lang_switch">Recorre los idiomas del teclado con Mayús+Espacio</string>
+
+    <!-- Language Switch Shortcut -->
+    <string name="lang_switch_permission_missing">Necesita WRITE_SECURE_SETTINGS. Concédelo una vez desde un ordenador y vuelve - se mantiene tras reiniciar y no hace falta dejar nada en ejecución:</string>
+    <string name="lang_switch_copy_command">Copiar comando</string>
+    <string name="lang_switch_grant_root">Conceder con root</string>
+    <string name="lang_switch_one_language">El teclado actual solo tiene un idioma activado, así que no hay nada que recorrer. Añade otro en los ajustes del propio teclado.</string>
+    <string name="lang_switch_desc">Mayús+Espacio cambia al siguiente idioma del teclado que estás usando y vuelve al primero tras el último. Recorre los idiomas de ese teclado (por ejemplo, inglés y pinyin de Gboard), no distintos teclados.</string>
 
     <!-- Info Screen -->
     <string name="info_device">Dispositivo</string>
