@@ -416,4 +416,40 @@
     <string name="adblock_update_status_done">Up-to-date</string>
     <string name="adblock_update_status_error">Fout: %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Welk systeem gebruik je?</string>
+    <string name="rom_choice_body">Q25 Toolbox kon je ROM niet herkennen en sommige modules zijn ervan afhankelijk. Je kunt dit later wijzigen in Instellingen.</string>
+    <string name="rom_choice_later">Later</string>
+    <string name="settings_rom_title">ROM-profiel</string>
+    <string name="settings_rom_subtitle">Kies op welk systeem de modules zich aanpassen</string>
+    <string name="settings_rom_auto">Automatisch (%1$s)</string>
+    <string name="info_rom">ROM-profiel</string>
+    <string name="lockscreen_nav_block_label">Navigatietoetsen op het vergrendelscherm blokkeren</string>
+    <string name="lockscreen_nav_block_desc">Bij een vergrendeld apparaat worden D-pad, Tab, Spatie en Enter genegeerd, zodat een toetsenbord dat in een zak wordt ingedrukt de focus niet naar de noodoproepknop kan verplaatsen. Enter blijft actief als pincode via toetsenbord aan staat. Vereist de toegankelijkheidsservice.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Slanke lijst (verticaal, geen momentopnames)</string>
+    <string name="recents_mode_quilt">Mozaïek (momentopname-quilt)</string>
+    <string name="recents_mode_quilt_standalone">Mozaïek, zelfstandig (momentopname-quilt, zonder Xposed)</string>
+    <string name="recents_slim_empty">Niets anders om naar te wisselen.</string>
+    <string name="recents_slim_close_all">Alles sluiten</string>
+    <string name="recents_slim_app_info">App-info</string>
+    <string name="recents_overlay_trigger_note">Slanke lijst en Mozaïek openen met de fysieke Recent-toets. De navigatieknop of -beweging op het scherm opent nog steeds het standaardoverzicht.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Weergave</string>
+    <string name="recents_slim_scrim_color">Achtergrondkleur</string>
+    <string name="recents_slim_scrim_opacity">Achtergronddekking</string>
+    <string name="recents_slim_scrim_blur">Achtergrondvervaging</string>
+    <string name="recents_slim_blur_unsupported">Vervaging is nu niet beschikbaar (het systeem schakelt deze uit, bijvoorbeeld in batterijbesparing).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Donker</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Animatieduur</string>
+    <string name="recents_slim_anim_off">Uit</string>
+    <string name="recents_slim_anim_hint">Vermenigvuldigt de basistijd en volgt de systeemanimatieschaal (Ontwikkelaarsopties). 100% komt overeen met de systeemsnelheid.</string>
+    <string name="lockscreen_enter_opens_pin_label">Enter / pad opent de pincode op het vergrendelscherm</string>
+    <string name="lockscreen_enter_opens_pin_desc">Op het vergrendelscherm openen Enter en het midden van het pad altijd het pincodeveld. Anders activeren ze wat de focus heeft (ontgrendelen, netwerkinstellingen, de nieuwste melding). Vereist root en de toegankelijkheidsservice.</string>
 </resources>

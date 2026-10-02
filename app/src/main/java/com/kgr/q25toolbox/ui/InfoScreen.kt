@@ -35,6 +35,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.core.Rom
+import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.core.RootShell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -51,6 +53,8 @@ internal data class Row(val label: String, val value: String)
 internal class InfoState {
     var device: List<Row> by mutableStateOf(emptyList())
     var battery: List<Row> by mutableStateOf(emptyList())
+    var rom: Rom? by mutableStateOf(null)
+    var lineageMajor: Int? by mutableStateOf(null)
 }
 
 internal suspend fun InfoState.refresh(context: Context) {
@@ -60,9 +64,12 @@ internal suspend fun InfoState.refresh(context: Context) {
         // for real process-fork time - keep it (and the root sysfs read) off the
         // main thread rather than in the calling LaunchedEffect's default dispatcher.
         val deviceRows = buildDeviceRows(context)
+        val romInfo = RomProfile.get(context)
         val health = readBatteryHealthRows(context)
         withContext(Dispatchers.Main) {
             device = deviceRows
+            rom = romInfo.rom
+            lineageMajor = romInfo.lineageMajor
             if (health.isNotEmpty()) battery = battery + health
         }
     }
@@ -80,7 +87,10 @@ internal fun InfoScreen(state: InfoState, scrollState: ScrollState, onOpenBatter
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
+            state.rom?.takeIf { it != Rom.UNKNOWN }?.let { RomBadge(it, state.lineageMajor) }
+        }
 
         InfoCard(stringResource(R.string.info_device)) { device.forEach { LabelValue(it) } }
 
@@ -94,6 +104,21 @@ internal fun InfoScreen(state: InfoState, scrollState: ScrollState, onOpenBatter
             }
         }
     }
+}
+
+/** Small pill showing which ROM profile is active (BenOS / ZinwaOS / LineageOS). */
+@Composable
+private fun RomBadge(rom: Rom, lineageMajor: Int?) {
+    val name = romLabel(rom) + if (rom == Rom.LINEAGE && lineageMajor != null) " $lineageMajor" else ""
+    Text(
+        name,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    )
 }
 
 private val NEUTRAL = Color(0xFFB0B0B0)
@@ -163,6 +188,15 @@ private fun buildDeviceRows(context: Context): List<Row> {
     )
     getprop("ro.lineage.version").takeIf { it.isNotEmpty() }?.let {
         rows += Row(context.getString(R.string.info_lineageos), it)
+    }
+    RomProfile.get(context).let { r ->
+        val name = when (r.rom) {
+            Rom.LINEAGE -> "LineageOS" + (r.lineageMajor?.let { " $it" } ?: "")
+            Rom.BENOS -> "BenOS"
+            Rom.ZINWAOS -> "ZinwaOS"
+            Rom.UNKNOWN -> "?"
+        }
+        rows += Row(context.getString(R.string.info_rom), name + if (r.overridden) " *" else "")
     }
     rows += Row(context.getString(R.string.info_build), Build.DISPLAY)
     Build.VERSION.SECURITY_PATCH.takeIf { it.isNotEmpty() }?.let {

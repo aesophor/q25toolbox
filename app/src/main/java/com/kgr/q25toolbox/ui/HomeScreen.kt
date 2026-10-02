@@ -68,6 +68,8 @@ fun HomeScreen() {
         withContext(Dispatchers.IO) { DaemonMaintenance.sweep(context) }
     }
 
+    val rom by rememberRom()
+
     val currentVersionName = remember {
         try {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
@@ -79,6 +81,7 @@ fun HomeScreen() {
     BackHandler(enabled = detail != null) { detailRoute = null }
 
     WhatsNewDialog()
+    RomChoiceDialog()
 
     Scaffold(
         bottomBar = {
@@ -132,10 +135,10 @@ fun HomeScreen() {
                     scrollState = infoScrollState,
                     onOpenBatteryUsage = { detailRoute = Screen.BatteryUsage.route }
                 )
-                AppTab.Keyboard -> CategoryMenu(stringResource(R.string.tab_keyboard), keyboardScreens) { detailRoute = it.route }
-                AppTab.Screen -> CategoryMenu(stringResource(R.string.tab_screen), screenScreens) { detailRoute = it.route }
-                AppTab.System -> CategoryMenu(stringResource(R.string.tab_system), systemScreens) { detailRoute = it.route }
-                AppTab.Network -> CategoryMenu(stringResource(R.string.tab_network), networkScreens) { detailRoute = it.route }
+                AppTab.Keyboard -> CategoryMenu(stringResource(R.string.tab_keyboard), keyboardScreens.filter { it.availableOn(rom) }) { detailRoute = it.route }
+                AppTab.Screen -> CategoryMenu(stringResource(R.string.tab_screen), screenScreens.filter { it.availableOn(rom) }) { detailRoute = it.route }
+                AppTab.System -> CategoryMenu(stringResource(R.string.tab_system), systemScreens.filter { it.availableOn(rom) }) { detailRoute = it.route }
+                AppTab.Network -> CategoryMenu(stringResource(R.string.tab_network), networkScreens.filter { it.availableOn(rom) }) { detailRoute = it.route }
                 AppTab.Settings -> SettingsScreen(currentVersionName = currentVersionName)
             }
         }

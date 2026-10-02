@@ -414,4 +414,40 @@
     <string name="adblock_update_status_done">Aggiornato</string>
     <string name="adblock_update_status_error">Errore: %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Quale sistema stai usando?</string>
+    <string name="rom_choice_body">Q25 Toolbox non è riuscito a identificare la tua ROM e alcuni moduli ne dipendono. Puoi cambiarlo più tardi nelle Impostazioni.</string>
+    <string name="rom_choice_later">Più tardi</string>
+    <string name="settings_rom_title">Profilo ROM</string>
+    <string name="settings_rom_subtitle">Scegli a quale sistema si adattano i moduli</string>
+    <string name="settings_rom_auto">Automatico (%1$s)</string>
+    <string name="info_rom">Profilo ROM</string>
+    <string name="lockscreen_nav_block_label">Blocca i tasti di navigazione nella schermata di blocco</string>
+    <string name="lockscreen_nav_block_desc">A dispositivo bloccato ignora D-pad, Tab, Spazio e Invio, così una tastiera premuta in tasca non può spostare il focus sul pulsante di chiamata di emergenza. Invio resta attivo se il PIN da tastiera è attivo. Richiede il servizio di accessibilità.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Elenco Sottile (verticale, senza istantanee)</string>
+    <string name="recents_mode_quilt">Mosaico (quilt di istantanee)</string>
+    <string name="recents_mode_quilt_standalone">Mosaico autonomo (quilt di istantanee, senza Xposed)</string>
+    <string name="recents_slim_empty">Nient\'altro a cui passare.</string>
+    <string name="recents_slim_close_all">Chiudi tutto</string>
+    <string name="recents_slim_app_info">Info app</string>
+    <string name="recents_overlay_trigger_note">Elenco Sottile e Mosaico si aprono con il tasto fisico Recenti. Il pulsante o il gesto di navigazione su schermo apre ancora la panoramica standard.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Aspetto</string>
+    <string name="recents_slim_scrim_color">Colore di sfondo</string>
+    <string name="recents_slim_scrim_opacity">Opacità dello sfondo</string>
+    <string name="recents_slim_scrim_blur">Sfocatura dello sfondo</string>
+    <string name="recents_slim_blur_unsupported">La sfocatura non è disponibile al momento (il sistema la disattiva, ad esempio con il risparmio energetico).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Scuro</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Durata dell\'animazione</string>
+    <string name="recents_slim_anim_off">Disattivata</string>
+    <string name="recents_slim_anim_hint">Moltiplica il tempo di base e segue la scala delle animazioni di sistema (Opzioni sviluppatore). 100% corrisponde alla velocità di sistema.</string>
+    <string name="lockscreen_enter_opens_pin_label">Invio / pad apre il PIN nella schermata di blocco</string>
+    <string name="lockscreen_enter_opens_pin_desc">Nella schermata di blocco, Invio e il centro del pad aprono sempre il tastierino del PIN. Altrimenti attivano ciò che ha il focus (sblocco, impostazioni di rete, la notifica più recente). Richiede root e il servizio di accessibilità.</string>
 </resources>

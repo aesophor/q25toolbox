@@ -420,4 +420,43 @@
     <string name="adblock_update_status_done">Up to date</string>
     <string name="adblock_update_status_error">Error: %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Which system are you running?</string>
+    <string name="rom_choice_body">Q25 Toolbox could not identify your ROM, and some modules depend on it. You can change this later in Settings.</string>
+    <string name="rom_choice_later">Later</string>
+    <string name="settings_rom_title">ROM profile</string>
+    <string name="settings_rom_subtitle">Choose which system the modules should adapt to</string>
+    <string name="settings_rom_auto">Automatic (%1$s)</string>
+    <string name="info_rom">ROM profile</string>
+    <string name="rom_benos" translatable="false">BenOS</string>
+    <string name="rom_zinwaos" translatable="false">ZinwaOS</string>
+    <string name="rom_lineage" translatable="false">LineageOS</string>
+    <string name="lockscreen_nav_block_label">Block navigation keys on lockscreen</string>
+    <string name="lockscreen_nav_block_desc">While the device is locked, ignores D-pad, Tab, Space and Enter so a keyboard pressed in a pocket cannot move focus onto the emergency-call button. Enter stays active if PIN on keyboard is on. Needs the accessibility service.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Slim List (vertical, no snapshots)</string>
+    <string name="recents_mode_quilt">Masonry (snapshot quilt)</string>
+    <string name="recents_mode_quilt_standalone">Masonry, standalone (snapshot quilt, no Xposed)</string>
+    <string name="recents_slim_empty">Nothing else to switch to.</string>
+    <string name="recents_slim_close_all">Close all</string>
+    <string name="recents_slim_app_info">App info</string>
+    <string name="recents_overlay_trigger_note">Slim List and Masonry open from the physical Recents key. The on-screen navigation button or gesture still opens the stock Overview.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Appearance</string>
+    <string name="recents_slim_scrim_color">Background colour</string>
+    <string name="recents_slim_scrim_opacity">Background opacity</string>
+    <string name="recents_slim_scrim_blur">Background blur</string>
+    <string name="recents_slim_blur_unsupported">Blur is unavailable right now (the system turns it off, for example in battery saver).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Dark</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Animation duration</string>
+    <string name="recents_slim_anim_off">Off</string>
+    <string name="recents_slim_anim_hint">Multiplies the base time and follows the system animation scale (Developer options). 100% matches the system speed.</string>
+    <string name="lockscreen_enter_opens_pin_label">Enter / pad opens the PIN on the lockscreen</string>
+    <string name="lockscreen_enter_opens_pin_desc">On the lockscreen, Enter and the pad centre always open the PIN pad. Without this, they activate whatever has focus (unlock, network settings, the newest notification). Needs root and the accessibility service.</string>
 </resources>

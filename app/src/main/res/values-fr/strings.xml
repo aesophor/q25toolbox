@@ -414,4 +414,40 @@
     <string name="adblock_update_status_done">À jour</string>
     <string name="adblock_update_status_error">Erreur : %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Quel système utilisez-vous ?</string>
+    <string name="rom_choice_body">Q25 Toolbox n\'a pas pu identifier votre ROM, et certains modules en dépendent. Vous pourrez le modifier plus tard dans les Réglages.</string>
+    <string name="rom_choice_later">Plus tard</string>
+    <string name="settings_rom_title">Profil de ROM</string>
+    <string name="settings_rom_subtitle">Choisissez le système auquel les modules s\'adaptent</string>
+    <string name="settings_rom_auto">Automatique (%1$s)</string>
+    <string name="info_rom">Profil de ROM</string>
+    <string name="lockscreen_nav_block_label">Bloquer les touches de navigation sur l\'écran verrouillé</string>
+    <string name="lockscreen_nav_block_desc">Appareil verrouillé, ignore le pavé directionnel, Tab, Espace et Entrée afin qu\'un clavier pressé dans une poche ne puisse pas déplacer le focus vers le bouton d\'appel d\'urgence. Entrée reste active si le code PIN au clavier est activé. Nécessite le service d\'accessibilité.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Liste Fine (vertical, sans captures)</string>
+    <string name="recents_mode_quilt">Mosaïque (patchwork de captures)</string>
+    <string name="recents_mode_quilt_standalone">Mosaïque autonome (patchwork de captures, sans Xposed)</string>
+    <string name="recents_slim_empty">Rien d\'autre vers quoi basculer.</string>
+    <string name="recents_slim_close_all">Tout fermer</string>
+    <string name="recents_slim_app_info">Infos appli</string>
+    <string name="recents_overlay_trigger_note">Liste Fine et Mosaïque s\'ouvrent avec la touche physique Récents. Le bouton ou le geste de navigation à l\'écran ouvre toujours l\'aperçu standard.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Apparence</string>
+    <string name="recents_slim_scrim_color">Couleur d\'arrière-plan</string>
+    <string name="recents_slim_scrim_opacity">Opacité de l\'arrière-plan</string>
+    <string name="recents_slim_scrim_blur">Flou d\'arrière-plan</string>
+    <string name="recents_slim_blur_unsupported">Le flou n\'est pas disponible pour le moment (le système le désactive, par exemple en économie d\'énergie).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Sombre</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Durée de l\'animation</string>
+    <string name="recents_slim_anim_off">Désactivée</string>
+    <string name="recents_slim_anim_hint">Multiplie la durée de base et suit l\'échelle d\'animation du système (Options pour les développeurs). 100 % correspond à la vitesse du système.</string>
+    <string name="lockscreen_enter_opens_pin_label">Entrée / pad ouvre le PIN sur l\'écran verrouillé</string>
+    <string name="lockscreen_enter_opens_pin_desc">Sur l\'écran verrouillé, Entrée et le centre du pad ouvrent toujours le clavier du code PIN. Sinon, ils activent l\'élément ayant le focus (déverrouillage, réglages réseau, notification la plus récente). Nécessite root et le service d\'accessibilité.</string>
 </resources>

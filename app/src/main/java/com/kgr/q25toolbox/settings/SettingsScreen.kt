@@ -58,6 +58,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.core.RomInfo
+import com.kgr.q25toolbox.core.RomProfile
+import com.kgr.q25toolbox.ui.RomPickerDialog
+import com.kgr.q25toolbox.ui.romLabel
+import androidx.compose.material.icons.filled.Build
 import com.kgr.q25toolbox.core.RootShell
 import com.kgr.q25toolbox.modules.DebugLogExporter
 import kotlinx.coroutines.Dispatchers
@@ -211,6 +216,7 @@ fun SettingsScreen(currentVersionName: String) {
         Spacer(Modifier.height(24.dp))
 
         SectionHeader(stringResource(R.string.settings_section_quick_access))
+        RomProfileRow()
         SettingsRow(
             title = stringResource(R.string.settings_quick_access_a11y_title),
             subtitle = stringResource(R.string.settings_quick_access_a11y_subtitle),
@@ -416,6 +422,39 @@ private fun AppLogoHeader() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+/** Shows the active ROM profile (auto-detected or overridden) and lets the user change it. */
+@Composable
+private fun RomProfileRow() {
+    val context = LocalContext.current
+    var info by remember { mutableStateOf<RomInfo?>(null) }
+    var picking by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) { info = withContext(Dispatchers.IO) { RomProfile.get(context) } }
+    val current = info ?: return
+    SettingsRow(
+        title = stringResource(R.string.settings_rom_title),
+        subtitle = romLabel(current.rom) + (current.lineageMajor?.let { " $it" } ?: "") +
+            " - " + stringResource(R.string.settings_rom_subtitle),
+        icon = Icons.Default.Build
+    ) { picking = true }
+    if (picking) {
+        RomPickerDialog(
+            title = stringResource(R.string.settings_rom_title),
+            body = null,
+            autoLabel = stringResource(R.string.settings_rom_auto, romLabel(current.auto)),
+            onPick = { choice ->
+                picking = false
+                // Re-read off the main thread (getprop spawn) so the row reflects the change.
+                scope.launch(Dispatchers.IO) {
+                    RomProfile.setOverride(context, choice)
+                    info = RomProfile.get(context)
+                }
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

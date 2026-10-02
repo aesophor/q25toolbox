@@ -414,4 +414,40 @@
     <string name="adblock_update_status_done">Al dia</string>
     <string name="adblock_update_status_error">Error: %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Quin sistema estàs fent servir?</string>
+    <string name="rom_choice_body">Q25 Toolbox no ha pogut identificar la teva ROM i alguns mòduls en depenen. Ho pots canviar després a Configuració.</string>
+    <string name="rom_choice_later">Més tard</string>
+    <string name="settings_rom_title">Perfil de ROM</string>
+    <string name="settings_rom_subtitle">Tria a quin sistema s\'adapten els mòduls</string>
+    <string name="settings_rom_auto">Automàtic (%1$s)</string>
+    <string name="info_rom">Perfil de ROM</string>
+    <string name="lockscreen_nav_block_label">Bloqueja les tecles de navegació a la pantalla de bloqueig</string>
+    <string name="lockscreen_nav_block_desc">Amb el dispositiu bloquejat, ignora el pad direccional, Tab, Espai i Retorn perquè un teclat premut a la butxaca no pugui moure el focus al botó de trucada d\'emergència. Retorn continua actiu si el PIN per teclat està activat. Requereix el servei d\'accessibilitat.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Llista Prima (vertical, sense captures)</string>
+    <string name="recents_mode_quilt">Mosaic (mosaic de captures)</string>
+    <string name="recents_mode_quilt_standalone">Mosaic independent (mosaic de captures, sense Xposed)</string>
+    <string name="recents_slim_empty">No hi ha res més on canviar.</string>
+    <string name="recents_slim_close_all">Tanca-ho tot</string>
+    <string name="recents_slim_app_info">Informació de l\'app</string>
+    <string name="recents_overlay_trigger_note">Llista Prima i Mosaic s\'obren amb la tecla física de Recents. El botó o el gest de navegació en pantalla continua obrint la vista general estàndard.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Aspecte</string>
+    <string name="recents_slim_scrim_color">Color de fons</string>
+    <string name="recents_slim_scrim_opacity">Opacitat del fons</string>
+    <string name="recents_slim_scrim_blur">Desenfocament del fons</string>
+    <string name="recents_slim_blur_unsupported">El desenfocament no està disponible ara (el sistema el desactiva, per exemple amb l\'estalvi de bateria).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Fosc</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Durada de l\'animació</string>
+    <string name="recents_slim_anim_off">Desactivada</string>
+    <string name="recents_slim_anim_hint">Multiplica el temps base i segueix l\'escala d\'animació del sistema (Opcions de desenvolupador). 100% iguala la velocitat del sistema.</string>
+    <string name="lockscreen_enter_opens_pin_label">Retorn / pad obre el PIN a la pantalla de bloqueig</string>
+    <string name="lockscreen_enter_opens_pin_desc">A la pantalla de bloqueig, Retorn i el centre del pad obren sempre el teclat del PIN. Sense això, activen el que tingui el focus (desbloquejar, configuració de xarxa, la notificació més recent). Requereix root i el servei d\'accessibilitat.</string>
 </resources>

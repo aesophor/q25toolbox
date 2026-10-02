@@ -30,6 +30,9 @@ fun PinKeyboardScreen(onBack: () -> Unit) {
     var serviceEnabled by remember { mutableStateOf(false) }
     var enabled by remember { mutableStateOf(prefs.getBoolean(Q25AccessibilityService.KEY_PIN_INPUT, true)) }
 
+    var enterOpens by remember { mutableStateOf(prefs.getBoolean(Q25AccessibilityService.KEY_LOCKSCREEN_ENTER_OPENS_PIN, true)) }
+    var navBlock by remember { mutableStateOf(prefs.getBoolean(Q25AccessibilityService.KEY_LOCKSCREEN_NAV_BLOCK, false)) }
+
     LaunchedEffect(Unit) {
         serviceEnabled = isQ25AccessibilityServiceEnabled(context)
     }
@@ -51,6 +54,38 @@ fun PinKeyboardScreen(onBack: () -> Unit) {
         DescriptionDivider()
         Text(
             stringResource(R.string.pin_desc),
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        DescriptionDivider()
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.lockscreen_enter_opens_pin_label))
+            Switch(
+                checked = enterOpens,
+                onCheckedChange = { checked ->
+                    enterOpens = checked
+                    prefs.edit().putBoolean(Q25AccessibilityService.KEY_LOCKSCREEN_ENTER_OPENS_PIN, checked).apply()
+                }
+            )
+        }
+        Text(
+            stringResource(R.string.lockscreen_enter_opens_pin_desc),
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        DescriptionDivider()
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.lockscreen_nav_block_label))
+            Switch(
+                checked = navBlock,
+                onCheckedChange = { checked ->
+                    navBlock = checked
+                    prefs.edit().putBoolean(Q25AccessibilityService.KEY_LOCKSCREEN_NAV_BLOCK, checked).apply()
+                }
+            )
+        }
+        Text(
+            stringResource(R.string.lockscreen_nav_block_desc),
             style = MaterialTheme.typography.bodySmall
         )
     }

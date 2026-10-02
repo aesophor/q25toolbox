@@ -9,13 +9,18 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.BatteryManager
 import android.util.Log
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import com.kgr.q25toolbox.core.RootShell
+import com.kgr.q25toolbox.modules.RecentsTweaksController
+import com.kgr.q25toolbox.modules.SlimRecentsController
 import com.kgr.q25toolbox.inputfix.CalculatorInputFix
 import com.kgr.q25toolbox.inputfix.ComposerEnterKeyHandler
 import com.kgr.q25toolbox.modules.AppScalingController
@@ -60,6 +65,8 @@ class Q25AccessibilityService : AccessibilityService() {
         const val KEY_SCALING_APPS = "scaling_apps"       // StringSet "pkg=width" for per-app resolution
         const val KEY_IN_CALL_SHORTCUTS = "in_call_shortcuts_enabled"
         const val KEY_IME_SUGGESTIONS = "ime_suggestions_enabled" // Ctrl+W/E/R picks IME suggestion 1/2/3
+        const val KEY_LOCKSCREEN_ENTER_OPENS_PIN = "lockscreen_enter_opens_pin" // Enter / pad centre -> open the PIN pad
+        const val KEY_LOCKSCREEN_NAV_BLOCK = "lockscreen_nav_block_enabled" // swallow D-pad/Enter/Space/Tab while keyguard is up
         const val KEY_CALL_SCREEN_RECOVERY = "call_screen_recovery_enabled" // force-wake if still dark after a call ends
 
 
@@ -92,12 +99,18 @@ class Q25AccessibilityService : AccessibilityService() {
         // no-op'd. Exact (trimmed, case-insensitive) match against these sets instead of a
         // substring check, since several of these strings are short enough that substring
         // matching could false-positive against something unrelated.
+        // Google Dialer, plus LineageOS' own Dialer (com.android.dialer, same code base:
+        // id/digits confirmed in its APK; its in-call buttons are not verified yet).
+        private const val AOSP_DIALER = "com.android.dialer"
+        private val AOSP_INCALL_BUTTON = Regex(""".*:id/incall_(first|second|third|fourth|fifth|sixth)_button""")
+        private val DIALER_PKGS = listOf("com.google.android.dialer", "com.google.android.apps.dialer", "com.android.dialer")
         private val SPEAKER_LABELS = setOf("altaveu", "altavoz", "altifalante", "alto-falante", "altofalante", "altoparlanti", "bocina", "bozgorailua", "difuzor", "dinamik", "garsiakalbis", "głośnik", "hangszóró", "haut-parleur", "hoparlör", "hátalari", "högtalare", "højttaler", "høyttaler", "isipikha", "kaiutin", "karnay", "kõlar", "lautsprecher", "loa", "luidspreker", "pmbsr suara", "reproduktor", "skaļrunis", "speaker", "spika", "vivavoce", "zvočnik", "zvučnik", "ηχείο", "високогов.", "динамик", "динамік", "дынамік", "звучник", "катуу сүйлөткүч", "чанга яригч", "բարձրախոս", "רמקול", "اسپیکر", "بلندگو", "مكبر الصوت", "स्पिकर", "स्पीकर", "स्‍पीकर", "স্পিকার", "স্পীকাৰ", "ਸਪੀਕਰ", "સ્પીકર", "ସ୍ପିକର୍‌", "ஸ்பீக்கர்", "స్పీకర్", "ಸ್ಪೀಕರ್‌", "സ്പീക്കർ", "ස්පීකරය", "ลำโพง", "ລຳໂພງ", "စပီကာ", "სპიკერი", "የድምጽ ማጉያ", "ឧបករណ៍​បំពង​សំឡេង", "スピーカー", "免提", "喇叭", "擴音", "스피커")
         private val MUTE_LABELS = setOf("bisukan", "couper le son", "couper micro", "demp", "dempen", "desakt. audioa", "desativ. som", "hiqi zërin", "hljóð af", "i-mute", "isklj. zvuk", "isključi zvuk", "izklopi zvok", "izslēgt", "kutt lyden", "ljud av", "mute", "mykistä", "nutildyti", "némítás", "ovozsiz", "redam", "sesi kapat", "silencia", "silenciar", "silenzia", "silențios", "sluk mikrofon", "stumm", "susdurun", "thulisa", "tắt tiếng", "vaigista", "vypnúť zvuk", "wycisz", "zima maikrofoni", "ztlumit", "σίγαση", "без звука", "выкл. гук", "дууг хаах", "дыбысын өшіру", "заглушаване", "исклучи звук", "искључи звук", "мікрофон", "үнүн өчүрүү", "անջատել", "השתקה", "خاموش کریں", "صامت کردن", "كتم", "म्युट गर्नुहोस्", "म्यूट करा", "म्यूट करें", "মিউট করুন", "মিউট কৰক", "ਮਿਊਟ ਕਰੋ", "મ્યૂટ કરો", "ମ୍ୟୁଟ୍ କର", "ஒலியடக்கு", "మ్యూట్", "ಮ್ಯೂಟ್‌", "മ്യൂട്ടുചെയ്യുക", "නිහඬ කරන්න", "ปิดเสียง", "ປີດສຽງ", "အသံပိတ်ရန်", "დადუმება", "ድምፀ-ከል አድርግ", "បិទ​សំឡេង", "ミュート", "静音", "靜音", "음소거")
         private val DIALPAD_LABELS = setOf("billentyűzet", "blloku i tasteve", "bàn phím", "cipartast.", "clavier", "ikhiphedi", "keypad", "klaviatura", "klaviatuur", "klaviatūra", "klawiatura", "klávesnice", "knappsats", "nommerblad", "näppäimistö", "pad kekunci", "talnaborð", "tastatur", "tastatura", "tastatură", "tastenfeld", "tastierino", "teclado", "teclat", "teklatua", "telefonska tastatura", "tipkovnica", "toetsenblok", "tuş takımı", "vitufe vya simu", "číselník", "πληκτρολόγιο", "клавиа­тура", "клавиатура", "клавіатура", "клавіятура", "ном. тергич", "пернетақта", "тастатура", "товчлуур", "թվաշար", "לוח חיוג", "صفحه کلید", "لوحة المفاتيح", "کی پیڈ", "किप्याड", "कीपॅड", "कीपैड", "কীপেড", "কীপ্যাড", "ਕੀਪੈਡ", "કીપેડ", "କୀ’ପେଡ", "கீபேட்", "కీప్యాడ్", "ಕೀಪ್ಯಾಡ್‌", "കീപാഡ്", "යතුරු පුවරුව", "ปุ่มกด", "ແປ້ນກົດ", "ခလုတ်ခုံ", "კლავიატურა", "ቁልፍ ሰሌዳ", "ផ្ទាំងចុចលេខ", "キーパッド", "拨号键盘", "撥號鍵盤", "키패드")
     }
 
     private val worker: ExecutorService = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
     // IME switching (e.g. entering the per-app keyboard block) is latency-critical - the user
     // can start typing the moment the new app appears - so it gets its own executor rather than
     // sharing `worker` with slower, poll-based tasks (auto-focus's focus-and-verify loop, the
@@ -116,6 +129,8 @@ class Q25AccessibilityService : AccessibilityService() {
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                // An accessibility-overlay window can sit above the keyguard; never leave it up.
+                SlimRecentsOverlayController.hide(animate = false)
                 foregroundPkg = null
                 reconcileScaling()
             }
@@ -249,6 +264,8 @@ class Q25AccessibilityService : AccessibilityService() {
     private fun imeBlockApps(): Set<String> =
         prefs?.getStringSet(KEY_IME_BLOCK_APPS, emptySet()) ?: emptySet()
     private fun inCallShortcutsEnabled() = prefs?.getBoolean(KEY_IN_CALL_SHORTCUTS, false) ?: false
+    private fun lockscreenEnterOpensPinEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_ENTER_OPENS_PIN, true) ?: true
+    private fun lockscreenNavBlockEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_NAV_BLOCK, false) ?: false
     private fun callScreenRecoveryEnabled() = prefs?.getBoolean(KEY_CALL_SCREEN_RECOVERY, true) ?: true
 
 
@@ -336,7 +353,7 @@ class Q25AccessibilityService : AccessibilityService() {
 
     private fun isGoogleDialerForeground(): Boolean {
         val pkg = foregroundPkg ?: return false
-        return pkg == "com.google.android.dialer" || pkg == "com.google.android.apps.dialer"
+        return pkg in DIALER_PKGS
     }
 
     /**
@@ -346,7 +363,7 @@ class Q25AccessibilityService : AccessibilityService() {
      */
     private fun isDialpadDigitsField(node: AccessibilityNodeInfo): Boolean {
         val id = node.viewIdResourceName ?: return false
-        return id == "com.google.android.dialer:id/digits" || id == "com.google.android.apps.dialer:id/digits"
+        return DIALER_PKGS.any { id == "$it:id/digits" }
     }
 
     private fun isAutoFocusEnabledForForeground(): Boolean {
@@ -458,9 +475,83 @@ class Q25AccessibilityService : AccessibilityService() {
 
     // -------------------------------------------------- Physical key handling
 
+    /**
+     * Builds the Slim List / Masonry-quilt overlay. Task listing, snapshots and the live screenshot all
+     * run root shell commands, so everything happens on [worker]; the window itself is added on the
+     * main thread. In quilt mode the window comes up at once with placeholders and the snapshots
+     * stream in afterwards.
+     */
+    private fun openRecents() {
+        val mode = RecentsTweaksController.getOverlayMode(this)
+        if (!mode.isOverlay) { performGlobalAction(GLOBAL_ACTION_RECENTS); return }
+        worker.execute {
+            try {
+                val cards = mode == RecentsTweaksController.LayoutMode.QUILT
+                val tasks = SlimRecentsController.listTasks(this)
+                // The foreground app has no fresh stored snapshot (those are taken when a task goes
+                // to the background), so its tile gets a live screenshot, taken before our own window
+                // goes up so the scrim is not in the shot.
+                val liveTop = if (cards && tasks.isNotEmpty()) captureForRecents() else null
+                val topId = tasks.firstOrNull()?.taskId
+                mainHandler.post {
+                    SlimRecentsOverlayController.show(this, tasks, cards)
+                    if (liveTop != null && topId != null) {
+                        SlimRecentsOverlayController.fillSnapshots(mapOf(topId to liveTop))
+                    }
+                }
+                if (cards && tasks.isNotEmpty()) {
+                    val ids = if (liveTop != null) tasks.drop(1).map { it.taskId } else tasks.map { it.taskId }
+                    val snaps = SlimRecentsController.loadSnapshots(ids)
+                    mainHandler.post { SlimRecentsOverlayController.fillSnapshots(snaps) }
+                }
+            } catch (t: Throwable) {
+                Log.e("Q25Toolbox", "openRecents failed", t)
+            }
+        }
+    }
+
+    /** Live screenshot for the quilt's newest tile, minus the status bar. Blocking (root screencap). */
+    private fun captureForRecents(): Bitmap? {
+        val sbId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        val top = if (sbId > 0) resources.getDimensionPixelSize(sbId) else 0
+        return SlimRecentsController.captureScreen(top, 0)
+    }
+
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return false
         val kc = event.keyCode
+
+        // Recents overlay (Slim List / Masonry quilt). While it is showing, Back/Home/Recents close
+        // or refresh it unconditionally, before any other feature gets a look at the key: the
+        // overlay is FLAG_NOT_FOCUSABLE, so it can never receive keys itself.
+        if (SlimRecentsOverlayController.isShowing()) {
+            when (kc) {
+                KeyEvent.KEYCODE_BACK -> {
+                    if (event.action == KeyEvent.ACTION_DOWN) SlimRecentsOverlayController.hide()
+                    return true
+                }
+                KeyEvent.KEYCODE_HOME -> {
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        SlimRecentsOverlayController.hide()
+                        performGlobalAction(GLOBAL_ACTION_HOME)
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_APP_SWITCH, KeyEvent.KEYCODE_PROG_RED -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) openRecents()
+                    return true
+                }
+            }
+        } else if ((kc == KeyEvent.KEYCODE_PROG_RED || kc == KeyEvent.KEYCODE_APP_SWITCH) && !isDeviceLocked() &&
+            RecentsTweaksController.getOverlayMode(this).isOverlay
+        ) {
+            // PROG_RED is what KeyRemapController turns the physical Recents key into while an overlay
+            // mode is selected, so the system never sees it (it would open its own Overview alongside
+            // ours). APP_SWITCH still lands here from sources that bypass the remap (e.g. USB keyboards).
+            // The on-screen nav button and gesture go straight to the launcher and cannot be intercepted.
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) openRecents()
+            return true
+        }
 
         // IME suggestion shortcuts: Ctrl+W/E/R picks suggestion 1/2/3 from the keyboard's
         // candidate strip. Only consumes the key if a suggestion was actually found and
@@ -533,10 +624,10 @@ class Q25AccessibilityService : AccessibilityService() {
                                     if (keypadNode == null) {
                                         // Couldn't identify the keypad toggle by label - do nothing
                                         // rather than guess at a differently-ordered button.
-                                    } else if (keypadNode.isChecked) {
+                                    } else if (isKeypadToggleOn(keypadNode, root)) {
                                         // Common case: autoOpenDialpad() already opened it earlier,
                                         // so the digits field should already exist - insert straight away.
-                                        findDialerDigitsField(root)?.let { insertDialerDigit(it, kc) }
+                                        sendDialerDigit(root, kc)
                                     } else {
                                         // Dialpad hasn't visibly opened yet - autoOpenDialpad()'s
                                         // click is async and can lose this race for the very first
@@ -546,19 +637,17 @@ class Q25AccessibilityService : AccessibilityService() {
                                         // same reason auto-focus below uses ACTION_SET_TEXT instead).
                                         keypadNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                                         worker.execute {
-                                            var digits: AccessibilityNodeInfo? = null
                                             for (attempt in 1..10) {
                                                 Thread.sleep(50)
-                                                digits = rootInActiveWindow?.let { r ->
+                                                val sent = rootInActiveWindow?.let { r ->
                                                     try {
-                                                        findDialerDigitsField(r)
+                                                        sendDialerDigit(r, kc)
                                                     } finally {
                                                         r.recycle()
                                                     }
-                                                }
-                                                if (digits != null) break
+                                                } ?: false
+                                                if (sent) break
                                             }
-                                            digits?.let { insertDialerDigit(it, kc) }
                                         }
                                     }
                                 }
@@ -668,6 +757,26 @@ class Q25AccessibilityService : AccessibilityService() {
         if (chatComposerEnabled() && composerHandler.supportsPackage(fgPkg) &&
             composerHandler.onKeyEvent(this, event)
         ) return true
+
+        // Enter / pad centre on the plain lockscreen: open the PIN pad, deterministically. Left to the system,
+        // these keys activate whatever happens to hold focus (unlock, the network tile, the newest
+        // notification), which changes with earlier key presses. Only when SystemUI's own keyguard is the
+        // active window and no bouncer is up: over-lockscreen apps (an incoming call, say) and the PIN pad
+        // itself keep their keys.
+        if (isOpenPinKey(kc) && lockscreenEnterOpensPinEnabled() && isDeviceLocked() && isPlainLockscreen()) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                // Root shell: never on the main thread (this callback has a ~500 ms budget).
+                worker.execute { RootShell.run("wm dismiss-keyguard") }
+            }
+            return true
+        }
+
+        // Lockscreen navigation block: on the keyguard, D-pad/Tab/Space/Enter move focus and click
+        // the focused control, which can reach the emergency-call button with no touch at all
+        // (e.g. keyboard pressed in a pocket). Event-driven on purpose (ported idea from
+        // Key2Toolbox's "Lockscreen Keyboard Lock", which polls dumpsys and chmods the input node).
+        // Enter/D-pad-center stay live while PIN-on-keyboard is on, since the PIN pad needs them.
+        if (lockscreenNavBlockEnabled() && isLockscreenNavKey(kc, pinInputEnabled()) && isDeviceLocked()) return true
 
         // PIN Input: map physical keys to the lockscreen PIN pad.
         if (!pinInputEnabled()) return false
@@ -828,6 +937,41 @@ class Q25AccessibilityService : AccessibilityService() {
         return first
     }
 
+    private fun isLockscreenNavKey(kc: Int, pinActive: Boolean): Boolean = when (kc) {
+        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT,
+        KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_TAB, KeyEvent.KEYCODE_SPACE -> true
+        // Enter / pad centre open the PIN pad natively from the plain lockscreen (verified on LineageOS 23),
+        // so they must pass until the bouncer is up. Once it is, they can activate the focused control (for
+        // example the emergency-call button), so they are blocked - unless PIN-on-keyboard needs them.
+        KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_DPAD_CENTER ->
+            !pinActive && isBouncerShowing()
+        else -> false
+    }
+
+    private fun isOpenPinKey(kc: Int) =
+        kc == KeyEvent.KEYCODE_ENTER || kc == KeyEvent.KEYCODE_NUMPAD_ENTER || kc == KeyEvent.KEYCODE_DPAD_CENTER
+
+    /** SystemUI's keyguard is the active window and its PIN pad is not showing. */
+    private fun isPlainLockscreen(): Boolean {
+        val root = rootInActiveWindow ?: return false
+        return try {
+            root.packageName == "com.android.systemui" &&
+                findNodeByViewIdFirst(root, "com.android.systemui:id/keyguard_bouncer_container")?.also { it.recycle() } == null
+        } finally {
+            root.recycle()
+        }
+    }
+
+    /** True while the lockscreen's PIN/password/pattern pad (the "bouncer") is on screen. */
+    private fun isBouncerShowing(): Boolean {
+        val root = rootInActiveWindow ?: return false
+        return try {
+            findNodeByViewIdFirst(root, "com.android.systemui:id/keyguard_bouncer_container")?.also { it.recycle() } != null
+        } finally {
+            root.recycle()
+        }
+    }
+
     private fun isDeviceLocked(): Boolean {
         val km = getSystemService(KEYGUARD_SERVICE) as? KeyguardManager
         return km?.isKeyguardLocked ?: false
@@ -875,7 +1019,7 @@ class Q25AccessibilityService : AccessibilityService() {
      * [isDialpadDigitsField] checks for. Caller must recycle the returned node.
      */
     private fun findDialerDigitsField(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
-        for (id in arrayOf("com.google.android.dialer:id/digits", "com.google.android.apps.dialer:id/digits")) {
+        for (id in DIALER_PKGS.map { "$it:id/digits" }) {
             val nodes = root.findAccessibilityNodeInfosByViewId(id)
             if (nodes != null && nodes.isNotEmpty()) {
                 for (i in 1 until nodes.size) nodes[i].recycle()
@@ -915,7 +1059,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 // pre-call dial-a-number screen's own (unrelated) checkables.
                 if (checkables.size >= 3) {
                     val keypadNode = findCheckableByLabel(checkables, DIALPAD_LABELS)
-                    if (keypadNode != null && !keypadNode.isChecked) {
+                    if (keypadNode != null && !isKeypadToggleOn(keypadNode, root)) {
                         keypadNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                         Log.d("Q25Toolbox", "Auto-opened dialpad on call screen load")
                     }
@@ -1002,7 +1146,7 @@ class Q25AccessibilityService : AccessibilityService() {
     }
 
     private fun findCheckables(node: AccessibilityNodeInfo, list: MutableList<AccessibilityNodeInfo>) {
-        if (node.isCheckable) {
+        if (node.isCheckable || isAospInCallButton(node)) {
             list.add(AccessibilityNodeInfo.obtain(node))
         }
         for (i in 0 until node.childCount) {
@@ -1010,6 +1154,45 @@ class Q25AccessibilityService : AccessibilityService() {
             findCheckables(child, list)
             child.recycle()
         }
+    }
+
+    /**
+     * LineageOS' own Dialer (com.android.dialer) builds its in-call actions as plain clickable
+     * LinearLayouts (`incall_first_button` .. `incall_sixth_button`), not checkable toggles, so
+     * [findCheckables] would otherwise see none of them. Layout confirmed with uiautomator on
+     * LineageOS 23; their labels are child TextViews, which [nodeSubtreeContainsLabel] reads.
+     */
+    private fun isAospInCallButton(node: AccessibilityNodeInfo): Boolean {
+        if (node.packageName != AOSP_DIALER) return false
+        val id = node.viewIdResourceName ?: return false
+        return AOSP_INCALL_BUTTON.matches(id)
+    }
+
+    /** The AOSP dialer exposes no checked state for its Keypad button; the DTMF pad existing is the signal. */
+    private fun isKeypadToggleOn(node: AccessibilityNodeInfo, root: AccessibilityNodeInfo): Boolean {
+        if (node.isCheckable) return node.isChecked
+        val pad = root.findAccessibilityNodeInfosByViewId("$AOSP_DIALER:id/dtmf_twelve_key_dialer_view")
+        return !pad.isNullOrEmpty()
+    }
+
+    /**
+     * Types a mapped digit into the in-call dialpad. The AOSP dialer sends DTMF from its key
+     * views, so click the key (zero..nine) rather than set text; Google's keeps the SET_TEXT path.
+     * Returns false if the target isn't there yet (caller may retry).
+     */
+    private fun sendDialerDigit(root: AccessibilityNodeInfo, kc: Int): Boolean {
+        val digit = dialerDigitChar(kc) ?: return false
+        if (foregroundPkg == AOSP_DIALER) {
+            val name = arrayOf("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")[digit - '0']
+            val keys = root.findAccessibilityNodeInfosByViewId("$AOSP_DIALER:id/$name")
+            if (keys.isNullOrEmpty()) return false
+            val ok = keys[0].performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            keys.forEach { it.recycle() }
+            return ok
+        }
+        val field = findDialerDigitsField(root) ?: return false
+        insertDialerDigit(field, kc)
+        return true
     }
 
     /** Matches by content-description or text (case-insensitive) instead of a fixed index,
@@ -1172,6 +1355,7 @@ class Q25AccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         if (instance === this) instance = null
+        SlimRecentsOverlayController.hide(animate = false)
         restoreImeBlock()
         restoreScaling()
         prefs?.unregisterOnSharedPreferenceChangeListener(prefListener)

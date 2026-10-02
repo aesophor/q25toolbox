@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.core.Rom
 
 sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes val subtitleRes: Int = 0) {
     data object KeyRemap : Screen("key_remap", R.string.title_key_remap, R.string.subtitle_key_remap)
@@ -90,3 +91,13 @@ val networkScreens = listOf(
 )
 
 val allScreens = keyboardScreens + screenScreens + systemScreens + networkScreens + listOf(Screen.BatteryUsage, Screen.Dt2w)
+
+/**
+ * Screens that make no sense on a given ROM are hidden from the menus (the code stays). Only
+ * hardware/ROM facts belong here; BenOS and ZinwaOS keep the full list.
+ *  - BesLoudness drives MediaTek's HAL parameter, which LineageOS does not expose.
+ */
+fun Screen.availableOn(rom: Rom?): Boolean = when (this) {
+    Screen.BesLoudness -> rom != Rom.LINEAGE
+    else -> true
+}

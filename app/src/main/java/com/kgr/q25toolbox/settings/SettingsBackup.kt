@@ -78,6 +78,8 @@ object SettingsBackup {
     /** Which BackupModule owns each key in the shared "q25tweaks" prefs file. */
     private val Q25TWEAKS_MODULE_MAP: Map<String, BackupModule> = mapOf(
         Q25AccessibilityService.KEY_PIN_INPUT to BackupModule.PIN_KEYBOARD,
+        Q25AccessibilityService.KEY_LOCKSCREEN_NAV_BLOCK to BackupModule.PIN_KEYBOARD,
+        Q25AccessibilityService.KEY_LOCKSCREEN_ENTER_OPENS_PIN to BackupModule.PIN_KEYBOARD,
         Q25AccessibilityService.KEY_IME_BLOCK to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_BLOCK_APPS to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SAVED to BackupModule.IME_BLOCK,

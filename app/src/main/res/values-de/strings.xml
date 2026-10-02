@@ -414,4 +414,40 @@
     <string name="adblock_update_status_done">Aktuell</string>
     <string name="adblock_update_status_error">Fehler: %1$s</string>
 
+
+    <!-- ROM profile (Lineage support) -->
+    <string name="rom_choice_title">Welches System verwenden Sie?</string>
+    <string name="rom_choice_body">Q25 Toolbox konnte Ihre ROM nicht erkennen, und einige Module hängen davon ab. Sie können dies später in den Einstellungen ändern.</string>
+    <string name="rom_choice_later">Später</string>
+    <string name="settings_rom_title">ROM-Profil</string>
+    <string name="settings_rom_subtitle">Wählen Sie, an welches System sich die Module anpassen</string>
+    <string name="settings_rom_auto">Automatisch (%1$s)</string>
+    <string name="info_rom">ROM-Profil</string>
+    <string name="lockscreen_nav_block_label">Navigationstasten auf dem Sperrbildschirm blockieren</string>
+    <string name="lockscreen_nav_block_desc">Bei gesperrtem Gerät werden Steuerkreuz, Tab, Leertaste und Eingabe ignoriert, damit eine in der Tasche gedrückte Tastatur den Fokus nicht auf die Notruftaste setzen kann. Eingabe bleibt aktiv, wenn die PIN-Eingabe per Tastatur an ist. Benötigt den Bedienungshilfen-Dienst.</string>
+
+    <!-- Standalone Recents overlays (ported from Key2 Toolbox) -->
+    <string name="recents_mode_slim">Schmale Liste (vertikal, ohne Vorschau)</string>
+    <string name="recents_mode_quilt">Mosaik (Vorschau-Quilt)</string>
+    <string name="recents_mode_quilt_standalone">Mosaik, eigenständig (Vorschau-Quilt, ohne Xposed)</string>
+    <string name="recents_slim_empty">Nichts anderes zum Wechseln.</string>
+    <string name="recents_slim_close_all">Alle schließen</string>
+    <string name="recents_slim_app_info">App-Info</string>
+    <string name="recents_overlay_trigger_note">Schmale Liste und Mosaik öffnen sich mit der physischen Übersicht-Taste. Die Bildschirm-Navigationstaste oder -geste öffnet weiterhin die Standardübersicht.</string>
+
+    <!-- Overlay appearance -->
+    <string name="recents_slim_appearance_section">Darstellung</string>
+    <string name="recents_slim_scrim_color">Hintergrundfarbe</string>
+    <string name="recents_slim_scrim_opacity">Hintergrunddeckkraft</string>
+    <string name="recents_slim_scrim_blur">Hintergrundunschärfe</string>
+    <string name="recents_slim_blur_unsupported">Unschärfe ist derzeit nicht verfügbar (das System schaltet sie ab, z. B. im Energiesparmodus).</string>
+    <string-array name="recents_slim_scrim_color_modes">
+        <item>Dunkel</item>
+        <item>Material You</item>
+    </string-array>
+    <string name="recents_slim_anim_duration">Animationsdauer</string>
+    <string name="recents_slim_anim_off">Aus</string>
+    <string name="recents_slim_anim_hint">Multipliziert die Basiszeit und folgt der System-Animationsskala (Entwickleroptionen). 100 % entspricht der Systemgeschwindigkeit.</string>
+    <string name="lockscreen_enter_opens_pin_label">Eingabe / Pad öffnet die PIN auf dem Sperrbildschirm</string>
+    <string name="lockscreen_enter_opens_pin_desc">Auf dem Sperrbildschirm öffnen Eingabe und die Pad-Mitte immer das PIN-Feld. Sonst aktivieren sie, was gerade den Fokus hat (Entsperren, Netzwerkeinstellungen, neueste Benachrichtigung). Benötigt Root und den Bedienungshilfen-Dienst.</string>
 </resources>

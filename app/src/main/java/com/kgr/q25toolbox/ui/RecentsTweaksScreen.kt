@@ -30,6 +30,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.modules.SlimRecentsController
+import androidx.compose.ui.res.stringArrayResource
+import android.view.WindowManager
+import android.os.Build
+import com.kgr.q25toolbox.service.Q25AccessibilityService
+import com.kgr.q25toolbox.service.isQ25AccessibilityServiceEnabled
+import com.kgr.q25toolbox.modules.KeyRemapController
+import android.content.Context
+import com.kgr.q25toolbox.core.Rom
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.RecentsTweaksController.LayoutMode
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +55,9 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
     var mode by remember { mutableStateOf(LayoutMode.STOCK) }
     var scrimAlpha by remember { mutableFloatStateOf(1f) }
     var repairMessage by remember { mutableStateOf<String?>(null) }
+    var serviceEnabled by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) { serviceEnabled = isQ25AccessibilityServiceEnabled(context) }
+    val onLineage = rememberRom().value == Rom.LINEAGE
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -61,7 +73,13 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
 
     fun setModeAsync(newMode: LayoutMode) {
         mode = newMode
-        scope.launch(Dispatchers.IO) { RecentsTweaksController.setLayoutMode(newMode) }
+        scope.launch(Dispatchers.IO) {
+            RecentsTweaksController.setLayoutMode(newMode)
+            // Overlay modes need the physical Recents key hidden from the system (see KeyRemapController).
+            val prefs = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+            KeyRemapController.setRecentsOverlayRemap(prefs, newMode.isOverlay)
+            KeyRemapController.applySettings(prefs)
+        }
     }
 
     fun commitScrimAlphaAsync(alpha: Float) {
@@ -92,7 +110,10 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             stringResource(R.string.recents_intro),
             style = MaterialTheme.typography.bodySmall
         )
+        // Overlay modes depend on the service receiving the (remapped) Recents key.
+        if (mode.isOverlay) AccessibilityServiceBanner(serviceEnabled)
 
+        if (!onLineage) {
         DescriptionDivider()
         Text(
             stringResource(R.string.recents_section_lsposed),
@@ -124,6 +145,7 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                 }
             }
         }
+        }
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -141,10 +163,18 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
-                val options = listOf(
+                // Grid/Masonry are LSPosed hooks into BenOS' launcher and do not apply on LineageOS, where
+                // the standalone overlays (labelled "Masonry" there) are the way to go. BenOS keeps its list.
+                val options = if (onLineage) listOf(
+                    LayoutMode.STOCK to R.string.recents_mode_stock,
+                    LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
+                    LayoutMode.QUILT to R.string.recents_mode_quilt
+                ) else listOf(
                     LayoutMode.STOCK to R.string.recents_mode_stock,
                     LayoutMode.GRID to R.string.recents_mode_grid,
-                    LayoutMode.MASONRY to R.string.recents_mode_masonry
+                    LayoutMode.MASONRY to R.string.recents_mode_masonry,
+                    LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
+                    LayoutMode.QUILT to R.string.recents_mode_quilt_standalone
                 )
                 options.forEach { (value, labelRes) ->
                     Row(
@@ -162,6 +192,15 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             }
         }
 
+        Text(
+            stringResource(R.string.recents_overlay_trigger_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (mode.isOverlay) OverlayAppearanceCard()
+
+        if (!onLineage) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -195,6 +234,7 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                 )
             }
         }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -212,6 +252,8 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             ) { Text(stringResource(R.string.recents_restart_systemui)) }
         }
 
+        // The OTA corruption this repairs is specific to BenOS' launcher package.
+        if (rememberRom().value != Rom.LINEAGE) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -241,11 +283,98 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             }
         }
 
+        }
+
         DescriptionDivider()
         Text(
             stringResource(R.string.subtitle_recents_tweaks),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+/**
+ * Look of the standalone overlays (Slim List / Masonry): background colour (dark or Material You),
+ * opacity and blur. Saved straight to the shared prefs; the overlay reads them each time it opens.
+ */
+@Composable
+private fun OverlayAppearanceCard() {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE) }
+    var colorMode by remember { mutableStateOf(SlimRecentsController.scrimColorMode(prefs)) }
+    var opacity by remember { mutableFloatStateOf(SlimRecentsController.scrimOpacityPercent(prefs).toFloat()) }
+    var blur by remember { mutableFloatStateOf(SlimRecentsController.scrimBlurPercent(prefs).toFloat()) }
+    var animPct by remember { mutableFloatStateOf(SlimRecentsController.animDurationPercent(prefs).toFloat()) }
+    // Cross-window blur can be unavailable (battery saver, unsupported GPU path): say so instead of a dead slider.
+    val blurSupported = remember {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).isCrossWindowBlurEnabled
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(stringResource(R.string.recents_slim_appearance_section), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+            Text(stringResource(R.string.recents_slim_scrim_color), style = MaterialTheme.typography.bodyMedium)
+            val labels = stringArrayResource(R.array.recents_slim_scrim_color_modes)
+            listOf(0, 1).forEach { m ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        colorMode = m
+                        prefs.edit().putInt(SlimRecentsController.KEY_SCRIM_COLOR_MODE, m).apply()
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(selected = colorMode == m, onClick = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(labels.getOrElse(m) { "$m" }, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            AppearanceSlider(
+                label = stringResource(R.string.recents_slim_scrim_opacity), value = opacity, range = 15f..100f,
+                onChange = { opacity = it },
+                onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_SCRIM_OPACITY, opacity.toInt()).apply() }
+            )
+            AppearanceSlider(
+                label = stringResource(R.string.recents_slim_scrim_blur), value = blur, range = 0f..100f,
+                enabled = blurSupported,
+                onChange = { blur = it },
+                onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_SCRIM_BLUR, blur.toInt()).apply() }
+            )
+            AppearanceSlider(
+                label = stringResource(R.string.recents_slim_anim_duration), value = animPct, range = 0f..200f,
+                offLabel = stringResource(R.string.recents_slim_anim_off),
+                onChange = { animPct = it },
+                onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_ANIM_DURATION, animPct.toInt()).apply() }
+            )
+            Text(
+                stringResource(R.string.recents_slim_anim_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (!blurSupported) {
+                Text(
+                    stringResource(R.string.recents_slim_blur_unsupported),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppearanceSlider(
+    label: String, value: Float, range: ClosedFloatingPointRange<Float>,
+    enabled: Boolean = true, offLabel: String? = null, onChange: (Float) -> Unit, onCommit: () -> Unit
+) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(if (value.toInt() == 0 && offLabel != null) offLabel else "${value.toInt()}%", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+        }
+        Slider(value = value, onValueChange = onChange, onValueChangeFinished = onCommit, valueRange = range, enabled = enabled)
     }
 }

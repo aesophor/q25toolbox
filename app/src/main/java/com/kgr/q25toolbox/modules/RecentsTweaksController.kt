@@ -1,6 +1,7 @@
 package com.kgr.q25toolbox.modules
 
 import android.content.Context
+import android.provider.Settings
 import android.os.Process
 import com.kgr.q25toolbox.core.ApkAligner
 import com.kgr.q25toolbox.core.AssetInstaller
@@ -48,12 +49,24 @@ object RecentsTweaksController {
     private const val LEGACY_MODULE_DIR = "/data/adb/modules/q25_recents"
     private const val LEGACY_PATCHED_APK = "/data/adb/q25toolbox/SearchLauncherQuickStep_patched.apk"
 
+    /** Standalone overlay modes live under their own key; see [setLayoutMode]. */
+    private const val OVERLAY_MODE_KEY = "q25_recents_overlay_mode"
+
     enum class LayoutMode(val value: Int) {
         STOCK(0),
         GRID(1),
 
         /** Grid layout plus staggered per-tile heights (see RecentsHookInit). */
-        MASONRY(2);
+        MASONRY(2),
+
+        /** Standalone vertical task list drawn as our own overlay; no Xposed, no launcher hook. */
+        SLIM_LIST(3),
+
+        /** Standalone snapshot quilt drawn as our own overlay; no Xposed, no launcher hook. */
+        QUILT(4);
+
+        /** True for the modes drawn by [com.kgr.q25toolbox.service.SlimRecentsOverlayController]. */
+        val isOverlay: Boolean get() = this == SLIM_LIST || this == QUILT
 
         companion object {
             fun fromValue(v: Int?): LayoutMode = entries.firstOrNull { it.value == v } ?: STOCK
@@ -68,13 +81,34 @@ object RecentsTweaksController {
     @JvmStatic
     fun isXposedActive(): Boolean = false
 
-    fun getLayoutMode(): LayoutMode = LayoutMode.fromValue(
-        RootShell.run("settings get global $LAYOUT_MODE_KEY").outString.trim().toIntOrNull()
-    )
+    fun getLayoutMode(): LayoutMode {
+        val overlay = LayoutMode.fromValue(
+            RootShell.run("settings get global $OVERLAY_MODE_KEY").outString.trim().toIntOrNull()
+        )
+        if (overlay.isOverlay) return overlay
+        return LayoutMode.fromValue(
+            RootShell.run("settings get global $LAYOUT_MODE_KEY").outString.trim().toIntOrNull()
+        )
+    }
 
+    /** Non-root read for the accessibility service's "open Recents" path (world-readable Global key). */
+    fun getOverlayMode(context: Context): LayoutMode = LayoutMode.fromValue(
+        runCatching { Settings.Global.getInt(context.contentResolver, OVERLAY_MODE_KEY) }.getOrNull()
+    ).takeIf { it.isOverlay } ?: LayoutMode.STOCK
+
+    /**
+     * Overlay modes write only [OVERLAY_MODE_KEY] and force the hook's key to STOCK, so the Xposed
+     * module (which treats every non-zero value as a grid) never sees them. The launcher only needs
+     * a restart when the hook-controlled mode actually changes.
+     */
     fun setLayoutMode(mode: LayoutMode) {
-        RootShell.run("settings put global $LAYOUT_MODE_KEY ${mode.value}")
-        restartLauncher()
+        val hookBefore = RootShell.run("settings get global $LAYOUT_MODE_KEY").outString.trim().toIntOrNull() ?: 0
+        val hookAfter = if (mode.isOverlay) LayoutMode.STOCK.value else mode.value
+        RootShell.run(
+            "settings put global $OVERLAY_MODE_KEY ${if (mode.isOverlay) mode.value else 0}" +
+                " ; settings put global $LAYOUT_MODE_KEY $hookAfter"
+        )
+        if (hookBefore != hookAfter) restartLauncher()
     }
 
     /** Recents background scrim opacity (0f = fully transparent, 1f = fully opaque). */

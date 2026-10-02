@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.core.Rom
 import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.modules.ProximitySensorController
 import com.kgr.q25toolbox.service.Q25AccessibilityService
@@ -85,6 +86,8 @@ fun CallScreenRecoveryScreen(onBack: () -> Unit) {
 
         DescriptionDivider()
 
+        // Driver rebind can panic the kernel on LineageOS (see RomProfile.keyboardRebindUnsafe).
+        if (rememberRom().value != Rom.LINEAGE) {
         Button(
             enabled = !respawning,
             onClick = {
@@ -105,6 +108,7 @@ fun CallScreenRecoveryScreen(onBack: () -> Unit) {
         }
         statusMessage?.let {
             Text(it, style = MaterialTheme.typography.bodySmall)
+        }
         }
 
         DescriptionDivider()
@@ -207,6 +211,11 @@ fun CallScreenRecoveryScreen(onBack: () -> Unit) {
             }
         }
 
+        // OEM factory-test app (BenOS/ZinwaOS only); nothing to launch if it is not installed.
+        val hasFactoryTest = remember {
+            runCatching { context.packageManager.getPackageInfo("com.hodafone.factorytest", 0) }.isSuccess
+        }
+        if (hasFactoryTest) {
         // Factory Test Activity Card
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -233,6 +242,7 @@ fun CallScreenRecoveryScreen(onBack: () -> Unit) {
                     Text(stringResource(R.string.prox_factory_test_button))
                 }
             }
+        }
         }
 
         DescriptionDivider()
