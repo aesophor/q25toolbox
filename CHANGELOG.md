@@ -1,8 +1,51 @@
 # Changelog
 
 All notable changes to Q25 Toolbox are documented here. This app started as
-a fork of [Key2 Toolbox](../Key2Toolbox) for the BlackBerry Key2 - entries
+a fork of [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
+
+## [4.1] - 2026-10-04
+
+Edge gestures. versionCode 35 → 36.
+
+### Added
+
+- **Edge Gestures** (Screen tab). Thin strips on the left, right and bottom edges, drawn as accessibility overlay
+  windows. The three zones are configured independently (Off or Custom, thickness, length, swipe distance, vibration);
+  a button copies one side onto the other. Needed on the Q25's LineageOS, which has no system gesture navigation
+  (`hasNavigationBar(0)` is false, and `force_show_navbar=1` had no effect even after a reboot).
+- **An action for every gesture, plain swipe and hold.** Side edges tell straight, diagonal-up and diagonal-down
+  swipes apart by the finger's angle; the bottom edge swipes up. Actions: Back, Home, Recents, Notifications, Quick
+  settings, Lock screen, Screenshot, Power menu, Split screen, Flashlight, Previous app, None. Defaults: side swipe
+  Back, side hold Previous app, diagonal down Notifications, diagonal up Quick settings, bottom swipe Home, bottom
+  hold Recents.
+- **Arrow overlay** (optional, per zone). A badge slides out of the edge following the finger, turns with the
+  direction of travel, changes colour past the threshold and flies off or retracts on release. Configurable: colours,
+  size, travel, opacity, thickness, animation speed, round badge or bare arrow, tilt, with a live preview.
+- **Vibration settings** (tick at the threshold, pulse on the action, test button). The system haptic is inaudible on
+  the Q25 motor (no predefined effects, no amplitude control), so the strips call the vibrator directly.
+- **Apps without strips:** the strips are off while a listed app is in front.
+- **Switch off the native bottom gesture**, independent of the strip. An LSPosed hook (`GestureHookInit`) skips the
+  launcher's `TouchInteractionService.onInputEvent`; the screen shows whether the hook is running, read from a
+  proof-of-life file the hook leaves in the launcher's data directory. Needs the module enabled for the launcher.
+- Backup covers Edge Gestures (backups from before the two sides were separate still restore).
+
+### Changed
+
+- **Recents overlays:** label and icon lookups are cached per package and banner colours are computed before the
+  window is shown (ported from Key2 Toolbox 5.5.3). A tile without a stored snapshot now fades instead of expanding
+  into a black rectangle.
+- README rewritten: requirements, install, module table, LineageOS facts, edge gestures, build and release checklist.
+
+### Not changed, on purpose
+
+- The live `screencap` of the app in front stays (0.24 s on the Q25, against about 2 s on the Key2).
+
+### Known issue
+
+- On LineageOS with the BlackBerry keyboard, the full on-screen keyboard sometimes appears instead of the
+  suggestions-only strip, seen together with reinstalling the app. Cause not established. Disabling and enabling the
+  keyboard in the input method settings restores the strip.
 
 ## [4.0.2] - 2026-10-04
 

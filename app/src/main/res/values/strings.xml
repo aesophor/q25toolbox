@@ -349,10 +349,10 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">Now runs on LineageOS 23, besides BenOS and ZinwaOS.</string>
-    <string name="whats_new_body">The app detects your ROM on its own (shown next to the title in Info; change it in Settings) and hides what does not apply. New: Slim List, Masonry and Grid Recents with no Xposed (they open from the physical Recents key), Zygisk Detach, and on LineageOS Double-Tap to Wake and Call Proximity Sleep. Enter or the pad now opens the PIN on the lockscreen (on by default only on LineageOS).\n\nTelemetry blocking is now per app: if you already had it on, your detected apps were enrolled for you.\n\nAdBlock also works on root managers that do not mount module files, and Backup now covers KeyRemap, Recents and Zygisk Detach.\n\nNew in 4.0.1: Grid now picks the LSPosed Grid when it works in your launcher and the standalone one otherwise, so LSPosed is no longer required. The Recents repair button is gone.</string>
+    <string name="whats_new_headline">Edge gestures: Back, Home, Recents and more from the screen edges.</string>
+    <string name="whats_new_body">New in Screen, Edge Gestures: thin strips on the left, right and bottom edges, each set up on its own. Every gesture (on the sides straight, diagonal up and diagonal down; on the bottom up) has one action for a plain swipe and another for a hold: Back, Home, Recents, Notifications, Quick settings, Lock screen, Screenshot, Power menu, Split screen, Flashlight or Previous app. There is an optional arrow that follows your finger (with its own colours, size and speed), vibration settings, and a list of apps where the strips are off.\n\nThe launcher\'s native bottom swipe-up can be switched off (it needs the LSPosed module enabled for the launcher).\n\nLineageOS on the Q25 has no system gesture navigation, so these strips are how you get edge gestures there. Recents also opens a bit faster.</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>

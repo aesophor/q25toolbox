@@ -357,10 +357,7 @@
     <string name="settings_quick_access_restart_systemui_subtitle">SystemUI zwangsweise neu starten, um eine ausstehende Änderung anzuwenden</string>
     <string name="settings_quick_access_notifications_title">Benachrichtigungszugriff</string>
     <string name="settings_quick_access_notifications_subtitle">Manuelle Alternative für Ticker-Benachrichtigungen, falls die Root-Freigabe nicht griff</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Verstanden</string>
-    <string name="whats_new_headline">Läuft jetzt auch auf LineageOS 23, zusätzlich zu BenOS und ZinwaOS.</string>
-    <string name="whats_new_body">Die App erkennt Ihre ROM selbst (neben dem Titel in Info; änderbar in den Einstellungen) und blendet aus, was nicht zutrifft. Neu: Zuletzt-Ansichten Schmale Liste, Mosaik und Raster ohne Xposed (geöffnet mit der physischen Übersicht-Taste), Zygisk Detach und unter LineageOS Doppeltippen zum Wecken sowie Call Proximity Sleep. Eingabe oder das Pad öffnen jetzt die PIN auf dem Sperrbildschirm (nur unter LineageOS standardmäßig an).\n\nDie Telemetrie-Sperre gilt jetzt pro App: Wenn sie schon aktiv war, wurden die erkannten Apps für Sie eingetragen.\n\nAdBlock funktioniert auch mit Root-Managern, die Moduldateien nicht einhängen, und die Sicherung umfasst jetzt KeyRemap, Zuletzt und Zygisk Detach.\n\nNeu in 4.0.1: Raster nutzt jetzt das LSPosed-Raster, wenn es in Ihrem Launcher funktioniert, sonst das eigenständige; LSPosed ist damit nicht mehr nötig. Die Reparatur-Schaltfläche für Zuletzt ist entfernt.</string>
     <string name="generic_cancel">Abbrechen</string>
     <string name="settings_backup_restore">Sichern &amp; Wiederherstellen</string>
     <string name="settings_backup_desc">Exportiert die Einstellungen der ausgewählten Module in eine JSON-Datei oder stellt sie daraus wieder her. Die Wiederherstellung führt mit deinen aktuellen Einstellungen zusammen — sie löscht nie, was nicht in der Datei steht.</string>
