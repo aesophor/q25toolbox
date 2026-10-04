@@ -510,4 +510,26 @@
     <string name="recents_hook_status_broken">LSPosed hook: it could not hook this launcher build, so the standalone Grid is used.</string>
     <string name="recents_hook_status_unknown">LSPosed hook: not seen in the launcher yet. Enable the module for the launcher in LSPosed, then restart the launcher.</string>
     <string name="recents_hook_recheck">Check again</string>
+    <string name="title_gestures">Edge Gestures</string>
+    <string name="subtitle_gestures">Back / Home / Recents from the screen edges</string>
+    <string name="gestures_zone_lateral">Side edges</string>
+    <string name="gestures_zone_bottom">Bottom edge</string>
+    <string name="gestures_lateral_desc">Swipe inward from either side edge: Back.</string>
+    <string name="gestures_bottom_desc">Swipe up from the bottom: Home. Swipe up and hold: Recents.</string>
+    <string name="gestures_mode_off">Off</string>
+    <string name="gestures_mode_custom">Custom</string>
+    <string name="gestures_thickness">Strip thickness</string>
+    <string name="gestures_length">Strip length</string>
+    <string name="gestures_distance">Swipe distance (smaller = more sensitive)</string>
+    <string name="gestures_haptic">Vibrate on action</string>
+    <string name="gestures_show_strips">Show strips (to place them)</string>
+    <string name="gestures_description">Each zone is independent. A custom strip is a thin invisible window that takes the touches landing on it, so a tap there does not reach the app below: keep it thin, or switch the zone off. Strips are not active on the lockscreen. There is no system gesture option: the Q25\'s LineageOS does not enable system gesture navigation.</string>
+    <string name="gestures_hook_ok">Launcher hook: running. The native bottom swipe-up is switched off while the bottom strip is on.</string>
+    <string name="gestures_hook_unknown">Launcher hook: not seen yet. The bottom strip needs it, or the native swipe-up fires too. Enable the Q25 Toolbox module for the launcher in LSPosed and restart the launcher, then touch the screen and check again.</string>
+    <string name="gestures_vibration">Vibration</string>
+    <string name="gestures_vib_tick">Tick at the swipe distance</string>
+    <string name="gestures_vib_action">Pulse when the action fires</string>
+    <string name="gestures_vib_strength">Strength</string>
+    <string name="gestures_vib_no_amplitude">This motor has no amplitude control: only the duration changes the feel.</string>
+    <string name="gestures_vib_test">Test (tick, then pulse)</string>
 </resources>

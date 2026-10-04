@@ -501,4 +501,26 @@
     <string name="recents_hook_status_broken">Hook de LSPosed: no s\'ha pogut enganxar a aquesta versió del launcher, així que es fa servir la quadrícula independent.</string>
     <string name="recents_hook_status_unknown">Hook de LSPosed: encara no s\'ha vist al launcher. Activa el mòdul per al launcher a LSPosed i reinicia el launcher.</string>
     <string name="recents_hook_recheck">Comprova de nou</string>
+    <string name="title_gestures">Gestos de vora</string>
+    <string name="subtitle_gestures">Enrere / Inici / Recents des de les vores</string>
+    <string name="gestures_zone_lateral">Vores laterals</string>
+    <string name="gestures_zone_bottom">Vora inferior</string>
+    <string name="gestures_lateral_desc">Lliscar cap a dins des de qualsevol vora lateral: Enrere.</string>
+    <string name="gestures_bottom_desc">Lliscar cap amunt des de baix: Inici. Lliscar cap amunt i mantenir: Recents.</string>
+    <string name="gestures_mode_off">Desactivat</string>
+    <string name="gestures_mode_custom">Personalitzat</string>
+    <string name="gestures_thickness">Gruix de la franja</string>
+    <string name="gestures_length">Llargada de la franja</string>
+    <string name="gestures_distance">Distància del gest (menor = més sensible)</string>
+    <string name="gestures_haptic">Vibrar en executar</string>
+    <string name="gestures_show_strips">Mostrar franges (per col·locar-les)</string>
+    <string name="gestures_description">Cada zona és independent. Una franja personalitzada és una finestra fina i invisible que recull els tocs que hi cauen, de manera que un toc allà no arriba a l\'app de sota: mantén-la fina o desactiva la zona. Les franges no actuen a la pantalla de bloqueig. No hi ha opció de gestos del sistema: el LineageOS del Q25 no activa la navegació per gestos del sistema.</string>
+    <string name="gestures_hook_ok">Hook del launcher: actiu. El gest natiu de lliscar cap amunt des de baix s\'apaga mentre la franja inferior està activa.</string>
+    <string name="gestures_hook_unknown">Hook del launcher: encara no detectat. La franja inferior el necessita; si no, el gest natiu es dispara alhora. Activa el mòdul de Q25 Toolbox per al launcher a LSPosed, reinicia el launcher, toca la pantalla i torna a comprovar.</string>
+    <string name="gestures_vibration">Vibració</string>
+    <string name="gestures_vib_tick">Tic en assolir la distància</string>
+    <string name="gestures_vib_action">Pols en executar l\'acció</string>
+    <string name="gestures_vib_strength">Intensitat</string>
+    <string name="gestures_vib_no_amplitude">Aquest motor no té control d\'amplitud: només la durada canvia la sensació.</string>
+    <string name="gestures_vib_test">Provar (tic i després pols)</string>
 </resources>

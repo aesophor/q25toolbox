@@ -11,6 +11,7 @@ import com.kgr.q25toolbox.modules.Dt2wController
 import com.kgr.q25toolbox.modules.ExtraDimController
 import com.kgr.q25toolbox.modules.LocationIdleController
 import com.kgr.q25toolbox.modules.TelemetryController
+import com.kgr.q25toolbox.modules.GestureSettings
 import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
@@ -84,6 +85,7 @@ object SettingsBackup {
         RECENTS(R.string.title_recents_tweaks),
         ZYGISK_DETACH(R.string.title_zygisk_detach),
         CALL_PROXIMITY_SLEEP(R.string.title_call_proximity_sleep),
+        GESTURES(R.string.title_gestures),
     }
 
     /** Which BackupModule owns each key in the shared "q25tweaks" prefs file. */
@@ -114,7 +116,7 @@ object SettingsBackup {
         SlimRecentsController.KEY_ANIM_DURATION to BackupModule.RECENTS,
         SlimRecentsController.KEY_GRID_CORNER_DP to BackupModule.RECENTS,
         SlimRecentsController.KEY_QUILT_CORNER_DP to BackupModule.RECENTS,
-    )
+    ) + GestureSettings.allKeys().associateWith { BackupModule.GESTURES }
 
     private const val Q25TWEAKS_PREFS = "q25tweaks"
     private const val TICKER_PREFS = "ticker_notifications"

@@ -501,4 +501,26 @@
     <string name="recents_hook_status_broken">Hook de LSPosed: no pudo engancharse a esta versión del launcher, así que se usa la cuadrícula independiente.</string>
     <string name="recents_hook_status_unknown">Hook de LSPosed: aún no se ha visto en el launcher. Activa el módulo para el launcher en LSPosed y reinicia el launcher.</string>
     <string name="recents_hook_recheck">Comprobar de nuevo</string>
+    <string name="title_gestures">Gestos de borde</string>
+    <string name="subtitle_gestures">Atrás / Inicio / Recientes desde los bordes</string>
+    <string name="gestures_zone_lateral">Bordes laterales</string>
+    <string name="gestures_zone_bottom">Borde inferior</string>
+    <string name="gestures_lateral_desc">Deslizar hacia dentro desde cualquier borde lateral: Atrás.</string>
+    <string name="gestures_bottom_desc">Deslizar hacia arriba desde abajo: Inicio. Deslizar hacia arriba y mantener: Recientes.</string>
+    <string name="gestures_mode_off">Desactivado</string>
+    <string name="gestures_mode_custom">Personalizado</string>
+    <string name="gestures_thickness">Grosor de la franja</string>
+    <string name="gestures_length">Longitud de la franja</string>
+    <string name="gestures_distance">Distancia del gesto (menor = más sensible)</string>
+    <string name="gestures_haptic">Vibrar al ejecutar</string>
+    <string name="gestures_show_strips">Mostrar franjas (para colocarlas)</string>
+    <string name="gestures_description">Cada zona es independiente. Una franja personalizada es una ventana fina e invisible que recoge los toques que caen sobre ella, de modo que un toque ahí no llega a la app de debajo: mantenla fina o desactiva la zona. Las franjas no actúan en la pantalla de bloqueo. No hay opción de gestos del sistema: el LineageOS del Q25 no activa la navegación por gestos del sistema.</string>
+    <string name="gestures_hook_ok">Hook del launcher: activo. El gesto nativo de deslizar hacia arriba abajo se apaga mientras la franja inferior está activa.</string>
+    <string name="gestures_hook_unknown">Hook del launcher: aún no detectado. La franja inferior lo necesita; si no, el gesto nativo se dispara a la vez. Activa el módulo de Q25 Toolbox para el launcher en LSPosed, reinicia el launcher, toca la pantalla y vuelve a comprobar.</string>
+    <string name="gestures_vibration">Vibración</string>
+    <string name="gestures_vib_tick">Tic al alcanzar la distancia</string>
+    <string name="gestures_vib_action">Pulso al ejecutar la acción</string>
+    <string name="gestures_vib_strength">Intensidad</string>
+    <string name="gestures_vib_no_amplitude">Este motor no tiene control de amplitud: solo la duración cambia la sensación.</string>
+    <string name="gestures_vib_test">Probar (tic y luego pulso)</string>
 </resources>

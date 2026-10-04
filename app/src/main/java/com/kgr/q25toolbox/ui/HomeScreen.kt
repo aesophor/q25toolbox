@@ -172,6 +172,7 @@ private fun DetailHost(screen: Screen, onBack: () -> Unit) {
         Screen.RecentsTweaks -> RecentsTweaksScreen(onBack)
         Screen.AdBlock -> AdBlockScreen(onBack)
         Screen.ZygiskDetach -> ZygiskDetachScreen(onBack)
+        Screen.Gestures -> GesturesScreen(onBack)
     }
 }
 

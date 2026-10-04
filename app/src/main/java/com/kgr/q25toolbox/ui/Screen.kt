@@ -29,6 +29,7 @@ sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes 
     data object TickerNotifications : Screen("ticker_notifications", R.string.title_ticker_notifications, R.string.subtitle_ticker_notifications)
     data object RecentsTweaks : Screen("recents_tweaks", R.string.title_recents_tweaks, R.string.subtitle_recents_tweaks)
     data object AdBlock : Screen("adblock", R.string.title_adblock, R.string.subtitle_adblock)
+    data object Gestures : Screen("gestures", R.string.title_gestures, R.string.subtitle_gestures)
     data object ZygiskDetach : Screen("zygisk_detach", R.string.title_zygisk_detach, R.string.subtitle_zygisk_detach)
 
     val title: String @Composable get() = stringResource(titleRes)
@@ -68,6 +69,7 @@ val screenScreens = listOf(
     Screen.ExtraDim,
     Screen.AppScaling,
     Screen.RecentsTweaks,
+    Screen.Gestures,
 )
 
 /** Screens listed under the System tab. */

@@ -22,6 +22,8 @@ import android.view.accessibility.AccessibilityWindowInfo
 import com.kgr.q25toolbox.core.RootShell
 import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.modules.Dt2wController
+import com.kgr.q25toolbox.modules.GestureSettings
+import com.kgr.q25toolbox.modules.NativeBottomGesture
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
 import com.kgr.q25toolbox.inputfix.CalculatorInputFix
@@ -132,6 +134,10 @@ class Q25AccessibilityService : AccessibilityService() {
     // Resets resolution to native when the screen turns off (lock button).
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_ON || intent?.action == Intent.ACTION_USER_PRESENT) {
+                // Edge strips: rebuilt once the screen is on and the keyguard is gone (a no-op while locked).
+                GestureStripsController.reconcile(this@Q25AccessibilityService)
+            }
             if (intent?.action == Intent.ACTION_SCREEN_ON) {
                 // DT2W's listener exists only while the screen is off (root shell: never on the main thread).
                 worker.execute { try { Dt2wController.onScreenOn() } catch (_: Throwable) { } }
@@ -139,6 +145,7 @@ class Q25AccessibilityService : AccessibilityService() {
             if (intent?.action == Intent.ACTION_SCREEN_OFF) {
                 // An accessibility-overlay window can sit above the keyguard; never leave it up.
                 RecentsOverlays.hide(animate = false)
+                GestureStripsController.hide()
                 foregroundPkg = null
                 reconcileScaling()
                 worker.execute { try { Dt2wController.onScreenOff(this@Q25AccessibilityService) } catch (_: Throwable) { } }
@@ -233,6 +240,16 @@ class Q25AccessibilityService : AccessibilityService() {
             reconcileScaling()
         }
         if (key == KEY_CALL_PROXIMITY_SLEEP) reconcileCallProximity()
+        if (key.startsWith(GestureSettings.KEY_PREFIX)) {
+            GestureStripsController.reconcile(this)
+            syncNativeBottomGesture()
+        }
+    }
+
+    /** Mirrors "custom bottom strip on" into the Settings.Global flag the launcher hook reads (root, off the main thread). */
+    private fun syncNativeBottomGesture() {
+        val mode = GestureSettings.get(this, GestureSettings.Zone.BOTTOM).mode
+        worker.execute { try { NativeBottomGesture.sync(mode) } catch (_: Throwable) { } }
     }
 
     // Created only on Android 12+ (needs AudioManager.OnModeChangedListener); null elsewhere.
@@ -286,7 +303,10 @@ class Q25AccessibilityService : AccessibilityService() {
         registerReceiver(screenOffReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
         })
+        GestureStripsController.reconcile(this)
+        syncNativeBottomGesture()
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
@@ -514,6 +534,19 @@ class Q25AccessibilityService : AccessibilityService() {
     }
 
     // -------------------------------------------------- Physical key handling
+
+    /** Action of a custom edge gesture. Back/Home first close our Recents overlay if it is up, like the keys do. */
+    fun performEdgeAction(a: GestureStripsController.Action) {
+        when (a) {
+            GestureStripsController.Action.BACK ->
+                if (RecentsOverlays.isShowing()) RecentsOverlays.hide() else performGlobalAction(GLOBAL_ACTION_BACK)
+            GestureStripsController.Action.HOME -> {
+                if (RecentsOverlays.isShowing()) RecentsOverlays.hide()
+                performGlobalAction(GLOBAL_ACTION_HOME)
+            }
+            GestureStripsController.Action.RECENTS -> openRecents()
+        }
+    }
 
     /**
      * Builds the Slim List / Masonry-quilt overlay. Task listing, snapshots and the live screenshot all
@@ -1391,6 +1424,7 @@ class Q25AccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     override fun onUnbind(intent: Intent?): Boolean {
+        GestureStripsController.hide()
         restoreImeBlock()  // never leave the soft keyboard globally suppressed
         restoreScaling()   // never leave the screen stuck at a scaled resolution
         if (instance === this) instance = null
@@ -1406,6 +1440,7 @@ class Q25AccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         if (instance === this) instance = null
+        GestureStripsController.hide()
         RecentsOverlays.hide(animate = false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) callProximity?.stop()
         restoreImeBlock()

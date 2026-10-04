@@ -37,7 +37,7 @@ object RecentsTweaksController {
     private const val LAUNCHER_PKG = "com.android.launcher3"
 
     /** Launcher packages the hook is scoped to (see RecentsHookInit.TARGET_PACKAGES). */
-    private val HOOK_PACKAGES = listOf("com.android.launcher3", "org.lineageos.trebuchet")
+    internal val HOOK_PACKAGES = listOf("com.android.launcher3", "org.lineageos.trebuchet")
 
     /** Written by the hook inside the launcher's files dir; read here as root. */
     private const val HOOK_STATE_FILE = "files/q25toolbox_hook.state"
@@ -161,7 +161,7 @@ object RecentsTweaksController {
 
     // --- LSPosed hook handshake ------------------------------------------------
 
-    private fun installedVersionCode(pkg: String): String? =
+    internal fun installedVersionCode(pkg: String): String? =
         RootShell.run("dumpsys package $pkg 2>/dev/null | grep -m1 -o 'versionCode=[0-9]*'")
             .outString.substringAfter("=", "").trim().ifEmpty { null }
 
@@ -295,6 +295,6 @@ object RecentsTweaksController {
 
     // Every app process gets its own private mount namespace on this ROM, so every mount/umount/status check
     // must run inside PID 1's global namespace.
-    private fun inGlobalNs(cmd: String): String =
+    internal fun inGlobalNs(cmd: String): String =
         "nsenter --mount=/proc/1/ns/mnt -- sh -c '${cmd.replace("'", "'\\''")}'"
 }
