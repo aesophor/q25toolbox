@@ -1,679 +1,537 @@
 # Q25 Toolbox
 
-A root app for the Zinwa Q25 (MediaTek-based, physical QWERTY keyboard) that
-bundles a set of tweaks into one UI, organised into six bottom-bar sections.
-It runs on **BenOS, ZinwaOS and LineageOS 23** (the 24 beta should work too; untested): the ROM is detected from the
-build (shown next to the title in Info, overridable in Settings) and the
-modules that do not apply to it are hidden.
-
-- **Info** — device status landing page: build info and battery (level,
-  health, temperature, voltage, capacity), plus an entry into the Battery
-  Usage breakdown.
-- **Keyboard** — key remapping, lockscreen PIN entry on the physical
-  keyboard, per-app keyboard block, chat Enter-to-send, calculator-key
-  routing, IME suggestion shortcuts, and in-call shortcuts.
-- **Screen** — extra dimming, per-app display scaling, and Recents UI Layout:
-  standalone Slim List, Masonry and Grid overlays that need no Xposed (v4.0+),
-  with colour, opacity, blur, animation and corner settings. On BenOS/ZinwaOS
-  it also keeps the LSPosed two-row Grid (v3.0+), its Masonry variant, and the
-  APK-level Recents Provider Repair for the BenOS OTA that breaks Overview.
-- **System** — BesLoudness speaker enhancement (with an optional night
-  schedule), auto-focus input, Ticker Notifications, and Proximity Sensor
-  Workarounds (auto-recovering the screen/keyboard after a stuck-near sensor
-  post-call, plus a live sensor/Lux monitor and the OEM factory test screen
-  merged into the same module). On LineageOS: Double-Tap to Wake and Call
-  Proximity Sleep instead.
-- **Network** — AdBlock, Zygisk Detach, per-app telemetry blocking, wireless
-  ADB, and Bluetooth/Location auto-disable.
-- **Settings** — update checking (with in-app download + install), quick
-  links to the Accessibility/Input Method system settings, a SystemUI restart
-  action, and a Notification Access shortcut, plus contributors and about.
-
-Ported from [Key2 Toolbox](../Key2Toolbox), the same app built for the
-BlackBerry Key2. Most of the UI and architecture carried over unchanged; the
-hardware underneath several modules did not, so a few Key2-only features
-(ZRAM control, the Key2 App Spoof module) were left out of this Q25 build.
-
-## Version compatibility
-
-| App version | Use it if | Recents grid |
-| --- | --- | --- |
-| **v4.0+** | BenOS, ZinwaOS or LineageOS 23 (24 beta untested); Xposed optional | standalone overlay (any ROM), plus the LSPosed hook on BenOS/ZinwaOS |
-| **v3.0+** | any stock-based Q25 ROM, with an Xposed framework (LSPosed / Vector) available | LSPosed hook, survives OTAs |
-| **2.1.1** | BenOS beta3, no Xposed framework | bundled patched-launcher bind-mount |
-| **2.0.5** | BenOS pre-beta3a / older stock | older patched-launcher |
-
-From v3.0 the launcher-hooked Grid/Masonry Recents overview is an LSPosed
-module (BenOS/ZinwaOS). Since v4.0 the standalone Slim List, Masonry and Grid
-overlays work on any ROM without a framework. Every other module works without
-a framework, and Recents falls back to stock. If you had
-the bind-mounted grid from 2.x, v3.0 removes it on first launch.
-
-## Architecture
-
-The UI follows Material You (Monet), in light or dark to match the system.
-Most modules are stateless: they fire root commands on demand and persist by
-installing a script to `/data/adb/service.d/`. PIN keyboard, the input fixes,
-Per-App Keyboard Block, Per-App Display Scaling, Auto-Focus, and In-Call
-Shortcuts instead depend on a long-lived `Q25AccessibilityService` that
-watches window/IME/foreground state and intercepts physical key events, since
-none of that is observable from a one-shot root command. Their settings live
-in a `q25tweaks` SharedPreferences file rather than going through
-`AssetInstaller`.
-
-The accessibility-service modules only work once **Q25 Toolbox** is enabled
-under Settings → Accessibility - each of their screens shows a banner with a
-direct link there if it isn't. Reinstalling the app resets this, so it needs
-re-enabling after every fresh install.
-
-The boot-time daemons (Extra Dim's schedule, BesLoudness's schedule, Global
-Telemetry Block, Bluetooth Auto-Disable, Location Auto-Disable) run detached
-(`setsid`) and are guarded by a PID lock that also verifies
-`/proc/$PID/cmdline` still names the same script - not just `kill -0`, which
-can false-positive once an unrelated process reuses a stale PID after
-reboot. A dead daemon isn't the only failure mode, though: one left running
-whatever an older app version installed looks identical to a healthy one
-from the outside (it holds its lock and loops forever either way), so
-`DaemonMaintenance.sweep()` runs once per app launch (from the home screen,
-before any tab is picked) and compares each installed script's actual
-content against what today's app
-would install, reinstalling anything stale - not just anything dead. It also
-removes daemons left behind by features that are now hidden or removed (see
-DT2W below). Each module's own screen does the same narrower check on open.
-
-## Signing with your existing keystore
-
-`app/build.gradle.kts` has a commented-out `signingConfigs { create("release") {...} }`
-block referencing `kgr_signing.keystore` / alias `kgr`. Uncomment it, point
-`storeFile` at your keystore path, and wire `signingConfig = signingConfigs.getByName("release")`
-into the `release` build type. Consider passing the password via
-`gradle.properties` (gitignored) or an env var rather than committing it in
-the build script. Until then, both build types are signed with the debug key.
-
-## How each module works
-
-### Key Remapper (`KeyRemapController`)
-- Remaps one of three source keys to Right Ctrl at the hardware keylayout
-  level: the **Currency key** (`GRAVE`, scancode 41 - the firmware-miswired
-  key next to Space), **Right Shift** (scancode 54), or the **Recents**
-  BlackBerry key (`APP_SWITCH`, scancode 580 - remapping it means losing the
-  hardware shortcut for recents).
-- Rewrites `/system/usr/keylayout/Q25_keyboard.kl` (confirmed live via
-  `dumpsys input` that the keyboard actually resolves its KeyLayoutFile to
-  this exact path - not `Generic.kl`, despite the two files historically
-  sharing near-identical content). A generated boot script
-  (`service.d/key_remap.sh`) unbinds the i2c driver first (so EventHub
-  releases its file descriptor on the layout file), `umount`s any previous
-  bind, copies the pristine original, `sed`s the target scancode's keycode to
-  `CTRL_RIGHT`, `chcon`s it to `system_file` so `system_server` can read it,
-  bind-mounts the copy over the original, and rebinds the driver
-  (`/sys/bus/i2c/drivers/Q25_keyboard/{un,}bind`, device `6-001f`) so
-  EventHub reloads it. The same script runs live on save, so no reboot is
-  needed.
-- Settings live in the shared `q25tweaks` prefs file.
-- **LineageOS (v4.0):** the layout is `/vendor/usr/keylayout/Q25_keyboard.kl`
-  and the bind-mounted copy must carry the `vendor_keylayout_file` SELinux
-  label (with `vendor_file`, `system_server` is denied and EventHub silently
-  falls back to `Generic.kl`). The keyboard driver is **never** unbound there:
-  `bbqX0kbd.ko` registers a display notifier but never unregisters it, so a
-  panel-on while unbound oopses the kernel. The keyboard is reloaded with a
-  uevent remove/add on its input node instead (ueventd recreates the node and
-  EventHub re-reads the layout). BenOS keeps the unbind/bind reload.
-- The boot script refuses to mount an empty layout, which would leave the
-  keyboard dead on every boot.
-
-### Auto-Focus Input (`AutoFocusController`)
-- Uses the accessibility service to focus the first editable field in
-  selected apps once a printable key is pressed, so e.g. the Google Phone
-  dialer or a browser's search box is ready for immediate keyboard input
-  without tapping it first.
-- Focuses via `ACTION_FOCUS`/`ACTION_CLICK` then inserts the triggering
-  character via `ACTION_SET_TEXT` once the field actually receives input
-  focus - woken by the next relevant accessibility event rather than a fixed
-  poll interval, with a 1s timeout as a safety net for apps where that event
-  never cleanly fires.
-- Each insertion is followed by `ACTION_SET_SELECTION` to the end of the text.
-  Without it the IME still believes the caret is at offset 0 on an empty
-  field, and inserts the *next* typed letter at the front, auto-capitalized.
-- Keys pressed while an insertion is in flight are claimed and appended to
-  that same insertion in press order, rather than being left to the IME and
-  then overwritten by an `ACTION_SET_TEXT` snapshot taken before them.
-- A negative "this window has no editable field" result is cached briefly, so
-  typing into a screen with nothing to focus doesn't re-walk the entire node
-  tree, on the main thread, once per letter.
-- The per-app target list is stored in the same `q25tweaks` prefs set used by
-  the other accessibility-service modules, so the behavior can be enabled or
-  disabled independently for each app.
-
-### In-Call Shortcuts (`Q25AccessibilityService`)
-- Adds physical-keyboard shortcuts on Google Phone's in-call screen: **M**
-  toggles mute, the **currency key** (its raw `GRAVE` keycode, or
-  `CTRL_RIGHT` if remapped above) toggles speaker, and `W E R S D F Z X C 0`
-  route to the dialpad as `1 2 3 4 5 6 7 8 9 0` - inserted via
-  `ACTION_SET_TEXT` directly into the digits field rather than shell-injected
-  `input keyevent`, which is unreliable immediately after the dialpad's
-  own open/visibility transition. The dialpad also auto-opens when the call
-  screen loads.
-- Runs with priority ahead of Auto-Focus's own key handling on the in-call
-  screen specifically (identified by the presence of the expected
-  keypad/mute/speaker toggle triple), so a call in progress can't have its
-  mute/speaker presses stolen by Auto-Focus reaching for an unrelated
-  unfocused field elsewhere in the same window tree. Auto-Focus still handles
-  every other dialer screen (pre-call dial pad, contact search) normally.
-
-### Proximity Sensor Workarounds (`Q25AccessibilityService` + `KeyRemapController` + `ProximitySensorController`)
-- This device's proximity sensor has, in practice, been observed getting
-  stuck near/covered after a call ends, leaving the screen dark - and
-  separately, taking the physical keyboard's i2c driver down with it, not
-  just the display.
-- **Auto-recover after calls** (default on): confirms a call has genuinely
-  ended (not just backgrounded mid-call, which looks identical from the
-  window-state event alone) against `dumpsys telecom`'s actual call state,
-  then if the screen is still off 5 seconds later, forces it back on with
-  `input keyevent KEYCODE_WAKEUP`. A no-op if the screen already came back on
-  by itself.
-- **Respawn keyboard now** (manual button): unbinds and rebinds the
-  `Q25_keyboard` i2c driver (`KeyRemapController.respawnKeyboard()`) to
-  recover a stuck physical keyboard. Deliberately **not** run automatically
-  alongside the screen wake above - pairing an i2c unbind/rebind (which
-  re-registers the keyboard driver's display notifier) with a forced wake
-  (its own display transition) right next to it was found to race the
-  display driver and crash the kernel
-  (`bbqX0kbd_disp_notifier_callback` null deref), including on every mid-call
-  app switch before the `dumpsys telecom` check existed, not just real
-  hangups. Any active Key Remap survives an unbind/rebind unaffected - the
-  bind mount is a VFS construct independent of the driver being bound.
-- **Live Sensor Monitor**: shows the proximity sensor's binary near/far state
-  plus a continuous analog Lux reading from the co-located `hx32062se_als`
-  light sensor, so you can watch it react in real time.
-- **Factory Hardware Test Mode** (button): launches `com.hodafone.factorytest`'s
-  `P_SensorTestActivity` (chosen over `PsensorTestActivity`/`PsensorProxTestActivity`
-  to dodge an OEM firmware bug). This is a raw sensor readout screen only -
-  confirmed via decompiled OEM smali that no calibration write path exists;
-  the near/far threshold is fixed in the sensor's firmware.
-
-### Extra Dimming (`ExtraDimController`)
-- Toggles Android's built-in Accessibility "Extra Dim" feature
-  (`reduce_bright_colors_activated` / `reduce_bright_colors_level` secure
-  settings) directly from the toolbox, with a 0-100% intensity slider.
-- The manual toggle/level need no persistence - they're standard system
-  settings that survive reboot on their own.
-- **Auto Night Dim schedule** (optional): a `service.d/extra_dim_schedule.sh`
-  watchdog turns Extra Dim on/off at a chosen start/end time, accurate to the
-  minute (window may wrap past midnight). It only writes the setting on an
-  on/off transition, so a manual override in between the two edges isn't
-  immediately clobbered - matching how Android's own Night Light schedule
-  coexists with manual toggles.
-
-### BesLoudness (`BesLoudnessController`)
-- Toggles the vendor speaker loudness-enhancement DSP stage, the same one
-  behind the stock Settings app's own "Sound Enhancement" screen - confirmed
-  live on-device by watching `logcat` while using that screen: it calls
-  `AudioManager.setParameters("SetBesLoudnessStatus=0/1")`, which the HAL
-  applies immediately (no restart) to the `mtk_bessound` DSP library and
-  persists into `/vendor/etc/audio_param/SoundEnhancement_AudioParam.xml`.
-- The obvious-looking alternative,
-  `persist.vendor.audiohal.besloudness_state`, is a red herring: writing it
-  does nothing audible, since it isn't the value the HAL actually reads live.
-- The manual toggle calls `AudioManager` directly from the app process. The
-  optional schedule (mirrors Extra Dim's: start/end time, on/off-transition
-  only) is a `service.d/besloudness_schedule.sh` watchdog - but that's a
-  plain shell script and can't call `AudioManager` itself, so it hands off to
-  the app via an explicit `am broadcast` to `BesLoudnessReceiver`, which a
-  root shell can deliver to a non-exported receiver even though third-party
-  apps can't.
-
-### Per-App Display Scaling (`AppScalingController` + `Q25AccessibilityService`)
-- This ROM ignores every *per-app* scaling mechanism - the compat-framework
-  `DOWNSCALE_*` changes and GameManager downscale are both no-ops, and `wm
-  density` has no effect either (all verified on-device, byte-identical
-  screenshots). The one display knob that works is `wm size` (physical
-  resolution).
-- So "per-app scaling" is done by switching the **global** resolution: the
-  accessibility service (which already tracks the foreground app for the
-  keyboard-block module) runs `wm size <W>x<H>` when a chosen app comes to
-  the foreground and `wm size reset` when leaving.
-- Targets are full width×height (not just squares), so an app can be given a
-  taller portrait aspect. Presets follow duc1607's
-  [q25-res-changer](../q25-res-changer) (720×720 native, 720×772, 720×960,
-  720×1280, 720×1440; the SystemUI-breaking 780×780 is omitted), plus a
-  **Custom…** entry to type any W×H (240–2000).
-- The whole screen (incl. system UI) briefly relayouts on enter/exit -
-  inherent to a global resolution change. Per-app targets are stored as a
-  `pkg=WxH` StringSet in the `q25tweaks` prefs; the service always resets to
-  native on teardown so it can't leave the screen stuck at a scaled
-  resolution.
-- Investigated (and rejected) a per-app compat-framework alternative for
-  this: `am compat enable OVERRIDE_MIN_ASPECT_RATIO_LARGE <pkg>` is accepted
-  without error on this ROM, but `dumpsys window` confirms it has zero actual
-  effect on the app's reported window bounds - the `wm size` swap remains the
-  only thing that works. Also: this technique (and the binary-patch approach
-  used by Recents UI Layout below) isn't worth pursuing for regular Play
-  Store apps like Calendar/Substack/Phone-dialer - unlike a stable
-  `/system_ext` priv-app, they live under a per-install `/data/app/~~random~~`
-  path that changes on every update, Play Store silently overwrites any
-  patched binary on the next auto-update, and a re-signed APK risks tripping
-  each app's own Play Integrity/anti-tampering checks (account sync,
-  subscription login).
-
-### Recents UI Layout (`RecentsTweaksController` + `xposed/RecentsHookInit`)
+A root app for the Zinwa Q25 (MediaTek, physical QWERTY keyboard) that collects
+device tweaks in one Material You interface. It runs on **BenOS, ZinwaOS and
+LineageOS 23** (the 24 beta is untested). The ROM is detected from the build
+properties (shown in Info, overridable in Settings) and modules that make no
+sense on it are hidden, never removed: BenOS behaviour is not changed by
+anything added for LineageOS.
 
 | Grid | Masonry |
 | --- | --- |
 | ![Grid Recents](docs/recents-grid.png) | ![Masonry Recents](docs/recents-masonry.png) |
 
-As of v3.0 this is an **LSPosed module**, not a binary patch. It needs an
-Xposed framework (LSPosed / Vector on KernelSU / APatch / Magisk). The Recents
-screen shows whether the module is active and how to scope it.
+## Contents
 
-**Grid (auto), v4.0.1:** the single "Grid" choice uses this hook when it is
-demonstrably working in the launcher that is installed, and the standalone
-Grid overlay otherwise, so no per-ROM or per-launcher-build variant of the app
-is needed any more. "Demonstrably working" is a handshake: once per launcher
-process the hook writes `files/q25toolbox_hook.state` in the launcher's data
-dir (`ok=1` only if all four hooks Grid needs installed: `isTablet`, the
-hotseat guard, the `DeviceProfile` fixup and `showAsGrid`, plus the launcher's
-`versionCode`), and the app reads it as root. A missing file or another
-`versionCode` (a launcher update) is "unknown" and a failed hook is "broken";
-only "ok" turns the hook on, with one exception: an install updating from v3,
-whose old hook never wrote the file, keeps the hook that already works until
-the new one has run once. The check runs when the Recents screen opens, on each
-app launch and when the accessibility service connects. "Grid, standalone"
-never uses the hook.
+1. [Requirements](#requirements)
+2. [Install and update](#install-and-update)
+3. [Modules](#modules)
+4. [LineageOS notes](#lineageos-notes)
+5. [Edge Gestures](#edge-gestures)
+6. [Recents UI Layout](#recents-ui-layout)
+7. [Other modules](#other-modules)
+8. [Architecture](#architecture)
+9. [Backup and restore](#backup-and-restore)
+10. [Build, test, release](#build-test-release)
+11. [Extending](#extending)
+12. [Credits](#credits)
 
-- Forces the real two-row Grid Recents overview (multiple task cards
-  on-screen, not one-app-per-swipe) on `SearchLauncherQuickStep.apk`, the
-  AOSP/QuickStep launcher that provides gesture-nav Recents on this device
-  regardless of which app is set as default Home.
-- `RecentsHookInit` (scoped to `com.android.launcher3`) hooks whatever
-  launcher build is actually running, by method name, in memory. Verified
-  against the decompiled BenOS launcher:
-  - `DisplayController.Info.isTablet(WindowBounds)` -> true while a grid mode
-    is active. The `DeviceProfile` constructor derives `isTablet` from it
-    before computing any Overview geometry, and that geometry (task sizing,
-    the grid maths, ~15 read sites in `RecentsView`) branches on the
-    `isTablet` field, not on `RecentsView.showAsGrid()`. `showAsGrid()` is
-    pinned too, mainly for a deterministic off state.
-  - `DeviceProfile.recalculateHotseatWidthAndBorderSpace()` is no-oped while a
-    grid mode is active: forcing a phone to tablet makes it run (it is
-    skipped on a non-scalable-grid phone) and divide by
-    `numShownHotseatIcons - 1` (= 0). The launcher's own hotseat is never
-    shown here (third-party Home), so this is safe.
-  - `overview_grid_row_spacing`, `overview_grid_side_margin` and
-    `task_thumbnail_icon_drawable_size_grid` are backfilled on the
-    `DeviceProfile` when they resolve to `0` from the phone resource bucket -
-    without this the grid lays out with 0-size task icons and no row gap.
-  - `isTaskbarPresent` is cleared after `DeviceProfile` construction so the
-    forced-tablet profile does not bring the floating taskbar.
-- Because it is a runtime hook and not a mounted file, it survives BenOS OTAs
-  on the same Android major with no per-OTA maintenance, and it cannot leave
-  the device with no Overview provider - its failure mode is "grid silently
-  falls back to stock". This replaces the pre-v3 mechanism (a bundled 28 MB
-  patched launcher, bind-mounted over `/system_ext`), which was locked to one
-  exact BenOS build. Updating from 2.x tears that mechanism down automatically
-  on first launch (`RecentsTweaksController.cleanupLegacyGridPatch`, run from
-  `DaemonMaintenance`): the KernelSU module `q25_recents`, the patched apk,
-  the `service.d` boot script, and the live mount.
-- **Masonry** mode is Grid plus staggered per-tile heights: each `TaskView`
-  box is shortened by a fixed factor keyed on its task id, in
-  `TaskView.updateTaskSize()`, and the launcher's own `updateGridProperties`
-  re-centres it - so tiles end up staggered without touching the scroll or
-  swipe-to-dismiss maths. Focused/desktop tasks are left full size. Square
-  tile corners (`TaskCornerRadius.get` -> 0). Selector on the Recents screen:
-  Stock / Grid / Masonry, stored in `bb_recents_layout_mode`
-  (`Settings.Global`, world-readable so the hook reads it with no permission).
-- **Background Transparency** slider: how much of the wallpaper shows through
-  behind the grid cards. Backed by `q25_recents_scrim_alpha`; the hook scales
-  the alpha of `OverviewState.getWorkspaceScrimColor` /
-  `fallback.RecentsState.getScrimColor`. A launcher restart applies it.
-- "Restart Launcher" / "Restart SystemUI" actions use a hard `kill -9` on the
-  actual PID - `am force-stop` is a no-op for persistent processes.
+## Requirements
 
-- The v3 "Recents Provider Repair" (an on-device realign and re-sign of a launcher APK that a BenOS OTA shipped
-  misaligned) was removed in v4.0.1, together with `ApkAligner` and `OnDeviceApkSigner`. The standalone overlays
-  draw Recents themselves and do not need the launcher's Recents provider. A bind mount left by an earlier
-  repair is not touched.
+| Need | For | Notes |
+| --- | --- | --- |
+| Root | almost every module | Tested with KernelSU Next. The app's own root shell does not see other apps' data (per-app mount namespaces), so anything that reads another app's files goes through `nsenter --mount=/proc/1/ns/mnt`. |
+| The accessibility service enabled | key handling, per-app features, Recents overlays, Edge Gestures, Ticker | Settings, Accessibility, Q25 Toolbox. Each affected screen shows a banner with a link when it is off. Updating over an existing install keeps the grant; a fresh install needs it again. |
+| An Xposed framework (LSPosed or Vector) | LSPosed Grid on BenOS/ZinwaOS, switching off the native bottom gesture | Optional. Without it Recents uses the standalone overlays and the native bottom gesture stays on. |
+| Zygisk (Magisk, ReZygisk, Zygisk Next) | Zygisk Detach | Optional. |
 
-### Ticker Notifications (`TickerController` + `TickerOverlayController`)
-- A "Super Status Bar"-style scrolling banner instead of heads-up popups.
-  `TickerNotificationListenerService` watches posted notifications (granted
-  via root's `cmd notification allow_listener`, no manual "Notification
-  access" screen needed) and hands qualifying ones to
-  `TickerOverlayController`, which draws the banner.
-- Heads-up popups: `heads_up_notifications_enabled` stays **enabled** as the
-  steady state and is turned off only around a ticker, so a notification the
-  ticker declines (a blocklisted app or category) is not touched at all and pops
-  up exactly as it would with this module off.
-  That leaves a race for the ones it does show - SystemUI decides
-  heads-up-or-not at post time, at roughly the same moment the listener hears
-  about it - so one occasionally slips through and shows both. It's narrowed
-  three ways: the write is issued the instant the ticker commits, ahead of the
-  icon/palette work in that callback; never on the main thread; and it lingers
-  2s past the ticker so a burst races once rather than per notification.
-  Latching the setting off for the module's whole lifetime (v2.1) removes the
-  race but silences blocklisted apps too, which is worse - see the 2.1.1
-  changelog entry. The proper fix, a `NotificationAssistantService` demoting
-  single notifications pre-post, needs privileged-app status: `cmd notification
-  allow_assistant` refuses a non-privileged component outright.
-- Swiping down on the banner opens the notification shade, via the
-  accessibility service's `GLOBAL_ACTION_NOTIFICATIONS` - the ticker covers the
-  status bar while it's up, so it forwards that gesture rather than swallowing
-  it, and dismisses itself as the shade opens.
-- The banner is a `TYPE_ACCESSIBILITY_OVERLAY` window, not
-  `TYPE_APPLICATION_OVERLAY`/`SYSTEM_ALERT_WINDOW` - the latter renders
-  *beneath* the real status bar on this device regardless of window flags.
-  `TYPE_ACCESSIBILITY_OVERLAY` needs no "draw over other apps" permission at
-  all, but can only be added via a `WindowManager` scoped to a *running*
-  `AccessibilityService`, so `Q25AccessibilityService` exposes itself as a
-  static `instance` for exactly this. Confirmed by decompiling Super Status
-  Bar (`com.tombayley.statusbar`) with `apktool` - its own status-bar window
-  uses the identical type + flag combination.
-  The app icon sits inside an opaque container on top of the text layer,
-  staying fully visible while text scrolls underneath it.
-- Configurable: tap-to-open, minimum notification priority, per-app and
-  per-category blocklists (with fallback smart category detection for
-  `MessagingStyle`/`CallStyle`), whether ongoing notifications (media/downloads) get a
-  ticker, lines of body text shown, scroll speed/start delay (defaults: 1.5s
-  delay, 100 dp/s speed), and background color (fixed preset, raw APK icon /
-  notification brand color muted via `androidx.palette` bypassing icon packs, or
-  Android 12+ Monet).
+Minimum Android is 9 (API 28); the app targets API 34.
 
-### ROM profile (`core/RomProfile`)
-- Detection is property-based: `ro.lineage.version` or a `lineage_*` build
-  flavor is LineageOS (major version from `ro.lineage.build.version`, else the
-  SDK level); a `ro.fota.version` containing "BenOS" is BenOS; any other
-  `ro.fota.*` build is treated as ZinwaOS (a heuristic, unverified on stock).
-  Anything else shows a chooser once. The manual override lives in Settings.
-- Hardware-safety decisions (such as never unbinding the keyboard driver on
-  LineageOS) use the auto-detected ROM and ignore the override.
-- `Screen.availableOn(rom)` hides the menu entries that do not apply.
+## Install and update
 
-### Recents overlays (`SlimRecentsController` + `service/*RecentsOverlayController`)
-- **Source of truth:** `dumpsys activity recents` for the task list, and the
-  system snapshot cache (`/data/system_ce/<user>/snapshots/`, inside a
-  UUID-named subdirectory on Android 16) for thumbnails, read with root. The
-  newest app gets a live `screencap`. Resume uses `am start` with
-  `FLAG_ACTIVITY_REORDER_TO_FRONT`, skipped for the app already in front;
-  dismiss uses `am stack remove <rootTaskId>`.
-- **Windows:** `TYPE_ACCESSIBILITY_OVERLAY`, drawn by the accessibility
-  service. *Slim List* and *Masonry* share one controller; *Grid* has its own
-  (horizontal scroll, newest tile at the right edge, older tasks in two rows
-  placed in whichever row is shorter, "Close all" at the far left).
-- **Trigger:** the system opens its own Overview on the physical Recents key
-  even when an accessibility service consumes it, so while an overlay mode is
-  on, `KeyRemapController` remaps scancode 580 (`APP_SWITCH`) to `PROG_RED`, and
-  the service treats that as the open key. The on-screen navigation button and
-  gesture cannot be intercepted and still open the stock Overview.
-- **Settings:** background colour (dark / Material You), opacity, blur
-  (cross-window blur, when the system allows it), animation length (0 = no
-  animators) and, for Grid and Masonry, a tile corner radius.
-- The layout mode is stored in `Settings.Global` (`q25_recents_overlay_mode`);
-  the LSPosed hook keeps its own key and never sees the overlay modes.
+Releases are on [GitHub](https://github.com/nozerorma/q25toolbox/releases).
+Download the `.apk` and install it, or let the in-app updater do it (Settings,
+Updates: it fetches the release's `.apk` and installs it with `pm install -r`).
+[Obtainium](https://github.com/ImranR98/Obtainium) works too, because the
+`versionName` carries the same `v` prefix as the tag.
 
-### Lockscreen: Enter / pad opens the PIN (`Q25AccessibilityService`)
-- Needs root. On the lockscreen Enter, the keypad Enter and D-pad centre are
-  intercepted and the PIN pad is opened with `wm dismiss-keyguard`, instead of
-  letting them activate whatever has focus. Acts only when SystemUI's own
-  keyguard is the active window and the bouncer
-  (`keyguard_bouncer_container`) is not showing; over-lockscreen apps (an
-  incoming call) keep their keys. On by default only on LineageOS.
-- An optional switch swallows D-pad, Tab and Space (and Enter once the PIN pad
-  is up, unless PIN-on-keyboard needs it) so a keyboard pressed in a pocket
-  cannot reach the emergency-call button.
+All releases since v3.1 are signed with the same key (the debug key, see
+[Build](#build-test-release)), so each installs over the previous one and
+keeps its settings. A build signed with a different key cannot update them.
 
-### Zygisk Detach (`ZygiskDetachController`)
-- Installs the bundled `zygisk-detach` Zygisk module (a hook on libbinder in
-  the Play Store process that hides chosen packages from
-  `getApplicationEnabledSetting`) and manages its detach list through the
-  module's own CLI. Needs root and Zygisk (Magisk, ReZygisk or Zygisk Next).
-- Installing, enabling or disabling the module takes effect at boot; list
-  changes apply as soon as the Play Store restarts. The list is owned by the
-  module and survives disabling.
+| App version | Use it if | Recents |
+| --- | --- | --- |
+| v4.0 and later | BenOS, ZinwaOS or LineageOS 23; Xposed optional | standalone overlays on any ROM, plus the LSPosed hook on BenOS/ZinwaOS |
+| v3.0 | a stock-based ROM with an Xposed framework | LSPosed hook |
+| 2.1.1 | BenOS beta3 without Xposed | bundled patched launcher (bind mount) |
+| 2.0.5 | BenOS before beta3a | older patched launcher |
 
-### Call Proximity Sleep (`service/CallProximitySleep`, LineageOS)
-- Detects a call from the audio mode, registers the proximity sensor only
-  during the call, and after a short "near" debounce injects `KEYCODE_SLEEP`
-  (and `KEYCODE_WAKEUP` when the sensor reports far or the call ends). Acts only
-  on the handset earpiece, never on speaker, Bluetooth or wired audio.
+Updating from 2.x removes the old bind-mounted launcher on first launch.
 
-### Persistent wireless ADB (`WirelessAdbController`)
-- User enters a port; **persist** installs `assets/adb_wireless_template.sh`
-  (with `__PORT__` substituted) to `/data/adb/service.d/adb_wireless.sh`,
-  which waits for `sys.boot_completed` then sets `adb_wifi_enabled` and pins
-  `persist.adb.tcp.port` / `service.adb.tcp.port`.
-- **Live apply** sets the same properties immediately.
-- The screen also shows the device's current WLAN IP and the live port, so
-  you can confirm the `adb connect <ip>:<port>` target at a glance.
+## Modules
 
-### Bluetooth Auto-Disable (`BtIdleController`)
-- A root watchdog daemon (`service.d/bt_idle.sh`) that checks once per minute
-  whether Bluetooth has any device actively connected and turns it off after
-  a configurable number of idle minutes (5 / 10 / 15 / 30 / 60, default 15).
-- Idle is tracked as a wall-clock (`date +%s`) deadline, not as a count of
-  60s loop passes: `sleep` runs on `CLOCK_MONOTONIC`, which does not advance
-  while the device is suspended, so counting passes measured awake time only
-  and overnight the radio stayed on far past the timeout.
-- Connection detection keys on four deliberately specific signals against
-  `dumpsys bluetooth_manager`: the adapter's own `AdapterProperties
-  ConnectionState` (which covers LE-only devices like a watch), the
-  A2DP/Headset active device, the `mIsPlaying` flag, and AVRCP's volume-table
-  `Connected` marker. Several independent signals on purpose - one going stale
-  on a ROM update shouldn't be able to switch Bluetooth off under a device
-  that's in use - but each one specific, since a false "connected" resets the
-  idle timer silently and forever.
-- The disable is verified, not fire-and-forget: it confirms the radio went
-  off, falls back to `svc bluetooth disable`, and appends to a small rotating
-  `/data/adb/.bt_idle.log`. A PID+cmdline lock (same as Extra Dim/Telemetry)
-  ensures only one daemon instance runs at a time.
+Six bottom-bar sections. "ROM" says where the entry is shown.
 
-### Auto-disable Location (`LocationIdleController`)
-- Mirrors Bluetooth Auto-Disable exactly, for Location instead: a root
-  watchdog (`service.d/location_idle.sh`) turns Location off after a
-  configurable idle timeout (5 / 10 / 15 / 30 / 60 min, default 15).
-- "Idle" is measured by the GPS provider going continuously unused, not by
-  GMS's own listeners - those are near-always registered in the background
-  regardless of whether anything's actually asking for a fix, so they're not
-  a usable "in use" signal here.
+| Section | Module | Needs | ROM |
+| --- | --- | --- | --- |
+| Info | Device status, battery usage breakdown | root (battery usage) | all |
+| Keyboard | Key Remapper | root | all |
+| | PIN on keyboard (lockscreen) | accessibility | all |
+| | Per-app keyboard block | root, accessibility | all |
+| | Chat Enter-to-send, calculator keys | accessibility | all |
+| | IME suggestion shortcuts, in-call shortcuts | accessibility | all |
+| Screen | Extra dimming, per-app display scaling | root | all |
+| | Recents UI Layout | root, accessibility | all (LSPosed part: BenOS/ZinwaOS) |
+| | **Edge Gestures** | accessibility; LSPosed for the native bottom gesture | all |
+| System | BesLoudness | root | BenOS, ZinwaOS |
+| | Auto-focus input, Ticker Notifications | accessibility | all |
+| | Proximity workarounds (call screen recovery) | root | BenOS, ZinwaOS |
+| | Call Proximity Sleep, Double-Tap to Wake | root, accessibility | LineageOS |
+| Network | AdBlock, per-app Telemetry block | root | all |
+| | Zygisk Detach | root, Zygisk | all |
+| | Wireless ADB, Bluetooth and Location auto-disable | root | all |
+| Settings | Updates, quick links, backup and restore, debug log export, about | | all |
 
-### AdBlock (`AdBlockController` + `assets/adblock_*`)
-- Systemless hosts-based ad & tracker blocking (based on
-  gloeyisk/systemless-hosts). Deploys a root-manager module
-  (`/data/adb/modules/q25_adblock`: `module.prop` + `hosts_ctl.sh` +
-  `post-fs-data.sh` + a staged `system/etc/hosts` the module bind-mounts at
-  boot) plus a persistent data dir (`/data/adb/q25_adblock`) that survives
-  module updates.
-- ~273k entries bundled as the default blacklist. Add/remove exact domains or
-  `*.glob` patterns, keep a whitelist, subscribe to remote hosts lists and
-  refresh them, pause/resume filtering live.
-- Kotlin drives everything through `hosts_ctl.sh` (which owns the
-  compile/dedupe logic). One reboot is needed after install to activate the
-  overlay; the UI shows a banner until then. Content edits afterward are live —
-  `rebuild` mirrors straight onto the mounted `/system/etc/hosts`.
-- **Fallback mount (v4.0):** KernelSU Next without a metamodule mounts nothing
-  from a module's `system/` tree, so the file was compiled but never reached
-  `/system/etc/hosts`. The module's `service.sh` (and an app-side check on each
-  launch) bind-mounts it over the live path, labelled `system_file`, only when
-  the overlay is missing. A no-op where the root manager already overlays it.
+## LineageOS notes
 
-### Telemetry Block (`TelemetryController`)
-- **Per-app opt-in (v4.0):** the watchdog only touches the packages in the
-  enrolled list (kept in `q25tweaks`, mirrored to `/data/adb/.telemetry_blocked`
-  for the root script). "Detect Apps" finds candidates; ticking one enrols it.
-  Installs coming from v3.1 or older are migrated once, enrolling every app the
-  old global block covered.
-- Forces off, in each enrolled app, the persisted "collection enabled"
-  flags for Firebase Crashlytics
-  (`firebase_crashlytics_collection_enabled`), Analytics / Google Analytics
-  (`measurement_enabled`, `measurement_enabled_from_api`,
-  `firebase_analytics_collection_enabled`), Performance Monitoring
-  (`firebase_performance_collection_enabled`) and the Firebase master flag
-  (`firebase_data_collection_default_enabled`) — flipping every occurrence and
-  injecting the opt-out into the Crashlytics / GMS-measurement prefs of apps
-  that lack one.
-- Firebase SDKs re-derive these from the manifest on every cold start, so a
-  one-shot pass gets undone. `service.d/block_telemetry.sh` is a **watchdog
-  daemon**: a burst of passes after boot, then a re-scan every 10 minutes,
-  plus an immediate burst whenever `packages.list` changes (app
-  installed/removed). Runs the scan inside the init (pid 1) mount namespace via
-  `nsenter`. A PID+cmdline lock keeps a single instance.
-- The screen has a "Show per-app status" list of which surface is blocked or
-  still leaking in each app.
+Facts below were verified on a Q25 running LineageOS 23 (Android 16, kernel
+5.10, KernelSU Next); where something is inference it says so.
 
-### Backup & Restore (`settings/SettingsBackup`)
-- Exports the selected modules' settings to a JSON document (via SAF), or
-  restores from one. Restore merges — it never wipes what isn't in the file.
-- Covers the `q25tweaks` shared-prefs modules (PIN Keyboard, Keyboard Block,
-  IME Suggestions, Chat Enter-to-Send, Calculator Keys, In-Call Shortcuts,
-  Call Screen Recovery, App Scaling, Auto-Focus, Battery Usage), Ticker
-  Notifications, and the root script/schedule state (BtIdle, LocationIdle,
-  Extra Dim, BesLoudness, Dt2w, Telemetry), plus (v4.0) KeyRemap, Recents
-  (appearance settings and layout mode), Zygisk Detach and Call Proximity
-  Sleep. The per-app Telemetry list is restored together with its root-side
-  copy. The ROM override is deliberately not backed up. ProximitySensor is not
-  covered.
+- **Keyboard driver.** `Q25_keyboard` must never be unbound and rebound:
+  `bbqX0kbd.ko` registers a display notifier and imports no unregister, so a
+  panel-on while unbound is a kernel NULL dereference. The keyboard is reloaded
+  with a uevent remove/add on its input node instead (`RomProfile.keyboardRebindUnsafe()`).
+  BenOS keeps the unbind/bind reload.
+- **Keylayout.** The file is `/vendor/usr/keylayout/Q25_keyboard.kl`. A
+  bind-mounted copy must be labelled `u:object_r:vendor_keylayout_file:s0`;
+  with `vendor_file` the system is denied access and silently uses `Generic.kl`.
+- **Physical Recents key.** The system opens its own Overview on scancode 580
+  even if an accessibility service consumes the key. While an overlay Recents
+  mode is on, the key is remapped to `PROG_RED` and the service treats that as
+  the trigger.
+- **No system gesture navigation.** Settings shows no "System navigation" page
+  because it requires `WindowManager.hasNavigationBar(0)`, which is false here:
+  the ROM treats the Q25 as having hardware Back/Home/Menu keys.
+  `navigation_mode=2` is set but inert. Writing Lineage's `force_show_navbar=1`
+  (through `content://lineagesettings`, with a reboot) did **not** change
+  `mForceShowNavigationBarEnabled`, create a navigation window or enable
+  SystemUI's edge back handler. Tested once, on one build; what gates it is not
+  known. Edge Gestures therefore draws its own strips.
+- **AdBlock.** KernelSU Next without a metamodule mounts nothing from a
+  module's `system/` tree, so the compiled hosts file is bind-mounted by the
+  module's `service.sh` (and checked on each app launch) when the overlay is missing.
+- **Lockscreen.** Enter and the keypad activate whatever has focus. The app
+  intercepts them and opens the PIN pad with `wm dismiss-keyguard`.
+- **Hidden on LineageOS:** BesLoudness (MediaTek HAL parameter), call screen
+  recovery, the always-on DT2W watchdog.
+- **Known issue, not explained.** With the BlackBerry keyboard
+  (`com.blackberry.keyboard`, AA001.021Q25P) the full on-screen keyboard
+  sometimes appears instead of the suggestions-only strip. Observed together
+  with reinstalling this app (the system logs "Input method reinstalling" for
+  `Q25PassthroughIme`), but a causal link is not established: the strip is 148 px
+  tall and the full keyboard 469 px in `dumpsys input_method`, with identical
+  settings. Disabling and re-enabling the keyboard in the input method settings
+  restored the strip.
 
-### Lockscreen PIN on Keyboard (`Q25AccessibilityService`)
-No root needed. While the keyguard is locked, maps physical key presses to
-taps on SystemUI's PIN pad via `AccessibilityNodeInfo`, so the PIN can be
-entered on the hardware keyboard instead of the touchscreen. Digits map
-phone-dialpad style onto QWERTY: `W E R` = `1 2 3`, `S D F` = `4 5 6`, `Z X C`
-= `7 8 9`, `Q` = `0` (number row also works directly). Enter/D-pad-center
-confirms, Delete/Backspace deletes. Button lookup goes straight to the known
-SystemUI resource ID for the pressed digit, falling back to a recursive node
-search by visible text or content description if that ID doesn't match on
-this build.
+## Edge Gestures
 
-### Per-App Keyboard Block (`Q25AccessibilityService` + `Q25PassthroughIme`)
-In a chosen set of apps, physical key presses are routed straight to the app
-instead of going through the keyboard - useful for games or any app that
-wants raw key events rather than IME-translated text. The service tracks the
-foreground app and, when a selected package is in front, switches the
-default IME to a bundled do-nothing input method (`Q25PassthroughIme`) via
-root `ime enable`/`ime set`, saving the previous IME to restore on the way
-out. The picked packages are a `StringSet` in the `q25tweaks` prefs; the app
-list uses a `<queries>` launcher intent so it can enumerate launchable apps
-on Android 11+.
+`GestureStripsController`, `EdgeSwipe`, `GestureArrowView`,
+`xposed/GestureHookInit`. Back, Home, Recents and more from the screen edges,
+for ROMs where system gesture navigation is unavailable (LineageOS on the Q25)
+or unwanted. Screen tab, "Edge Gestures".
 
-### Chat Enter-to-Send / Calculator Keys (`Q25AccessibilityService` + `inputfix/`)
-Ported from [smh786/q25-input-helper](https://github.com/smh786/q25-input-helper).
-No root needed. Both are physical-key handlers dispatched from the
-accessibility service's `onKeyEvent`, gated by their own `q25tweaks` prefs
-(`chat_composer_enabled` / `calculator_enabled`, both off by default). The
-handler classes (`ComposerEnterKeyHandler`, `CalculatorInputFix`,
-`Q25KeyTranslator`, `AccessibilityNodes`) live under `inputfix/` as Java,
-copied largely verbatim from the source app; each inspects the foreground app
-itself and no-ops outside its target apps, so they're safe to call for every
-key.
-- **Chat Enter-to-Send**: in a set of messaging apps (Messages, WhatsApp,
-  Telegram, Signal, Element/Matrix, Mattermost, ChatGPT, Perplexity), a plain
-  Enter on a non-empty composer clicks the app's send button (found by view
-  ID / content-description / label heuristics), while Alt+Enter and
-  Shift+Enter fall through as a normal newline.
-- **Calculator Keys**: in the AOSP/Google Calculator, maps digit and operator
-  keys to the calculator's buttons (by view ID with a label fallback), and
-  inserts `!`, `(`, `)` straight into the formula field via `ACTION_SET_TEXT`.
+**Zones.** Left, right and bottom are configured independently (a copy button
+mirrors one side onto the other). Each is Off or Custom, with strip thickness
+(6 to 32 dp), length (20 to 100 % of the edge) and swipe distance (8 to 80 dp,
+shown in millimetres too).
 
-### IME Suggestion Shortcuts (`Q25AccessibilityService`)
-No root needed. Ctrl+W/E/R picks suggestion 1/2/3 from the physical
-keyboard's candidate strip (confirmed against BlackBerry Keyboard; other
-BlackBerry-derived keyboards like Harpocrat are expected to share the
-structure). Finds the Nth clickable `TextView` in the IME window - only
-consumes the key combo if a suggestion was actually found and clicked, so
-e.g. Ctrl+W still closes a browser tab normally when nothing's showing.
+**Gestures and actions.** Each gesture has a plain-swipe action and a hold
+action (held 350 ms past the threshold; a hold with no action assigned lets the
+release run the swipe action). Side edges tell three swipes apart, by the angle
+of the finger's travel: straight (under about 31 degrees from the inward axis),
+diagonal up and diagonal down (up to about 63 degrees). The bottom edge swipes
+up. Actions: Back, Home, Recents, Notifications, Quick settings, Lock screen,
+Screenshot, Power menu, Split screen, Flashlight, Previous app, None. Most map
+to `performGlobalAction`
+([constants](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService#GLOBAL_ACTION_BACK));
+the flashlight uses
+[`CameraManager.setTorchMode`](https://developer.android.com/reference/android/hardware/camera2/CameraManager#setTorchMode(java.lang.String,%20boolean)),
+which needs no camera permission.
 
-### Battery Usage (`BatteryUsageController`)
-Per-app battery estimate (percentage, mAh, and a breakdown pie chart) since
-the last reset, read via root from the same underlying power model Android's
-native "Battery usage" screen uses (`dumpsys batterystats --checkin`) - which
-never populates on this device natively, since it additionally requires a
-`BATTERY_STATUS_FULL` transition the charging driver never reports. Reached
-from a card on the Info screen. Stats auto-reset once charging crosses a
-configurable threshold (default 100%, set from the screen's `⋮` menu), or you
-can reset manually at any time. Charge-cycle count is deliberately not shown
-- this gauge driver reports a static, non-incrementing value regardless of
-actual usage, with no alternate source on this hardware.
+| Gesture | Swipe | Hold |
+| --- | --- | --- |
+| Side, straight | Back | Previous app |
+| Side, diagonal down | Notifications | none |
+| Side, diagonal up | Quick settings | none |
+| Bottom, up | Home | Recents |
 
-### Settings tab (`settings/`)
-- **Updates**: checks `github.com/nozerorma/q25toolbox` releases, comparing
-  version cores and pre-release suffixes properly (so e.g. `beta9` isn't
-  misjudged newer than `beta14`) rather than just flagging any different tag.
-  "Download & install" fetches the release's `.apk` asset and installs it via
-  root (`pm install -r`) without leaving the app.
-- **Quick Access**: shortcuts straight to the system Accessibility and Input
-  Method settings screens, a "Restart SystemUI" action (hard `kill -9` on the
-  real PID - `am force-stop` is a no-op for persistent processes), and a
-  Notification Access shortcut (manual fallback for Ticker Notifications if
-  the root grant didn't take).
-- **Debug**: "Export Debug Logs" captures the full current `logcat -d` buffer
-  plus a header (app version, device model, Android version, build
-  fingerprint) via `DebugLogExporter` to `Documents/q25toolbox/
-  debug_<timestamp>.log`. Release builds aren't minified, so every module's
-  existing `Log.d`/`Log.e` tags already survive as-is - this just makes them
-  one tap away instead of needing a separate rooted logcat-reader app.
-- **Contributors**: avatars pulled live from the GitHub API.
-- **About**: current version and repo link.
+*Previous app* resumes the second task from the Recents task list, or the first
+when the app in front is the home launcher (which the list leaves out). If the
+service does not yet know the foreground app (just after the screen turns on)
+the guess can be one task off.
 
-### App Theming (`MainActivity`)
-- Full Material You (Monet): on Android 12+ the color scheme is derived from
-  the system wallpaper via `dynamicDarkColorScheme`/`dynamicLightColorScheme`,
-  following the system light/dark setting; older versions fall back to the
-  stock Material 3 baseline schemes.
-- `Theme.DeviceDefault.DayNight` was expected to keep the status bar in sync
-  with that on its own, but doesn't reliably resolve day/night on this ROM -
-  in light mode the (white) status bar icons were invisible against the light
-  bar, and the status bar's background color had the same problem, staying
-  stuck on one theme's color instead of tracking whichever scheme Compose was
-  actually rendering. Both are now set explicitly from a `SideEffect` each
-  recompose: `WindowCompat.getInsetsController(...).isAppearanceLightStatusBars`
-  for the icon tint, and `window.statusBarColor` from the live
-  `MaterialTheme.colorScheme.background` for the background - instead of
-  trusting the parent theme's own DayNight resolution for either.
+**How it is drawn.** Each strip is a thin `TYPE_ACCESSIBILITY_OVERLAY` window
+that gets the touches landing on it. Consequence: a plain tap on a strip is
+swallowed, so keep strips thin or switch a zone off. Strips are removed with the
+screen off and on the keyguard, and in apps listed under "Apps without strips".
+A debug switch tints them.
 
-### Double-Tap to Wake (`Dt2wController`)
-- **LineageOS (v4.0):** the kernel has no gesture-wake (the touch module's own
-  gesture code is never enabled by the device tree, and no sysfs/proc node or
-  gesture key exists), but the Synaptics controller keeps reporting touches
-  with the screen off. `assets/dt2w_lineage.sh` runs only while the screen is
-  off: the accessibility service starts it on `ACTION_SCREEN_OFF` and stops it
-  on `ACTION_SCREEN_ON`, and it ends by itself after injecting
-  `KEYCODE_WAKEUP`. Two taps within 0.8 s (each under 0.35 s) count; the
-  backlight node confirms the screen is really off. Measured with the screen
-  off: well-spaced taps all arrive, a fast burst loses roughly one in four, so a
-  missed double tap is simply repeated. Needs root and the accessibility service.
-- **BenOS / ZinwaOS:** still hidden. The old always-on watchdog
-  (`service.d/dt2w.sh`, adapted from
-  [nozerorma/q25-double-tap-wake](https://github.com/nozerorma/q25-double-tap-wake))
-  streamed every touch of the day and degraded SystemUI after extended
-  runtime, across several rewrites.
+**Native bottom gesture.** The launcher's swipe-up (home, recents, quick
+switch) is an input-monitor spy window, so it sees the same touches as the
+strip and cannot be blocked from another window. `GestureHookInit` (LSPosed,
+scoped to `com.android.launcher3`) skips `TouchInteractionService.onInputEvent`
+while `Settings.Global q25_native_bottom_gesture_off` is 1. The switch is
+independent of the strip; until the user touches it, it follows the strip (on
+while the strip is Custom). On its first call the hook writes
+`files/q25toolbox_gesture_hook.state` in the launcher's data directory
+(`ok=1` plus the launcher `versionCode`); the app reads it through PID 1's mount
+namespace and shows "running", "checking" or "not detected". The same
+technique is used by Key2 Toolbox's navigation-bar hook. There is no predictive
+back: that animation belongs to the native side gesture, which is unavailable
+here.
+
+**Arrow overlay (optional, per zone).** A badge slides out of the edge following
+the finger, turns with the real direction of travel, changes colour once the
+swipe is past its threshold ("release to fire"), and flies off or retracts on
+release. It lives in one full-screen window with `FLAG_NOT_TOUCHABLE`, so it
+never takes a touch. Style, shared by the zones: arrow, idle and active colours,
+size, slide-out distance, opacity, thickness, animation speed, round badge or
+bare arrow, tilt on or off, with a live preview. Defaults: bare white arrow,
+grey idle and black active colours for the badge, 70 % opacity, 50 dp travel.
+
+**Vibration.** The Q25 vibrator declares no predefined effects and no amplitude
+control, and the system haptic played for `performHapticFeedback` was not
+perceptible (the vibrator log showed a `TICK ... with fallback` of about one
+second). The strips therefore call `Vibrator` directly: a short tick when the
+distance is crossed and a longer pulse on the action, both with configurable
+duration. In one measurement a 35 ms pulse started about 0.7 s after it was
+requested, so latency may be a limit of the motor driver.
+
+**Settings** live in `q25tweaks` under `gest_*` and are applied live. Left and
+right fall back to the single side setup of earlier builds (`gest_lat_*`) for any
+value not yet saved.
+
+## Recents UI Layout
+
+`RecentsTweaksController`, `SlimRecentsController`,
+`service/*RecentsOverlayController`, `xposed/RecentsHookInit`. Three layouts,
+stored in `Settings.Global`.
+
+**Standalone overlays (any ROM, no Xposed).** *Slim List*, *Masonry* and *Grid*
+are drawn by the accessibility service as `TYPE_ACCESSIBILITY_OVERLAY` windows
+([reference](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#TYPE_ACCESSIBILITY_OVERLAY)).
+Slim List and Masonry share one controller; Grid has its own (newest tile at
+the right edge, older ones in two rows, "Close all" at the far end).
+
+- **Source.** `dumpsys activity recents` for tasks, the system snapshot cache
+  (`/data/system_ce/<user>/snapshots/`, inside a UUID-named subdirectory on
+  Android 16) for thumbnails, read with root. The app in front gets a live
+  `screencap` (0.24 s measured on the Q25), since it has no stored snapshot yet.
+  Resume uses `am start` with `FLAG_ACTIVITY_REORDER_TO_FRONT`, skipped for the
+  app already in front; dismiss uses `am stack remove <rootTaskId>` (the root,
+  not the leaf, task id on Android 16).
+- **Trigger.** The physical Recents key, via the `PROG_RED` remap described
+  above. The on-screen button and gesture cannot be intercepted and still open
+  the stock Overview; Edge Gestures can open the overlay instead.
+- **Settings.** Background colour (dark or Material You), opacity, blur
+  (cross-window blur, when the system allows it), animation length (0 = none;
+  durations also follow the system animator scale), tile corner radius for Grid
+  and Masonry.
+- **Performance.** Label and icon lookups are cached per package (invalidated by
+  the package's `lastUpdateTime`) and banner colours are computed on the worker
+  before the window is shown. A tile without a stored snapshot fades instead of
+  expanding into a black rectangle.
+
+**LSPosed Grid and Masonry (BenOS/ZinwaOS).** `RecentsHookInit`, scoped to
+`com.android.launcher3`, patches the running launcher by method name in memory:
+
+- `DisplayController.Info.isTablet(WindowBounds)` returns true while a grid mode
+  is active (the `DeviceProfile` constructor derives all Overview geometry from
+  it); `showAsGrid()` is pinned too.
+- `DeviceProfile.recalculateHotseatWidthAndBorderSpace()` is skipped (forcing
+  tablet makes it divide by zero; the launcher's hotseat is never shown).
+- `overview_grid_row_spacing`, `overview_grid_side_margin` and the grid icon
+  size are backfilled where the phone resource bucket gives 0 (on Android 16 they
+  sit in a nested `overviewProfile`).
+- `isTaskbarPresent` is cleared so the floating taskbar does not appear.
+- Masonry shortens each `TaskView` by a factor keyed on the task id; the
+  launcher's own `updateGridProperties` re-centres it.
+
+A runtime hook survives OTAs and fails soft (stock Overview), unlike the pre-v3
+patched launcher.
+
+**Grid (auto).** The single "Grid" choice uses the hook when it demonstrably
+works in the installed launcher, and the standalone overlay otherwise.
+Evidence is a handshake: once per launcher process the hook writes
+`files/q25toolbox_hook.state` (`ok=1` only if all four Grid hooks attached, plus
+the launcher `versionCode`). A missing file or another `versionCode` is
+"unknown" and a failed hook "broken"; only "ok" turns the hook on (an install
+updating from v3 keeps its working hook until the new one has run once). "Grid,
+standalone" never uses the hook.
+
+`Settings.Global` keys: `bb_recents_layout_mode` (0 stock, 1 grid, 2 masonry),
+`q25_recents_scrim_alpha`, `q25_recents_overlay_mode`, `q25_recents_hook_ok`.
+"Restart Launcher" and "Restart SystemUI" use `kill -9` on the real PID, since
+`am force-stop` does nothing for persistent processes.
+
+## Other modules
+
+**Key Remapper** (`KeyRemapController`). Remaps the Currency key (`GRAVE`,
+scancode 41, miswired in firmware), Right Shift (54) or the Recents key
+(`APP_SWITCH`, 580) to Right Ctrl by rewriting the keylayout through a
+bind-mounted copy. On BenOS the generated boot script unbinds the i2c driver so
+EventHub releases the file, copies the pristine layout, edits the scancode,
+labels it `system_file`, mounts it and rebinds the driver (`/sys/bus/i2c/drivers/Q25_keyboard`,
+device `6-001f`). The same script runs live on save. It refuses to mount an
+empty layout, which would leave the keyboard dead at every boot. On LineageOS
+see [LineageOS notes](#lineageos-notes).
+
+**PIN on keyboard** (no root). While the keyguard is locked, key presses become
+taps on SystemUI's PIN pad through `AccessibilityNodeInfo`. Digits follow the
+phone dialpad on QWERTY: `W E R` = 1 2 3, `S D F` = 4 5 6, `Z X C` = 7 8 9,
+`Q` = 0. The button is found by the known resource id, with a text and content
+description search as fallback.
+
+**Lockscreen Enter opens the PIN** (root, on by default only on LineageOS).
+Enter, keypad Enter and D-pad centre are intercepted on SystemUI's own keyguard
+and the PIN pad opens with `wm dismiss-keyguard`; over-lockscreen apps (an
+incoming call) keep their keys. An optional switch also swallows D-pad, Tab and
+Space so a keyboard pressed in a pocket cannot reach the emergency-call button.
+
+**Per-app keyboard block** (`Q25PassthroughIme`). In chosen apps key presses go
+straight to the app. The service switches the default IME to a bundled
+do-nothing IME with `ime enable` and `ime set` (root) and restores the previous
+one on leaving. The package list is a `StringSet` in `q25tweaks`.
+
+**Chat Enter-to-send and calculator keys** (no root; ported from
+[smh786/q25-input-helper](https://github.com/smh786/q25-input-helper), classes
+under `inputfix/`). Enter in a set of messaging apps clicks the send button
+(Alt or Shift+Enter stay a newline); in the AOSP/Google Calculator digits and
+operators press the calculator's buttons. Both off by default.
+
+**IME suggestion shortcuts** (no root). Ctrl+W/E/R clicks the 1st, 2nd or 3rd
+clickable `TextView` of the keyboard's candidate strip (confirmed with the
+BlackBerry keyboard). The key is consumed only if a suggestion was clicked.
+These shortcuts need the strip to be visible.
+
+**In-call shortcuts.** In Google Phone's call screen: M mutes, the Currency key
+toggles speaker, and `W E R S D F Z X C 0` insert dialpad digits with
+`ACTION_SET_TEXT` (more reliable than `input keyevent` right after the dialpad
+transition). They run before Auto-focus on that screen, identified by the
+keypad, mute and speaker toggles.
+
+**Auto-focus input.** On a printable key in selected apps, focuses the first
+editable field and inserts the key once the field has input focus (woken by the
+next accessibility event, with a 1 s timeout). Each insertion is followed by
+`ACTION_SET_SELECTION` to the end, otherwise the IME inserts the next letter at
+offset 0, capitalized. Keys pressed meanwhile are appended in order. A "no
+editable field" result is cached briefly.
+
+**Extra dimming.** Drives Android's Extra Dim (`reduce_bright_colors_*`) with an
+intensity slider and an optional night schedule (`service.d` watchdog, to the
+minute, writes only on transitions so manual overrides survive).
+
+**Per-app display scaling.** This ROM ignores per-app scaling (compat-framework
+`DOWNSCALE_*`, GameManager, `wm density`: no effect, verified), so the service
+switches the global `wm size` when a chosen app is in front and resets it on
+leaving and on teardown. Presets follow
+[duc1607/q25-res-changer](https://github.com/duc1607/q25-res-changer) (720x720,
+720x772, 720x960, 720x1280, 720x1440; the SystemUI-breaking 780x780 is omitted)
+plus a custom size. The screen relayouts briefly on each switch.
+
+**BesLoudness** (BenOS/ZinwaOS). Toggles the vendor speaker DSP stage with
+`AudioManager.setParameters("SetBesLoudnessStatus=0/1")`, as the stock Sound
+Enhancement screen does. `persist.vendor.audiohal.besloudness_state` is a red
+herring (no audible effect). The optional schedule is a shell watchdog that
+hands off to `BesLoudnessReceiver` with `am broadcast`.
+
+**Proximity workarounds** (BenOS/ZinwaOS). After a call, if the screen is still
+off 5 s later (confirmed against `dumpsys telecom`), wakes it. A manual "respawn
+keyboard" button rebinds the keyboard driver; it is deliberately not automatic,
+because pairing the rebind with a forced wake raced the display driver and
+crashed the kernel. Also a live proximity and Lux monitor and a launcher for the
+OEM factory test (`P_SensorTestActivity`; a readout only, there is no
+calibration write path).
+
+**Ticker Notifications.** A scrolling banner instead of heads-up popups,
+drawn as a `TYPE_ACCESSIBILITY_OVERLAY` window (a `TYPE_APPLICATION_OVERLAY`
+window renders under the status bar on this device; the choice follows Super
+Status Bar, `com.tombayley.statusbar`, decompiled). Notifications arrive
+through a listener granted with `cmd notification allow_listener`. Heads-up
+stays enabled and is turned off only around a ticker, so notifications the
+ticker declines pop up normally; one can still slip through in the race with
+SystemUI. Swiping down on the banner opens the shade. Configurable: tap to
+open, minimum priority, per-app and per-category blocklists, ongoing
+notifications, body lines, scroll speed and delay, background colour (fixed,
+icon colour via `androidx.palette`, or Monet).
+
+**Call Proximity Sleep** (LineageOS). Detects a call from the audio mode,
+registers the proximity sensor only during the call, and after a short debounce
+sends `KEYCODE_SLEEP` (and `KEYCODE_WAKEUP` on far or call end). Earpiece only,
+never speaker, Bluetooth or wired audio.
+
+**Double-Tap to Wake** (LineageOS). The kernel has no gesture wake, but the
+touch controller keeps reporting taps with the screen off. `dt2w_lineage.sh`
+runs only while the screen is off (started and stopped by the service on
+`ACTION_SCREEN_OFF` and `ACTION_SCREEN_ON`) and sends `KEYCODE_WAKEUP` after two
+taps within 0.8 s. Measured: spaced taps all arrive, fast bursts lose about one
+in four. The older always-on watchdog degraded SystemUI and stays hidden.
+
+**AdBlock.** Systemless hosts blocking (based on
+[gloeyisk/systemless-hosts](https://github.com/gloeyisk/systemless-hosts)):
+a root-manager module with about 273k bundled entries, your own blacklist and
+whitelist, subscribable lists and live pause. `hosts_ctl.sh` owns compilation;
+one reboot activates the overlay, later edits are live.
+
+**Telemetry Block.** Per-app opt-in: only enrolled packages are touched. For
+each it forces off the persisted collection flags of Firebase Crashlytics,
+Analytics, Performance and the Firebase master flag. SDKs re-derive them at
+cold start, so `block_telemetry.sh` is a watchdog (burst after boot, rescan
+every 10 minutes and whenever `packages.list` changes), run in PID 1's mount
+namespace with a PID and `cmdline` lock. Updating from v3.1 enrols every app
+the old global block covered.
+
+**Zygisk Detach.** Installs the bundled `zygisk-detach` module (a hook on
+libbinder in the Play Store process hiding chosen packages from
+`getApplicationEnabledSetting`) and manages its list. Install and enable take
+effect at boot; list changes when the Play Store restarts.
+
+**Wireless ADB.** Persists a port with `service.d/adb_wireless.sh` (waits for
+`sys.boot_completed`, sets `adb_wifi_enabled` and the TCP port properties) or
+applies it live; shows the WLAN address.
+
+**Bluetooth and Location auto-disable.** Watchdogs that turn the radio off
+after 5 to 60 idle minutes (default 15). The idle deadline is wall-clock
+(`date +%s`), not a count of 60 s passes, because `sleep` stops while the
+device suspends. Bluetooth connection detection combines four specific signals
+from `dumpsys bluetooth_manager`; Location idleness is the GPS provider going
+unused, since GMS listeners are always registered. Disables are verified and
+logged to `/data/adb/.bt_idle.log`.
+
+**Battery usage.** Per-app percentage and mAh since the last reset from
+`dumpsys batterystats --checkin`, because the native screen never populates
+here (it needs a `BATTERY_STATUS_FULL` the charger never reports). Auto-resets
+at a charge threshold. Cycle count is not shown: the gauge reports a static
+value.
+
+**Settings tab.** Update check (version cores and pre-release suffixes compared
+properly), links to Accessibility and Input Method settings, a SystemUI
+restart, a Notification Access shortcut, "Export debug logs" (the current
+`logcat -d` plus a header, to `Documents/q25toolbox/`), contributors and about.
+
+## Architecture
+
+**Accessibility service.** `Q25AccessibilityService` is long-lived and owns
+everything that needs observation (foreground app, windows, IME, key events),
+because a one-shot root command cannot be told when something happens. It
+exposes itself as `instance`, since a `TYPE_ACCESSIBILITY_OVERLAY` window can
+only be added from a running service's context. Its settings are in the
+`q25tweaks` SharedPreferences, which the service listens to, so changes apply
+live. A reinstall kills the service for a moment and restarts the IME.
+
+**Root modules.** Stateless ones run commands on demand and persist by
+installing scripts in `/data/adb/service.d/`. Daemons run detached (`setsid`)
+with a lock that checks `/proc/$PID/cmdline`, not just `kill -0`, which
+false-positives on a reused PID. A running daemon can still be stale (an old
+script holds its lock and loops forever), so `DaemonMaintenance.sweep()` runs
+once per app launch, compares installed scripts with what this version would
+install, and reinstalls anything stale; it also removes daemons of hidden or
+removed features.
+
+**LSPosed hooks** (`assets/xposed_init` lists two classes, scoped to the
+launcher): `RecentsHookInit` and `GestureHookInit`. Each is gated by a
+`Settings.Global` key (world-readable, written with root) and falls through to
+stock behaviour when it is 0. Each leaves a proof-of-life file in the
+launcher's `files/` directory.
+
+**State shared with other processes**
+
+| Key | Meaning |
+| --- | --- |
+| `bb_recents_layout_mode` | LSPosed layout: 0 stock, 1 grid, 2 masonry |
+| `q25_recents_overlay_mode` | standalone overlay mode |
+| `q25_recents_scrim_alpha` | Overview background opacity for the hook |
+| `q25_recents_hook_ok` | whether Grid (auto) currently uses the hook |
+| `q25_native_bottom_gesture_off` | 1 = the launcher hook skips the native swipe-up |
+
+**ROM profile** (`core/RomProfile`). A `lineage_*` build flavor (or
+`ro.lineage.version`) means LineageOS (major from the build or the SDK level);
+a `ro.fota.version` with "BenOS" is BenOS; any other `ro.fota.*` is treated as
+ZinwaOS (a heuristic, unverified on stock); otherwise a chooser appears once.
+The Q25's LineageOS build has no `ro.lineage.version` and still carries a stale
+`ro.fota.version`, so the flavor must win. Hardware-safety decisions use the
+detected ROM and ignore the override. `Screen.availableOn(rom)` hides entries.
+
+**Theme.** Material You from the wallpaper on Android 12 and later, following
+the system light or dark setting. The status bar icon tint and colour are set
+explicitly each recompose, because `Theme.DeviceDefault.DayNight` did not
+resolve day or night reliably on this ROM.
+
+## Backup and restore
+
+Settings, Backup: exports the selected modules to a JSON document (through the
+Storage Access Framework) and restores from one. Restore merges and never wipes
+what is not in the file. It covers the `q25tweaks` modules (PIN keyboard,
+keyboard block, IME suggestions, chat, calculator, in-call shortcuts, call
+screen recovery, app scaling, auto-focus, battery usage, key remap, Recents
+appearance and mode, Zygisk Detach, Call Proximity Sleep, **Edge Gestures**),
+Ticker Notifications, and root script state (Bluetooth and Location idle, Extra
+Dim, BesLoudness, DT2W, Telemetry with its root-side list). The ROM override is
+not backed up, and neither is the proximity monitor. Backups made before Edge
+Gestures had separate sides still restore: their `gest_lat_*` keys are read by
+both sides.
+
+## Build, test, release
+
+```
+./gradlew assembleDebug assembleRelease   # APKs in app/build/outputs/apk/
+./gradlew testDebugUnitTest               # JVM tests (no device needed)
+```
+
+Both build types are signed with the debug key. `app/build.gradle.kts` has a
+commented `signingConfigs` block for a private keystore; if you use it, pass
+the password through `gradle.properties` (gitignored) or an environment
+variable. Changing the key breaks updates for existing installs.
+
+Unit tests cover the pure logic: ROM detection, keylayout script generation,
+hook handshake parsing, the edge-swipe recognizer, and gesture defaults and
+settings migration.
+
+Release checklist:
+
+1. Bump `appVersionName` (it must start with `v`, matching the tag exactly:
+   Obtainium compares it with the tag) and `versionCode` in `app/build.gradle.kts`.
+2. Check that `settings_about_version` does not add a second `v`.
+3. Add a `## [X.Y]` entry to `CHANGELOG.md`; update this README for new modules.
+4. Build both variants, install the **release** APK, and verify `versionName`
+   and that the accessibility service is still enabled.
+5. Commit, tag (`git tag -a vX.Y`), push the branch and the tag.
+6. `gh release create vX.Y <release apk>`: the in-app updater needs an `.apk`
+   asset. Download it and check `aapt dump badging` against the tag.
+
+Never delete a tag a published release points to: the release turns into a
+draft and its URL breaks.
 
 ## Extending
 
-- For stateless root-command modules, add a `core`-style controller in
-  `modules/`, following the pattern of `KeyRemapController` /
-  `WirelessAdbController` / `BtIdleController` (persist via
-  `AssetInstaller`, live-apply via `RootShell.run`). If it runs as a boot
-  daemon, use the PID+cmdline lock pattern from
-  `extra_dim_schedule_template.sh` (not a bare `kill -0`, which can
-  false-positive on a reused PID) and launch it via `nohup setsid sh ...`
-  (a bare `nohup ... &` can die when the invoking root shell session is
-  later recycled).
-- For features that need to observe ongoing state (window/IME visibility,
-  key events) rather than just fire a command, that observation has to
-  happen inside `Q25AccessibilityService` - root has no API for "tell me
-  when X happens," only for executing commands. Add the logic there, store
-  settings as SharedPreferences booleans/ints in the `q25tweaks` prefs file,
-  and write the corresponding screen to read/write those same keys directly
-  rather than going through `AssetInstaller`.
-- Either way, add a corresponding screen in `ui/` (following e.g.
-  `KeyRemapScreen.kt` for the simple case or `ImeBlockScreen.kt` for the
-  prefs-based case, all built on the shared `ScreenScaffold`), and wire it
-  into `DetailHost` plus the section lists in `ui/HomeScreen.kt` and
-  `ui/Screen.kt`.
-- For something that belongs on the Settings tab instead of a module screen
-  (account-like state, app-level info) follow `settings/SettingsScreen.kt`'s
-  pattern instead of the `Screen`/`DetailHost` navigation used everywhere
-  else.
-- Drop any new boot scripts in `app/src/main/assets/`.
-- New user-facing strings go in `res/values/strings.xml` first; the other 7
-  locale files (`values-ca/de/es/fr/it/nl/pt`) can lag behind as a follow-up
-  translation pass rather than blocking the feature.
+- **Root, no observation.** Add a controller in `modules/` following
+  `KeyRemapController`, `WirelessAdbController` or `BtIdleController`: persist
+  through `AssetInstaller`, apply live with `RootShell.run`. For a boot daemon
+  use the PID and `cmdline` lock of `extra_dim_schedule_template.sh` and start
+  it with `nohup setsid sh ...` (a bare `nohup ... &` can die when the invoking
+  root shell is recycled). Scripts go in `app/src/main/assets/`.
+- **Needs observation** (windows, IME, keys). Put the logic in
+  `Q25AccessibilityService`, store settings as SharedPreferences values in
+  `q25tweaks`, and let the screen read and write those keys directly. Keep the
+  decision logic in a pure class so it can be unit tested (see `EdgeSwipe`).
+- **Screens.** Add a file in `ui/` (`KeyRemapScreen.kt` is the simple case,
+  `ImeBlockScreen.kt` the prefs-based one, both on `ScreenScaffold`), then wire
+  it into `DetailHost` in `ui/HomeScreen.kt` and the section lists in
+  `ui/Screen.kt`. Add a `BackupModule` and its keys in `settings/SettingsBackup.kt`.
+- **Settings tab items** follow `settings/SettingsScreen.kt` instead.
+- **Strings** go in `res/values/strings.xml` first; `values-es` and
+  `values-ca` are kept in step, and `values-de/fr/it/nl/pt` may lag and fall
+  back to English.
+- **ROM-specific behaviour** goes behind `RomProfile` so BenOS is untouched.
+
+## Credits
+
+Ported from [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox), the same app
+for the BlackBerry Key2 (a few Key2-only features, ZRAM control and the App
+Spoof module, were left out). Chat and calculator input from
+[smh786/q25-input-helper](https://github.com/smh786/q25-input-helper), screen
+sizes from [duc1607/q25-res-changer](https://github.com/duc1607/q25-res-changer),
+hosts blocking from [gloeyisk/systemless-hosts](https://github.com/gloeyisk/systemless-hosts),
+and the original double-tap-wake work from
+[nozerorma/q25-double-tap-wake](https://github.com/nozerorma/q25-double-tap-wake).
+Contributor avatars are shown in Settings. History is in [CHANGELOG.md](CHANGELOG.md).
