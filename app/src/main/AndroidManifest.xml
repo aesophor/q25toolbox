@@ -76,6 +76,15 @@
             android:name=".modules.BesLoudnessReceiver"
             android:exported="false" />
 
+        <!-- Other apps (Key Mapper) run one of our actions: see RunActionReceiver. -->
+        <receiver
+            android:name=".service.RunActionReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.kgr.q25toolbox.action.RUN" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.TickerNotificationListenerService"
             android:exported="true"

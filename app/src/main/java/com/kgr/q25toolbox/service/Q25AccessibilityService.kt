@@ -23,6 +23,7 @@ import com.kgr.q25toolbox.core.RootShell
 import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.modules.Dt2wController
 import com.kgr.q25toolbox.modules.GestureSettings
+import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.modules.NativeBottomGesture
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
@@ -268,6 +269,7 @@ class Q25AccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         worker.execute {
             enterOpensPinDefault = RomProfile.autoDetectedLineage()
+            onLineage = enterOpensPinDefault
             // Grid (auto): re-check whether the LSPosed hook works with the launcher that is installed now.
             try { RecentsTweaksController.reconcileGrid(this) } catch (t: Throwable) { Log.e("Q25Toolbox", "reconcileGrid failed", t) }
         }
@@ -313,6 +315,9 @@ class Q25AccessibilityService : AccessibilityService() {
     private fun chatComposerEnabled() = prefs?.getBoolean(KEY_CHAT_COMPOSER, false) ?: false
     private fun calculatorEnabled() = prefs?.getBoolean(KEY_CALCULATOR, false) ?: false
     private fun imeSuggestionsEnabled() = prefs?.getBoolean(KEY_IME_SUGGESTIONS, false) ?: false
+    // LineageOS only; resolved off the main thread in onServiceConnected (it reads build props).
+    @Volatile private var onLineage = false
+    private fun recentsKeyExternal() = onLineage && (prefs?.getBoolean(KeyRemapController.KEY_RECENTS_KEY_EXTERNAL, false) ?: false)
     private fun imeBlockEnabled() = prefs?.getBoolean(KEY_IME_BLOCK, false) ?: false
     private fun imeBlockApps(): Set<String> =
         prefs?.getStringSet(KEY_IME_BLOCK_APPS, emptySet()) ?: emptySet()
@@ -629,6 +634,10 @@ class Q25AccessibilityService : AccessibilityService() {
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return false
         val kc = event.keyCode
+
+        // The Recents key is left to another app (Key Mapper): do nothing with it here. It still arrives as PROG_RED
+        // (the keylayout remap keeps the system from opening its Overview), and every accessibility service sees it.
+        if ((kc == KeyEvent.KEYCODE_PROG_RED || kc == KeyEvent.KEYCODE_APP_SWITCH) && recentsKeyExternal()) return false
 
         // Recents overlay (Slim List / Masonry quilt). While it is showing, Back/Home/Recents close
         // or refresh it unconditionally, before any other feature gets a look at the key: the

@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.kgr.q25toolbox.R
+import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.service.Q25AccessibilityService
 import kotlinx.coroutines.Dispatchers
@@ -129,6 +130,36 @@ fun KeyRemapScreen(onBack: () -> Unit) {
                             }
                         }
                     )
+                }
+
+                if (remember { RomProfile.autoDetectedLineage() }) {
+                    HorizontalDivider()
+                    // Recents key (LineageOS only): the system never sees it (remapped to PROG_RED); here it can be left to Key Mapper.
+                    var external by remember { mutableStateOf(KeyRemapController.isRecentsKeyExternal(prefs)) }
+                    Text(stringResource(R.string.recents_key_title), style = MaterialTheme.typography.titleSmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(stringResource(R.string.recents_key_external), modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = external,
+                            enabled = !busy,
+                            onCheckedChange = { checked ->
+                                external = checked
+                                KeyRemapController.setRecentsKeyExternal(prefs, checked)
+                                busy = true
+                                scope.launch(Dispatchers.IO) {
+                                    KeyRemapController.applySettings(prefs)
+                                    withContext(Dispatchers.Main) { busy = false }
+                                }
+                            }
+                        )
+                    }
+                    Text(stringResource(R.string.recents_key_external_desc), style = MaterialTheme.typography.bodySmall)
+
+
                 }
 
                 DescriptionDivider()

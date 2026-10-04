@@ -56,4 +56,11 @@ class GestureSettingsTest {
         assertEquals("/data/user/0/com.android.launcher3/files/q25toolbox_gesture_hook.state",
             NativeBottomGesture.statePath("com.android.launcher3"))
     }
+
+    @Test fun parseActionAcceptsOurNamesCaseInsensitively() {
+        assertEquals(Action.PREVIOUS_APP, GestureSettings.parseAction("previous_app"))
+        assertEquals(Action.RECENTS, GestureSettings.parseAction(" RECENTS "))
+        assertEquals(null, GestureSettings.parseAction("reboot"))
+        assertEquals(null, GestureSettings.parseAction(null))
+    }
 }

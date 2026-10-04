@@ -133,6 +133,9 @@ object GestureSettings {
         NONE, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, LOCK_SCREEN, SCREENSHOT, POWER_MENU, SPLIT_SCREEN, FLASHLIGHT, PREVIOUS_APP
     }
 
+    /** Parses an action name from an external caller (case-insensitive); null if it is not one of ours. Pure, for tests. */
+    fun parseAction(name: String?): Action? = name?.trim()?.uppercase()?.let { n -> Action.entries.firstOrNull { it.name == n } }
+
     /** Gestures offered per zone: side edges tell straight from the two diagonals, the bottom edge only swipes up. */
     fun dirsOf(zone: Zone): List<EdgeSwipe.Dir> = when (zone) {
         Zone.LEFT, Zone.RIGHT -> listOf(EdgeSwipe.Dir.STRAIGHT, EdgeSwipe.Dir.DIAG_A, EdgeSwipe.Dir.DIAG_B)

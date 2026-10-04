@@ -42,6 +42,15 @@ object KeyRemapController {
      */
     const val KEY_RECENTS_OVERLAY_REMAP = "recents_overlay_key_remap"
     const val RECENTS_TRIGGER_KEYCODE = "PROG_RED"
+
+    /**
+     * "Leave the Recents key to another app" (Key Mapper). The scancode stays remapped to [RECENTS_TRIGGER_KEYCODE] so
+     * the system does nothing with it, but our service no longer acts on the key: the other app sees a plain
+     * PROG_RED (keycode 183, scancode 580) and decides what it does. It can ask us to open our overlay through
+     * [com.kgr.q25toolbox.service.RunActionReceiver]. LineageOS only (the setting is ignored elsewhere): BenOS keeps its
+     * behaviour.
+     */
+    const val KEY_RECENTS_KEY_EXTERNAL = "recents_key_external"
     private const val RECENTS_SCANCODE = 580
 
     private const val BOOT_SCRIPT = "/data/adb/service.d/key_remap.sh"
@@ -104,6 +113,19 @@ object KeyRemapController {
     fun isRecentsOverlayRemap(prefs: SharedPreferences) =
         prefs.getBoolean(KEY_RECENTS_OVERLAY_REMAP, false)
 
+    fun isRecentsKeyExternal(prefs: SharedPreferences) = prefs.getBoolean(KEY_RECENTS_KEY_EXTERNAL, false)
+
+    fun setRecentsKeyExternal(prefs: SharedPreferences, on: Boolean) =
+        prefs.edit().putBoolean(KEY_RECENTS_KEY_EXTERNAL, on).apply()
+
+    /**
+     * Whether scancode 580 must be remapped to the trigger keycode: when an overlay Recents mode needs it or the key is
+     * left to another app, except if the user chose the Recents key itself as their Ctrl source (then it is Ctrl).
+     * Pure, for tests.
+     */
+    internal fun wantsRecentsRemap(overlayRemap: Boolean, external: Boolean, ctrlOnRecents: Boolean) =
+        (overlayRemap || external) && !ctrlOnRecents
+
     fun setRecentsOverlayRemap(prefs: SharedPreferences, on: Boolean) =
         prefs.edit().putBoolean(KEY_RECENTS_OVERLAY_REMAP, on).apply()
 
@@ -133,7 +155,7 @@ object KeyRemapController {
         val source = getSourceKey(prefs)
         val rebind = !RomProfile.keyboardRebindUnsafe()
         // If the user chose the Recents key itself as their Ctrl source, it is Ctrl, not an overlay trigger.
-        val recentsRemap = isRecentsOverlayRemap(prefs) && !(ctrlEnabled && source == SourceKey.RECENTS)
+        val recentsRemap = wantsRecentsRemap(isRecentsOverlayRemap(prefs), isRecentsKeyExternal(prefs) && RomProfile.autoDetectedLineage(), ctrlEnabled && source == SourceKey.RECENTS)
         val enabled = ctrlEnabled || recentsRemap
 
         if (enabled) {

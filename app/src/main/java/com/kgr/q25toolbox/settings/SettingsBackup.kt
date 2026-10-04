@@ -109,6 +109,7 @@ object SettingsBackup {
         BatteryUsageController.KEY_RESET_THRESHOLD to BackupModule.BATTERY_USAGE,
         KeyRemapController.KEY_REMAP_ENABLED to BackupModule.KEY_REMAP,
         KeyRemapController.KEY_REMAP_SOURCE to BackupModule.KEY_REMAP,
+        KeyRemapController.KEY_RECENTS_KEY_EXTERNAL to BackupModule.KEY_REMAP,
         // The overlay's look. The Recents key remap pref is NOT listed: it is derived from the layout mode.
         SlimRecentsController.KEY_SCRIM_COLOR_MODE to BackupModule.RECENTS,
         SlimRecentsController.KEY_SCRIM_OPACITY to BackupModule.RECENTS,
