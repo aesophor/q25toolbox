@@ -353,6 +353,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 if (pkg != null && pkg != foregroundPkg) {
                     foregroundPkg = pkg
                     GestureStripsController.onForegroundChanged(this, pkg)
+                    SlimRecentsOverlayController.onForegroundChanged(pkg)
                     noEditableWindowId = -1
                     reconcileImeBlock()
                     reconcileScaling()
@@ -547,7 +548,7 @@ class Q25AccessibilityService : AccessibilityService() {
             GestureSettings.Action.BACK ->
                 if (RecentsOverlays.isShowing()) RecentsOverlays.hide() else performGlobalAction(GLOBAL_ACTION_BACK)
             GestureSettings.Action.HOME -> {
-                if (RecentsOverlays.isShowing()) RecentsOverlays.hide()
+                if (RecentsOverlays.isShowing()) RecentsOverlays.hide(expandTaskId = null)
                 performGlobalAction(GLOBAL_ACTION_HOME)
             }
             GestureSettings.Action.RECENTS -> openRecents()
@@ -650,7 +651,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 }
                 KeyEvent.KEYCODE_HOME -> {
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        RecentsOverlays.hide()
+                        RecentsOverlays.hide(expandTaskId = null)
                         performGlobalAction(GLOBAL_ACTION_HOME)
                     }
                     return true

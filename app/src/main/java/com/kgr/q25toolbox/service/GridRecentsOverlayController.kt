@@ -64,7 +64,11 @@ object GridRecentsOverlayController {
 
     private val ioExecutor = Executors.newSingleThreadExecutor()
 
+    /** Marker for [hide]: grow the newest tile to full screen (Back, tap on the background). Same value as the Slim list's. */
+    const val EXPAND_HERO = Int.MIN_VALUE
+
     private var windowManager: WindowManager? = null
+    private var windowParams: WindowManager.LayoutParams? = null
     private var root: FrameLayout? = null
     private var scroller: HorizontalScrollView? = null
     private var content: FrameLayout? = null
@@ -198,26 +202,29 @@ object GridRecentsOverlayController {
      * off, teardown). [isShowing] turns false immediately either way.
      */
     fun hide(animate: Boolean = true, expandTaskId: Int? = null) = safeUi {
+        val wanted = if (expandTaskId == EXPAND_HERO) currentTasks.firstOrNull()?.taskId else expandTaskId
         val v = root
         val tiles = HashMap(tileViews)
         val thumbs = HashMap(thumbViews)
         val headers = HashMap(headerViews)
         val closeAll = closeAllView
+        val params = windowParams
         val shots = snapshots // before clearState(): only a tile with a real snapshot may expand (see below)
         clearState()
         if (v == null) return@safeUi
-        val remove: () -> Unit = {
-            try { windowManager?.removeView(v) } catch (_: IllegalArgumentException) { }
-        }
+        val wm = windowManager
+        val remove: () -> Unit = { OverlayWindow.removeSoftly(wm, v, params) }
         v.animate().cancel()
         if (!animate || animMs(v.context, CLOSE_MS) <= 0L) { remove(); return@safeUi }
         // A tile without a stored snapshot is a dark placeholder: expanding it would cover the screen in black.
-        val canExpand = expandTaskId != null && shots.containsKey(expandTaskId)
-        val target = if (canExpand) tiles[expandTaskId] else null
-        val targetThumb = if (canExpand) thumbs[expandTaskId] else null
+        val canExpand = wanted != null && shots.containsKey(wanted)
+        val target = if (canExpand) tiles[wanted] else null
+        val targetThumb = if (canExpand) thumbs[wanted] else null
         if (target != null && targetThumb != null) {
+            OverlayWindow.blurOff(wm, v, params)
             expandAndFade(v, tiles, headers, closeAll, target, targetThumb, remove)
         } else {
+            OverlayWindow.blurOff(wm, v, params)
             v.animate().alpha(0f).scaleX(CLOSE_SCALE).scaleY(CLOSE_SCALE)
                 .setDuration(animMs(v.context, CLOSE_MS))
                 .setInterpolator(PathInterpolator(0.3f, 0f, 0.8f, 0.15f))
@@ -226,7 +233,7 @@ object GridRecentsOverlayController {
     }
 
     private fun clearState() {
-        root = null; scroller = null; content = null
+        root = null; scroller = null; content = null; windowParams = null
         tileViews.clear(); thumbViews.clear(); headerViews.clear(); tileDist.clear(); closeAllView = null
         snapshots = emptyMap(); pendingEntrance = false
     }
@@ -260,7 +267,7 @@ object GridRecentsOverlayController {
                     MotionEvent.ACTION_DOWN -> { downX = ev.rawX; downY = ev.rawY; moved = false }
                     MotionEvent.ACTION_MOVE ->
                         if (kotlin.math.abs(ev.rawX - downX) > slop || kotlin.math.abs(ev.rawY - downY) > slop) moved = true
-                    MotionEvent.ACTION_UP -> if (!moved) hide()
+                    MotionEvent.ACTION_UP -> if (!moved) hide(expandTaskId = EXPAND_HERO)
                 }
             } catch (t: Throwable) {
                 Log.e("Q25Toolbox", "GridRecents background touch failed", t)
@@ -289,6 +296,7 @@ object GridRecentsOverlayController {
         }
         try { wm.addView(container, lp) } catch (_: Exception) { return }
         windowManager = wm
+        windowParams = lp
         root = container; scroller = hsv; content = area
         pendingEntrance = true
         buildTiles(svc, tasks)

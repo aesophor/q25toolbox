@@ -61,6 +61,8 @@ object SlimRecentsOverlayController {
     private const val OPEN_MS = 280L
     private const val CLOSE_SCALE = 0.96f
     private const val CLOSE_MS = 170L
+    /** How long a chosen app may take to come to the front before the exit runs anyway. */
+    private const val LAUNCH_WAIT_MS = 900L
 
     /** Masonry open: the newest tile (the app you were in) shrinks from full screen into place while the rest fade in. */
     private const val ENTRANCE_MS = 340L
@@ -82,6 +84,7 @@ object SlimRecentsOverlayController {
     private val ioExecutor = Executors.newSingleThreadExecutor()
 
     private var windowManager: WindowManager? = null
+    private var windowParams: WindowManager.LayoutParams? = null
     private var root: FrameLayout? = null
     private var currentTasks: List<SlimTask> = emptyList()
     private var currentSnapshots: Map<Int, android.graphics.Bitmap> = emptyMap()
@@ -274,7 +277,19 @@ object SlimRecentsOverlayController {
      * and service teardown pass false, since animations do not run with the screen off and the window must
      * be gone immediately. [isShowing] turns false at once either way.
      */
+    // The app the user picked is starting: the overlay stays up until it is in front (or [LAUNCH_WAIT_MS] passes), so the
+    // exit animation reveals an app that is already there instead of racing its own launch transition.
+    @Volatile private var pendingLaunchPkg: String? = null
+    @Volatile private var pendingLaunchTaskId: Int? = null
+
+    /** Called by the service when the foreground app changes. */
+    fun onForegroundChanged(pkg: String) {
+        if (root != null && pkg == pendingLaunchPkg) hide(expandTaskId = pendingLaunchTaskId)
+    }
+
     fun hide(animate: Boolean = true, expandTaskId: Int? = EXPAND_HERO) = safeUi {
+        pendingLaunchPkg = null
+        pendingLaunchTaskId = null
         closeIconMenu()
         val shots = currentSnapshots // before it is cleared: decides whether a tile may expand (see below)
         currentSnapshots = emptyMap()
@@ -287,12 +302,9 @@ object SlimRecentsOverlayController {
         val v = root
         root = null
         if (v != null) {
-            val remove: () -> Unit = {
-                try {
-                    windowManager?.removeView(v)
-                } catch (_: IllegalArgumentException) {
-                }
-            }
+            val wm = windowManager
+            val params = windowParams
+            val remove: () -> Unit = { OverlayWindow.removeSoftly(wm, v, params) }
             // Only a tile with a real snapshot may grow to full screen: one without it is a dark placeholder, and
             // expanding it would cover the screen with a black rectangle. Plain fade then.
             val expandId = expandTaskId?.let { if (it == EXPAND_HERO) heroId else it }
@@ -303,8 +315,10 @@ object SlimRecentsOverlayController {
             // Duration 0 (setting or system animator scale off): no animators at all, just drop the window.
             val animating = animate && animMs(v.context, CLOSE_MS) > 0L
             if (animating && cardsMode && target != null && targetThumb != null) {
+                OverlayWindow.blurOff(wm, v, params)
                 expandAndFade(v, cards, headers, target, targetThumb, remove)
             } else if (animating) {
+                OverlayWindow.blurOff(wm, v, params)
                 v.animate()
                     .alpha(0f).scaleX(CLOSE_SCALE).scaleY(CLOSE_SCALE)
                     .setDuration(animMs(v.context, CLOSE_MS))
@@ -563,6 +577,7 @@ object SlimRecentsOverlayController {
         }
         pendingEntrance = cardsMode
         windowManager = wm
+        windowParams = lp
         root = container
         buildRows(svc, list, tasks)
     }
@@ -860,8 +875,18 @@ object SlimRecentsOverlayController {
                 // log it as an activity restart attempt and re-run the launch transition right as the overlay
                 // fades. Both conditions are required so a stale package can never swallow a real app switch.
                 val alreadyFront = task.packageName == frontPackage && task.taskId == currentTasks.firstOrNull()?.taskId
-                if (!alreadyFront) runSafely { SlimRecentsController.resumeTask(task) }
-                hide(expandTaskId = task.taskId)
+                if (alreadyFront) {
+                    hide(expandTaskId = task.taskId)
+                } else {
+                    runSafely { SlimRecentsController.resumeTask(task) }
+                    val target = task.packageName
+                    pendingLaunchPkg = target
+                    pendingLaunchTaskId = task.taskId
+                    val v = root
+                    v?.postDelayed({
+                        if (pendingLaunchPkg == target && root === v) hide(expandTaskId = task.taskId)
+                    }, LAUNCH_WAIT_MS)
+                }
             }
         }
         val slop = ViewConfiguration.get(svc).scaledTouchSlop

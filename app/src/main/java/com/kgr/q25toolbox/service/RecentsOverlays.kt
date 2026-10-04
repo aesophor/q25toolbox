@@ -5,9 +5,13 @@ object RecentsOverlays {
     fun isShowing(): Boolean =
         SlimRecentsOverlayController.isShowing() || GridRecentsOverlayController.isShowing()
 
-    /** Closes whichever is showing. [animate] = false removes it at once (screen off, teardown). */
-    fun hide(animate: Boolean = true) {
-        if (SlimRecentsOverlayController.isShowing()) SlimRecentsOverlayController.hide(animate = animate, expandTaskId = null)
-        if (GridRecentsOverlayController.isShowing()) GridRecentsOverlayController.hide(animate = animate)
+    /**
+     * Closes whichever is showing. [animate] = false removes it at once (screen off, teardown).
+     * [expandTaskId] picks the tile that grows to full screen as the exit: the default grows the newest one
+     * (Back), null is a plain fade (Home). Both overlays share the same marker value.
+     */
+    fun hide(animate: Boolean = true, expandTaskId: Int? = SlimRecentsOverlayController.EXPAND_HERO) {
+        if (SlimRecentsOverlayController.isShowing()) SlimRecentsOverlayController.hide(animate, expandTaskId)
+        if (GridRecentsOverlayController.isShowing()) GridRecentsOverlayController.hide(animate, expandTaskId)
     }
 }
