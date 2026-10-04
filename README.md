@@ -65,7 +65,7 @@ Six bottom-bar sections. "ROM" says where the entry is shown.
 | Section | Module | Needs | ROM |
 | --- | --- | --- | --- |
 | Info | Device status, battery usage breakdown | root (battery usage) | all |
-| Keyboard | Key Remapper | root | all |
+| Keyboard | Key Remapper (on LineageOS also: leave the Recents key to Key Mapper) | root | all |
 | | PIN on keyboard (lockscreen) | accessibility | all |
 | | Per-app keyboard block | root, accessibility | all |
 | | Chat Enter-to-send, calculator keys | accessibility | all |
@@ -99,6 +99,16 @@ Facts below were verified on a Q25 running LineageOS 23 (Android 16, kernel
   even if an accessibility service consumes the key. While an overlay Recents
   mode is on, the key is remapped to `PROG_RED` and the service treats that as
   the trigger.
+- **Recents key and Key Mapper.** The system opens its own Overview on `APP_SWITCH`, and an accessibility service
+  can add an action but not replace that one, so Key Mapper cannot take the key over by itself. The switch
+  "Leave the Recents key to another app" (Keyboard, Key Remapper) keeps scancode 580 remapped to `PROG_RED` (the
+  system ignores it) and makes this app stand down, so Key Mapper sees keycode 183, scancode 580 on any device and
+  can bind short, double and long presses, with its own vibration. Key Mapper's built-in "Recents" action performs
+  `GLOBAL_ACTION_RECENTS`, which opens the system Overview, not our overlays. To open ours, use Key Mapper's *Send
+  intent*: type Broadcast, action `com.kgr.q25toolbox.action.RUN`, package `com.kgr.q25toolbox`, and optionally the
+  string extra `action` (`RECENTS` by default, or any Edge Gestures action such as `PREVIOUS_APP`). The receiver is
+  exported, so any app can send it, and it is ignored on the keyguard. Without the switch, the key opens our
+  overlay while an overlay Recents mode is on.
 - **No system gesture navigation.** Settings shows no "System navigation" page
   because it requires `WindowManager.hasNavigationBar(0)`, which is false here:
   the ROM treats the Q25 as having hardware Back/Home/Menu keys.
@@ -121,7 +131,14 @@ Facts below were verified on a Q25 running LineageOS 23 (Android 16, kernel
   `Q25PassthroughIme`), but a causal link is not established: the strip is 148 px
   tall and the full keyboard 469 px in `dumpsys input_method`, with identical
   settings. Disabling and re-enabling the keyboard in the input method settings
-  restored the strip.
+  restored the strip. Observed in both states, with the same window frame: the
+  keyboard's window reports a landscape configuration in the failing state (569 dp
+  high against 597 dp wide on the square screen, the status bar taking 34 px) and
+  a portrait one (597 dp) in the good state. The keyboard's code (decompiled from
+  the installed APK) treats landscape as "show the full keyboard" on every device
+  except one whose `Build.DEVICE` is `venice`; here it is `Q25`. That is a
+  correlation plus a code path, not a controlled test; whether BenOS reports
+  `venice` is unverified.
 
 ## Edge Gestures
 
@@ -223,6 +240,13 @@ the right edge, older ones in two rows, "Close all" at the far end).
 - **Trigger.** The physical Recents key, via the `PROG_RED` remap described
   above. The on-screen button and gesture cannot be intercepted and still open
   the stock Overview; Edge Gestures can open the overlay instead.
+- **Exit.** The tile you pick (or the newest, on Back) grows to full screen while
+  the scrim fades. In Slim List and Masonry the overlay waits for the picked app
+  to be in front (900 ms at most) before that; in Grid, Back and a tap on the
+  background expand the newest tile, and Home is a plain fade. The blur is
+  switched off in one step when the exit starts, and the window is removed softly
+  (alpha 0, then 48 ms later), a workaround for a stale frame seen on Android 15
+  that is not known to be needed on Android 16.
 - **Settings.** Background colour (dark or Material You), opacity, blur
   (cross-window blur, when the system allows it), animation length (0 = none;
   durations also follow the system animator scale), tile corner radius for Grid
@@ -418,6 +442,9 @@ exposes itself as `instance`, since a `TYPE_ACCESSIBILITY_OVERLAY` window can
 only be added from a running service's context. Its settings are in the
 `q25tweaks` SharedPreferences, which the service listens to, so changes apply
 live. A reinstall kills the service for a moment and restarts the IME.
+
+**Outside callers.** `RunActionReceiver` (exported broadcast receiver) runs one of
+the gesture actions for another app, mainly Key Mapper; see the LineageOS notes.
 
 **Root modules.** Stateless ones run commands on demand and persist by
 installing scripts in `/data/adb/service.d/`. Daemons run detached (`setsid`)

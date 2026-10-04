@@ -4,6 +4,41 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.1.1] - 2026-10-04
+
+The Recents key can be left to Key Mapper, and the Recents overlays exit like Key2's. versionCode 36 → 37.
+
+### Added
+
+- **Leave the Recents key to another app** (LineageOS only; Keyboard, Key Remapper). The key stays remapped to
+  `PROG_RED`, so Android ignores it, but this app stops acting on it: Key Mapper sees keycode 183, scancode 580 and
+  can do short, double and long presses, with its own vibration. Key Mapper's built-in "Recents" action opens the
+  system Overview, not our overlays, so the screen explains how to call ours.
+- **`RunActionReceiver`**: another app can run one of our actions with a broadcast (action
+  `com.kgr.q25toolbox.action.RUN`, package `com.kgr.q25toolbox`, optional string extra `action`: `RECENTS` by default,
+  or `PREVIOUS_APP`, `HOME`, `NOTIFICATIONS`, `QUICK_SETTINGS`, `LOCK_SCREEN`, `SCREENSHOT`, `POWER_MENU`,
+  `SPLIT_SCREEN`, `FLASHLIGHT`, `BACK`). Exported: any app can send it. Ignored on the keyguard. Needs the
+  accessibility service. Included in backups (the switch).
+
+### Changed
+
+- **Recents overlays, exit (ported from Key2 Toolbox; the entrance is unchanged).**
+  - Slim List and Masonry: after picking an app the overlay stays up until that app is in front (900 ms at most),
+    then the tile expands, instead of racing the app's own launch transition.
+  - Grid: Back and a tap on the background expand the newest tile (they only faded); Home stays a plain fade.
+  - The blur is switched off in one step when the exit starts, and the window is removed softly (alpha 0, then 48 ms
+    later). The soft removal fixed a stale frame seen on Android 15; it is not known to be needed on Android 16.
+- README: the Recents key, the receiver, and a hedged note on the keyboard issue.
+
+### Known issue (update)
+
+- The full on-screen keyboard still sometimes appears instead of the suggestions strip on LineageOS with the BlackBerry
+  keyboard. New observations, not yet proven to be the cause: in the failing state the keyboard's window reports a
+  landscape configuration (569 dp high against 597 dp wide on the square screen, the status bar taking 34 px), and in
+  the good state a portrait one (597 dp), with the same window frame. The keyboard's code treats landscape as "show the
+  full keyboard" on every device except one whose `Build.DEVICE` is `venice`; here it is `Q25`. Disabling and enabling the
+  keyboard recalculates the configuration.
+
 ## [4.1] - 2026-10-04
 
 Edge gestures. versionCode 35 → 36.

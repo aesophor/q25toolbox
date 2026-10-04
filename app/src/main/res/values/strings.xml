@@ -349,10 +349,10 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.1</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">Edge gestures: Back, Home, Recents and more from the screen edges.</string>
-    <string name="whats_new_body">New in Screen, Edge Gestures: thin strips on the left, right and bottom edges, each set up on its own. Every gesture (on the sides straight, diagonal up and diagonal down; on the bottom up) has one action for a plain swipe and another for a hold: Back, Home, Recents, Notifications, Quick settings, Lock screen, Screenshot, Power menu, Split screen, Flashlight or Previous app. There is an optional arrow that follows your finger (with its own colours, size and speed), vibration settings, and a list of apps where the strips are off.\n\nThe launcher\'s native bottom swipe-up can be switched off (it needs the LSPosed module enabled for the launcher).\n\nLineageOS on the Q25 has no system gesture navigation, so these strips are how you get edge gestures there. Recents also opens a bit faster.</string>
+    <string name="whats_new_headline">The Recents key can be handled by Key Mapper (LineageOS), and the Recents overlay closes like Key2\'s.</string>
+    <string name="whats_new_body">New on LineageOS: a switch under Keyboard, Key Remapper, "Leave the Recents key to another app". The key stays remapped, so Android ignores it, but this app stops acting on it and Key Mapper sees it as PROG_RED (keycode 183, scancode 580). Set short, double and long presses there (with vibration). To open this app\'s Recents overlay from Key Mapper, use Send intent, Broadcast, action com.kgr.q25toolbox.action.RUN, package com.kgr.q25toolbox; the extra \"action\" (PREVIOUS_APP, HOME, NOTIFICATIONS, FLASHLIGHT...) runs another action. Key Mapper\'s own Recents action opens the system Overview, not this overlay.\n\nRecents overlays: the exit now works like in Key2 Toolbox. In the quilt and list the overlay waits for the app you picked to be in front before the tile expands; in the grid, Back or a tap on the background expands the newest tile. The opening is unchanged.</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
