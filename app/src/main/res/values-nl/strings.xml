@@ -359,12 +359,10 @@
     <string name="settings_quick_access_restart_systemui_subtitle">SystemUI geforceerd herstarten om een openstaande wijziging toe te passen</string>
     <string name="settings_quick_access_notifications_title">Meldingstoegang</string>
     <string name="settings_quick_access_notifications_subtitle">Handmatige terugval voor tickermeldingen als de root-toekenning niet doorkwam</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Begrepen</string>
     <string name="whats_new_headline">Draait nu ook op LineageOS 23, naast BenOS en ZinwaOS.</string>
     <string name="whats_new_body">De app herkent je ROM zelf (naast de titel in Info; wijzigen in Instellingen) en verbergt wat niet van toepassing is. Nieuw: Recent-weergaven Slanke lijst, Mozaïek en Raster zonder Xposed (geopend met de fysieke Recent-toets), Zygisk Detach en op LineageOS Dubbeltik om te ontwaken en Call Proximity Sleep. Enter of het pad opent nu de pincode op het vergrendelscherm (standaard alleen aan op LineageOS).\n\nTelemetrieblokkering werkt nu per app: als je die al aan had, zijn de gedetecteerde apps voor je ingeschreven.\n\nAdBlock werkt ook met root-managers die modulebestanden niet koppelen, en de back-up omvat nu KeyRemap, Recent en Zygisk Detach.\n\nNieuw in 4.0.1: Raster gebruikt nu het LSPosed-raster als dat in je launcher werkt en anders het zelfstandige, dus LSPosed is niet meer verplicht. De herstelknop voor Recent is verdwenen.</string>
-    <string name="whats_new_matrix_title">Welke versie wil ik?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS en LineageOS 23 (Xposed optioneel)\n3.1  :  Op stock gebaseerde Q25-ROM\'s, met LSPosed / Vector\n2.1.1  :  BenOS beta3, zonder Xposed\n2.0.5  :  BenOS vóór beta3a / oudere stock</string>
     <string name="generic_cancel">Annuleren</string>
     <string name="settings_backup_restore">Back-up en herstel</string>
     <string name="settings_backup_desc">Exporteert de instellingen van de geselecteerde modules naar een JSON-bestand, of herstelt ze daaruit. Herstellen wordt samengevoegd met je huidige instellingen — het wist nooit wat niet in het bestand staat.</string>

@@ -65,6 +65,9 @@ class RecentsHookInit : IXposedHookLoadPackage {
         const val MODE_GRID = 1
         const val MODE_MASONRY = 2
 
+        /** Gap (dp) the Grid puts between its two rows when the launcher's own value is 0. */
+        private const val ROW_SPACING_DP = 24
+
         /** File the app reads (as root) to learn whether the Grid hooks installed in this launcher build. */
         private const val HANDSHAKE_FILE = "q25toolbox_hook.state"
 
@@ -206,9 +209,6 @@ class RecentsHookInit : IXposedHookLoadPackage {
             XposedBridge.log("[$TAG] DeviceProfile not found: ${t.message}")
             return false
         }
-        val density = currentApplication()?.resources?.displayMetrics?.density ?: 2.0f
-        fun px(dpValue: Int) = (dpValue * density).toInt()
-
         var n = 0
         for (ctor in dp.declaredConstructors) {
             try {
@@ -216,25 +216,36 @@ class RecentsHookInit : IXposedHookLoadPackage {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         if (!gridActive()) return
                         val o = param.thisObject
+                        // Density is read now, not when the hook is installed: no Application exists yet at install
+                        // time, and a guessed value made "24 dp" come out as ~40 dp on a 193 dpi screen.
+                        val density = currentApplication()?.resources?.displayMetrics?.density ?: 2.0f
+                        fun px(dpValue: Int) = (dpValue * density).toInt()
                         runCatching { XposedHelpers.setBooleanField(o, "isTaskbarPresent", false) }
                         runCatching { XposedHelpers.setIntField(o, "taskbarHeight", 0) }
-                        runCatching {
-                            if (XposedHelpers.getIntField(o, "overviewTaskIconDrawableSizeGridPx") <= 0) {
-                                val nonGrid = XposedHelpers.getIntField(o, "overviewTaskIconDrawableSizePx")
-                                XposedHelpers.setIntField(
-                                    o, "overviewTaskIconDrawableSizeGridPx",
-                                    if (nonGrid > 0) nonGrid else px(44)
-                                )
-                            }
+
+                        // The grid dimens that resolve to 0 in the phone resource bucket. Android 16's launcher moved
+                        // them from DeviceProfile into a nested `overviewProfile` object (fields rowSpacing, ...);
+                        // older launchers keep them on DeviceProfile itself (overviewRowSpacing, ...). Try the new
+                        // layout first, then the old one.
+                        val nested = runCatching { XposedHelpers.getObjectField(o, "overviewProfile") }.getOrNull()
+                        val holder: Any = nested ?: o
+                        val rowSpacing = if (nested != null) "rowSpacing" else "overviewRowSpacing"
+                        val sideMargin = if (nested != null) "gridSideMargin" else "overviewGridSideMargin"
+                        val iconGrid = if (nested != null) "taskIconDrawableSizeGridPx" else "overviewTaskIconDrawableSizeGridPx"
+                        val iconPlain = if (nested != null) "taskIconDrawableSizePx" else "overviewTaskIconDrawableSizePx"
+                        fun geti(name: String) = runCatching { XposedHelpers.getIntField(holder, name) }.getOrNull()
+                        fun seti(name: String, v: Int) = runCatching { XposedHelpers.setIntField(holder, name, v) }
+
+                        if ((geti(iconGrid) ?: 1) <= 0) {
+                            val nonGrid = geti(iconPlain) ?: 0
+                            seti(iconGrid, if (nonGrid > 0) nonGrid else px(44))
                         }
-                        runCatching {
-                            if (XposedHelpers.getIntField(o, "overviewRowSpacing") <= 0)
-                                XposedHelpers.setIntField(o, "overviewRowSpacing", px(24))
-                        }
-                        runCatching {
-                            if (XposedHelpers.getIntField(o, "overviewGridSideMargin") <= 0)
-                                XposedHelpers.setIntField(o, "overviewGridSideMargin", px(12))
-                        }
+                        // Vertical gap between the two rows of tiles. Left at 0 the second row's header sits right
+                        // against the first row's snapshots, so the tiles look like they overlap.
+                        if ((geti(rowSpacing) ?: 1) <= 0) seti(rowSpacing, px(ROW_SPACING_DP))
+                        if ((geti(sideMargin) ?: 1) <= 0) seti(sideMargin, px(12))
+                        XposedBridge.log("[$TAG] DeviceProfile fixup (${if (nested != null) "overviewProfile" else "legacy"}): " +
+                            "rowSpacing=${geti(rowSpacing)} side=${geti(sideMargin)} iconGrid=${geti(iconGrid)}")
                     }
                 })
                 n++

@@ -4,6 +4,27 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](../Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.0.2] - 2026-10-04
+
+Hotfix for 4.0.1, whose headline feature did not work on a real device. versionCode 34 → 35.
+
+### Fixed
+
+- **"Grid" never switched to the LSPosed hook.** The app reads the hook's handshake file from the launcher's data
+  directory with its own root shell, and Android's per-app data isolation hides other apps' data from that shell
+  (a plain `adb root` shell sees it, which is why it looked fine by hand). The file is now read through PID 1's
+  mount namespace, as Telemetry already does. Until this fix, Grid (auto) always reported the hook as "not seen" and
+  used the standalone overlay.
+- **LSPosed Grid: tiles were almost touching vertically.** On Android 16 the launcher moved the Overview dimens
+  (`rowSpacing`, `gridSideMargin`, the grid icon size) from `DeviceProfile` into a nested `overviewProfile` object, so
+  the hook's backfill of the zero values from the phone resource bucket silently did nothing (`NoSuchFieldError`). It
+  now fills them in on both layouts. The row gap is 24 dp and no longer comes out larger than intended: the hook used
+  to guess the screen density before an `Application` existed.
+- The "What's new" dialog no longer carries the "Which version do I want?" table: since 4.0 one build fits every
+  supported ROM, so there is nothing left to choose.
+- The hook logs what it does to the Xposed log (profile layout and the resulting values), and the Grid decision is
+  logged as `reconcileGrid`, to make this kind of problem diagnosable.
+
 ## [4.0.1] - 2026-10-04
 
 versionCode 33 → 34.

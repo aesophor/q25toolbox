@@ -357,12 +357,10 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força el reinici de la SystemUI per aplicar un canvi pendent</string>
     <string name="settings_quick_access_notifications_title">Accés a les notificacions</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual per a les Notificacions tipus ticker si la concessió amb root no s\'ha aplicat</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Entesos</string>
     <string name="whats_new_headline">Ara també funciona a LineageOS 23, a més de BenOS i ZinwaOS.</string>
     <string name="whats_new_body">L\'app detecta la teva ROM sola (es veu al costat del títol a Info; es canvia a Configuració) i amaga el que no s\'aplica. Novetats: Recents amb Llista Prima, Mosaic i Quadrícula sense Xposed (s\'obren amb la tecla física de Recents), Zygisk Detach i, a LineageOS, Doble toc per despertar i Call Proximity Sleep. Retorn o el pad obren ara el PIN a la pantalla de bloqueig (activat per defecte només a LineageOS).\n\nEl bloqueig de telemetria és ara per app: si ja el tenies activat, s\'han enrolat les apps detectades per tu.\n\nAdBlock també funciona en gestors de root que no munten els fitxers dels mòduls, i la còpia de seguretat cobreix ara KeyRemap, Recents i Zygisk Detach.\n\nNovetat a 4.0.1: Quadrícula fa servir ara la de LSPosed quan funciona al teu launcher i la independent si no, així que LSPosed ja no és obligatori. El botó de reparar Recents ha desaparegut.</string>
-    <string name="whats_new_matrix_title">Quina versió vull?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS i LineageOS 23 (Xposed opcional)\n3.1  :  ROM Q25 basades en stock, amb LSPosed / Vector\n2.1.1  :  BenOS beta3, sense Xposed\n2.0.5  :  BenOS anterior a beta3a / stock antic</string>
     <string name="generic_cancel">Cancel·la</string>
     <string name="settings_backup_restore">Còpia de seguretat i restauració</string>
     <string name="settings_backup_desc">Exporta els ajustos dels mòduls seleccionats a un fitxer JSON, o restaura\'ls des d\'un. La restauració es fusiona amb els teus ajustos actuals — mai esborra el que no és al fitxer.</string>

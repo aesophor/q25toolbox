@@ -357,12 +357,10 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Force le redémarrage de SystemUI pour appliquer un réglage en attente</string>
     <string name="settings_quick_access_notifications_title">Accès aux notifications</string>
     <string name="settings_quick_access_notifications_subtitle">Solution de repli manuelle pour les notifications ticker si l\'autorisation root n\'a pas pris</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Compris</string>
     <string name="whats_new_headline">Fonctionne désormais aussi sous LineageOS 23, en plus de BenOS et ZinwaOS.</string>
     <string name="whats_new_body">L\'appli détecte seule votre ROM (affichée à côté du titre dans Info ; modifiable dans Réglages) et masque ce qui ne s\'applique pas. Nouveautés : Récents en Liste Fine, Mosaïque et Grille sans Xposed (ouverts par la touche physique Récents), Zygisk Detach et, sous LineageOS, Double appui pour réveiller et Call Proximity Sleep. Entrée ou le pad ouvrent désormais le code PIN sur l\'écran verrouillé (activé par défaut uniquement sous LineageOS).\n\nLe blocage de la télémétrie est maintenant par appli : si vous l\'aviez déjà activé, les applis détectées ont été enrôlées pour vous.\n\nAdBlock fonctionne aussi avec les gestionnaires root qui ne montent pas les fichiers des modules, et la sauvegarde couvre maintenant KeyRemap, Récents et Zygisk Detach.\n\nNouveau dans 4.0.1 : Grille utilise désormais celle de LSPosed quand elle fonctionne dans votre lanceur, et l\'autonome sinon ; LSPosed n\'est donc plus obligatoire. Le bouton de réparation de Récents a disparu.</string>
-    <string name="whats_new_matrix_title">Quelle version me faut-il ?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS et LineageOS 23 (Xposed facultatif)\n3.1  :  ROM Q25 basées sur stock, avec LSPosed / Vector\n2.1.1  :  BenOS beta3, sans Xposed\n2.0.5  :  BenOS antérieur à beta3a / stock ancien</string>
     <string name="generic_cancel">Annuler</string>
     <string name="settings_backup_restore">Sauvegarde et restauration</string>
     <string name="settings_backup_desc">Exporte les réglages des modules sélectionnés dans un fichier JSON, ou les restaure depuis un. La restauration fusionne avec tes réglages actuels — elle n\'efface jamais ce qui n\'est pas dans le fichier.</string>

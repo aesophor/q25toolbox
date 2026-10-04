@@ -173,9 +173,16 @@ object RecentsTweaksController {
      */
     fun hookHealth(): HookHealth {
         for (pkg in HOOK_PACKAGES) {
-            val state = RootShell.run("cat /data/user/0/$pkg/$HOOK_STATE_FILE 2>/dev/null").outString
+            // Through PID 1's mount namespace: the app's own root shell inherits Android's per-app data isolation and
+            // cannot see another app's data dir (an `adb root` shell can, which is why this passed by hand).
+            val res = RootShell.run(inGlobalNs("cat /data/user/0/$pkg/$HOOK_STATE_FILE 2>/dev/null"))
+            val state = res.outString
+            android.util.Log.i("Q25Toolbox", "hookHealth[$pkg]: success=${res.success} state=${state.replace("\n", "|")}")
             if (state.isBlank()) continue
-            return parseHandshake(state, installedVersionCode(pkg))
+            val installed = installedVersionCode(pkg)
+            val h = parseHandshake(state, installed)
+            android.util.Log.i("Q25Toolbox", "hookHealth[$pkg]: installed=$installed -> $h")
+            return h
         }
         return HookHealth.UNKNOWN
     }
@@ -203,10 +210,15 @@ object RecentsTweaksController {
      * No-op (returns false) unless the choice is Grid (auto). Blocking (root).
      */
     fun reconcileGrid(context: Context): Boolean {
-        if (LayoutMode.fromValue(globalInt(OVERLAY_MODE_KEY)) != LayoutMode.GRID_AUTO) return false
+        val choice = globalInt(OVERLAY_MODE_KEY)
+        if (LayoutMode.fromValue(choice) != LayoutMode.GRID_AUTO) {
+            android.util.Log.i("Q25Toolbox", "reconcileGrid: skipped, overlay choice=$choice")
+            return false
+        }
         val hookKeyNow = (globalInt(LAYOUT_MODE_KEY) ?: 0) == LayoutMode.GRID.value
         val health = hookHealth()
         val useHook = shouldUseHook(health, hookKeyNow)
+        android.util.Log.i("Q25Toolbox", "reconcileGrid: health=$health hookKeyNow=$hookKeyNow -> useHook=$useHook")
         val recorded = globalInt(HOOK_OK_KEY) == 1
 
         if (useHook != recorded || useHook != hookKeyNow) {

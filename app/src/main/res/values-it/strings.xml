@@ -357,12 +357,10 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Forza il riavvio della SystemUI per applicare una modifica in sospeso</string>
     <string name="settings_quick_access_notifications_title">Accesso alle notifiche</string>
     <string name="settings_quick_access_notifications_subtitle">Ripiego manuale per le notifiche ticker se la concessione root non ha avuto effetto</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Ho capito</string>
     <string name="whats_new_headline">Ora funziona anche su LineageOS 23, oltre a BenOS e ZinwaOS.</string>
     <string name="whats_new_body">L\'app rileva da sola la tua ROM (mostrata accanto al titolo in Info; si cambia in Impostazioni) e nasconde ciò che non si applica. Novità: Recenti con Elenco Sottile, Mosaico e Griglia senza Xposed (si aprono con il tasto fisico Recenti), Zygisk Detach e, su LineageOS, Doppio tocco per risvegliare e Call Proximity Sleep. Invio o il pad aprono ora il PIN nella schermata di blocco (attivo per impostazione predefinita solo su LineageOS).\n\nIl blocco della telemetria è ora per app: se lo avevi già attivo, le app rilevate sono state iscritte per te.\n\nAdBlock funziona anche con i gestori root che non montano i file dei moduli, e il backup copre ora KeyRemap, Recenti e Zygisk Detach.\n\nNovità in 4.0.1: Griglia usa ora quella di LSPosed quando funziona nel tuo launcher e quella autonoma altrimenti, quindi LSPosed non è più obbligatorio. Il pulsante di riparazione di Recenti è stato rimosso.</string>
-    <string name="whats_new_matrix_title">Quale versione mi serve?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS e LineageOS 23 (Xposed facoltativo)\n3.1  :  ROM Q25 basate su stock, con LSPosed / Vector\n2.1.1  :  BenOS beta3, senza Xposed\n2.0.5  :  BenOS precedente a beta3a / stock vecchio</string>
     <string name="generic_cancel">Annulla</string>
     <string name="settings_backup_restore">Backup e ripristino</string>
     <string name="settings_backup_desc">Esporta le impostazioni dei moduli selezionati in un file JSON, o le ripristina da uno. Il ripristino si fonde con le tue impostazioni attuali — non cancella mai ciò che non è nel file.</string>

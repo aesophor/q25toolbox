@@ -71,15 +71,6 @@ fun WhatsNewDialog() {
                     stringResource(R.string.whats_new_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Text(
-                    stringResource(R.string.whats_new_matrix_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    stringResource(R.string.whats_new_matrix),
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
         }
     )

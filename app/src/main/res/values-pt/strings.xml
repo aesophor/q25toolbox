@@ -357,12 +357,10 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força o reinício da SystemUI para aplicar uma alteração pendente</string>
     <string name="settings_quick_access_notifications_title">Acesso a notificações</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual para as Notificações tipo ticker se a concessão com root não pegou</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Entendido</string>
     <string name="whats_new_headline">Agora funciona também no LineageOS 23, além de BenOS e ZinwaOS.</string>
     <string name="whats_new_body">A app deteta a sua ROM sozinha (mostrada junto ao título em Info; altera-se em Definições) e oculta o que não se aplica. Novidades: Recentes com Lista Fina, Mosaico e Grelha sem Xposed (abrem-se com a tecla física de Recentes), Zygisk Detach e, no LineageOS, Toque duplo para acordar e Call Proximity Sleep. Enter ou o pad abrem agora o PIN no ecrã de bloqueio (ativo por predefinição apenas no LineageOS).\n\nO bloqueio de telemetria é agora por app: se já o tinha ativo, as apps detetadas foram inscritas por si.\n\nO AdBlock funciona também em gestores de root que não montam os ficheiros dos módulos, e a cópia de segurança cobre agora KeyRemap, Recentes e Zygisk Detach.\n\nNovidade na 4.0.1: Grelha usa agora a do LSPosed quando funciona no seu launcher e a autónoma caso contrário, pelo que o LSPosed já não é obrigatório. O botão de reparar Recentes foi removido.</string>
-    <string name="whats_new_matrix_title">Que versão quero?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS e LineageOS 23 (Xposed opcional)\n3.1  :  ROM Q25 baseadas em stock, com LSPosed / Vector\n2.1.1  :  BenOS beta3, sem Xposed\n2.0.5  :  BenOS anterior à beta3a / stock antigo</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="settings_backup_restore">Cópia de segurança e restauro</string>
     <string name="settings_backup_desc">Exporta as definições dos módulos selecionados para um ficheiro JSON, ou restaura-as a partir de um. O restauro funde-se com as tuas definições atuais — nunca apaga o que não está no ficheiro.</string>

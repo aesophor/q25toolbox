@@ -349,12 +349,10 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.2</string>
     <string name="whats_new_ok">Got it</string>
     <string name="whats_new_headline">Now runs on LineageOS 23, besides BenOS and ZinwaOS.</string>
     <string name="whats_new_body">The app detects your ROM on its own (shown next to the title in Info; change it in Settings) and hides what does not apply. New: Slim List, Masonry and Grid Recents with no Xposed (they open from the physical Recents key), Zygisk Detach, and on LineageOS Double-Tap to Wake and Call Proximity Sleep. Enter or the pad now opens the PIN on the lockscreen (on by default only on LineageOS).\n\nTelemetry blocking is now per app: if you already had it on, your detected apps were enrolled for you.\n\nAdBlock also works on root managers that do not mount module files, and Backup now covers KeyRemap, Recents and Zygisk Detach.\n\nNew in 4.0.1: Grid now picks the LSPosed Grid when it works in your launcher and the standalone one otherwise, so LSPosed is no longer required. The Recents repair button is gone.</string>
-    <string name="whats_new_matrix_title">Which version do I want?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS and LineageOS 23 (Xposed optional)\n3.1  :  stock-based Q25 ROMs, with LSPosed / Vector\n2.1.1  :  BenOS beta3, no Xposed framework\n2.0.5  :  BenOS pre-beta3a / older stock</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
