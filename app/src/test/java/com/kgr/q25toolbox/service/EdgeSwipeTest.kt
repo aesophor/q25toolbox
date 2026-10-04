@@ -86,4 +86,89 @@ class EdgeSwipeTest {
         s.onDown(5f, 300f)
         assertEquals(Result.NONE, s.onUp())
     }
+
+    // --- directions on side edges ---
+
+    private fun lateral() = EdgeSwipe(Edge.LEFT, 50f, holdEnabled = true, diagonals = true)
+
+    @Test fun straightSideSwipeIsStraight() {
+        val s = lateral(); s.onDown(5f, 300f)
+        assertEquals(Result.CROSSED, s.onMove(80f, 310f))
+        assertEquals(EdgeSwipe.Dir.STRAIGHT, s.direction())
+    }
+
+    @Test fun upwardTiltIsDiagA() {
+        val s = lateral(); s.onDown(5f, 300f)
+        s.onMove(80f, 200f)
+        assertEquals(EdgeSwipe.Dir.DIAG_A, s.direction())
+        assertEquals(Result.SWIPE, s.onUp())
+    }
+
+    @Test fun downwardTiltIsDiagB() {
+        val s = lateral(); s.onDown(5f, 300f)
+        s.onMove(80f, 400f)
+        assertEquals(EdgeSwipe.Dir.DIAG_B, s.direction())
+    }
+
+    @Test fun rightEdgeDirectionsAreScreenRelative() {
+        val s = EdgeSwipe(Edge.RIGHT, 50f, true, diagonals = true); s.onDown(715f, 300f)
+        s.onMove(640f, 200f) // inward (left) and up
+        assertEquals(EdgeSwipe.Dir.DIAG_A, s.direction())
+    }
+
+    @Test fun diagonalsAllowAWiderTiltThanPlainSwipes() {
+        // 80 px inward, 150 px vertical: ratio 1.9 -> valid with diagonals, rejected without.
+        val a = lateral(); a.onDown(5f, 300f)
+        assertEquals(Result.CROSSED, a.onMove(85f, 450f))
+        val b = EdgeSwipe(Edge.LEFT, 50f, true); b.onDown(5f, 300f)
+        assertEquals(Result.NONE, b.onMove(85f, 450f))
+    }
+
+    @Test fun bottomIsAlwaysStraight() {
+        val s = EdgeSwipe(Edge.BOTTOM, 50f, true); s.onDown(360f, 715f)
+        s.onMove(450f, 640f)
+        assertEquals(EdgeSwipe.Dir.STRAIGHT, s.direction())
+    }
+
+    @Test fun directionIsReadFromTheLatestPosition() {
+        val s = lateral(); s.onDown(5f, 300f)
+        s.onMove(80f, 200f)               // crosses, tilted up
+        s.onMove(200f, 205f)              // then straightens out (ratio 0.49)
+        assertEquals(EdgeSwipe.Dir.STRAIGHT, s.direction())
+    }
+
+    @Test fun holdWorksOnSideEdges() {
+        val s = lateral(); s.onDown(5f, 300f); s.onMove(80f, 300f)
+        assertTrue(s.onHoldElapsed())
+        assertEquals(Result.NONE, s.onUp())
+    }
+
+    // --- progress and angle (for the arrow overlay) ---
+
+    @Test fun fractionIsProgressOverDistance() {
+        val s = EdgeSwipe(Edge.LEFT, 50f, true); s.onDown(5f, 300f)
+        s.onMove(30f, 300f)
+        assertEquals(0.5f, s.fraction(), 0.001f)
+        s.onMove(105f, 300f)
+        assertEquals(2f, s.fraction(), 0.001f)
+        s.onMove(-20f, 300f)
+        assertEquals(0f, s.fraction(), 0.001f) // never negative
+    }
+
+    @Test fun angleFollowsTheTravelDirection() {
+        val s = lateral(); s.onDown(5f, 300f)
+        s.onMove(105f, 200f) // right and up
+        assertEquals(-45f, s.travelAngleDeg(), 0.5f)
+        val b = EdgeSwipe(Edge.BOTTOM, 50f, true); b.onDown(360f, 715f)
+        assertEquals(-90f, b.travelAngleDeg(), 0.001f) // idle: points inward
+    }
+
+    @Test fun crossedFlagTracksTheThreshold() {
+        val s = lateral(); s.onDown(5f, 300f)
+        assertFalse(s.isCrossed())
+        s.onMove(80f, 300f)
+        assertTrue(s.isCrossed())
+        s.onMove(10f, 300f)
+        assertFalse(s.isCrossed())
+    }
 }

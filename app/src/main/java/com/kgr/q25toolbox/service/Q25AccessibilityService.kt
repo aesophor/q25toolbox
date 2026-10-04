@@ -248,8 +248,7 @@ class Q25AccessibilityService : AccessibilityService() {
 
     /** Mirrors "custom bottom strip on" into the Settings.Global flag the launcher hook reads (root, off the main thread). */
     private fun syncNativeBottomGesture() {
-        val mode = GestureSettings.get(this, GestureSettings.Zone.BOTTOM).mode
-        worker.execute { try { NativeBottomGesture.sync(mode) } catch (_: Throwable) { } }
+        worker.execute { try { NativeBottomGesture.sync(this) } catch (_: Throwable) { } }
     }
 
     // Created only on Android 12+ (needs AudioManager.OnModeChangedListener); null elsewhere.
@@ -348,6 +347,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 val pkg = foregroundAppPackage()
                 if (pkg != null && pkg != foregroundPkg) {
                     foregroundPkg = pkg
+                    GestureStripsController.onForegroundChanged(this, pkg)
                     noEditableWindowId = -1
                     reconcileImeBlock()
                     reconcileScaling()
@@ -535,17 +535,41 @@ class Q25AccessibilityService : AccessibilityService() {
 
     // -------------------------------------------------- Physical key handling
 
-    /** Action of a custom edge gesture. Back/Home first close our Recents overlay if it is up, like the keys do. */
-    fun performEdgeAction(a: GestureStripsController.Action) {
+    /** Runs the action assigned to an edge gesture. Back/Home first close our Recents overlay if it is up, like the keys do. */
+    fun performEdgeAction(a: GestureSettings.Action) {
         when (a) {
-            GestureStripsController.Action.BACK ->
+            GestureSettings.Action.NONE -> {}
+            GestureSettings.Action.BACK ->
                 if (RecentsOverlays.isShowing()) RecentsOverlays.hide() else performGlobalAction(GLOBAL_ACTION_BACK)
-            GestureStripsController.Action.HOME -> {
+            GestureSettings.Action.HOME -> {
                 if (RecentsOverlays.isShowing()) RecentsOverlays.hide()
                 performGlobalAction(GLOBAL_ACTION_HOME)
             }
-            GestureStripsController.Action.RECENTS -> openRecents()
+            GestureSettings.Action.RECENTS -> openRecents()
+            GestureSettings.Action.NOTIFICATIONS -> performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+            GestureSettings.Action.QUICK_SETTINGS -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
+            GestureSettings.Action.LOCK_SCREEN -> performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+            GestureSettings.Action.SCREENSHOT -> performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
+            GestureSettings.Action.POWER_MENU -> performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)
+            GestureSettings.Action.SPLIT_SCREEN -> performGlobalAction(GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
+            GestureSettings.Action.FLASHLIGHT -> TorchToggle.toggle(this)
+            GestureSettings.Action.PREVIOUS_APP -> {
+                if (RecentsOverlays.isShowing()) RecentsOverlays.hide(animate = false)
+                val front = foregroundPkg
+                worker.execute { try { switchToPreviousApp(front) } catch (t: Throwable) { Log.e("Q25Toolbox", "previous app failed", t) } }
+            }
         }
+    }
+
+    /**
+     * Resumes the app used before the one in front. [SlimRecentsController.listTasks] is newest first and leaves the
+     * home launcher out: if its first task is the app in front, the previous one is the second; if the front app is
+     * the launcher (or unknown to us), the first task is the one to go back to. Root dumpsys, so off the main thread.
+     */
+    private fun switchToPreviousApp(front: String?) {
+        val tasks = SlimRecentsController.listTasks(this)
+        val target = if (front != null && tasks.firstOrNull()?.packageName == front) tasks.getOrNull(1) else tasks.firstOrNull()
+        target?.let { SlimRecentsController.resumeTask(it) }
     }
 
     /**

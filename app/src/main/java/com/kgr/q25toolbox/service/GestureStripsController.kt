@@ -17,8 +17,8 @@ import com.kgr.q25toolbox.modules.GestureSettings.Zone
 
 /**
  * Custom edge gestures: thin TYPE_ACCESSIBILITY_OVERLAY strips on the side edges and the bottom edge, each
- * driving an [EdgeSwipe] recognizer. Phase 1 mapping: inward swipe on a side = Back; swipe up from the bottom =
- * Home; swipe up and hold = Recents (our overlay when one is selected).
+ * driving an [EdgeSwipe] recognizer. Each gesture (side: straight / diagonal up / diagonal down; bottom: up), plain or held,
+ * runs a configurable [GestureSettings.Action]; the defaults are side = Back, bottom = Home, bottom hold = Recents.
  *
  * The strips take the touches that land on them (a tap there is not forwarded to the app underneath), which is
  * why they are thin and why each zone can be switched off on its own. They are not shown on the lockscreen or
@@ -26,10 +26,10 @@ import com.kgr.q25toolbox.modules.GestureSettings.Zone
  */
 object GestureStripsController {
 
-    enum class Action { BACK, HOME, RECENTS }
-
     private val main = Handler(Looper.getMainLooper())
     private val strips = ArrayList<View>()
+    /** The shared arrow overlay (null unless a zone has its arrow on). */
+    private var arrow: GestureArrowView? = null
     private var wm: WindowManager? = null
 
     /** Whether the strips may be up right now: screen on and keyguard gone. */
@@ -39,26 +39,42 @@ object GestureStripsController {
         return pm.isInteractive && !km.isKeyguardLocked
     }
 
+    // Foreground app, so the strips can be switched off in the excluded ones.
+    @Volatile private var foreground: String? = null
+    @Volatile private var excludedNow = false
+
+    /** Called by the service when the foreground app changes: rebuilds only if its excluded status flipped. */
+    fun onForegroundChanged(service: Q25AccessibilityService, pkg: String?) {
+        foreground = pkg
+        val ex = pkg != null && pkg in GestureSettings.excludedApps(service)
+        if (ex != excludedNow) reconcile(service)
+    }
+
     /** Rebuilds the strips from the saved settings (adds, resizes or removes them). */
     fun reconcile(service: Q25AccessibilityService) = main.post {
         removeAll()
-        if (!allowed(service)) return@post
-        val lateral = GestureSettings.get(service, Zone.LATERAL)
+        excludedNow = foreground?.let { it in GestureSettings.excludedApps(service) } == true
+        if (excludedNow || !allowed(service)) return@post
+        val left = GestureSettings.get(service, Zone.LEFT)
+        val right = GestureSettings.get(service, Zone.RIGHT)
         val bottom = GestureSettings.get(service, Zone.BOTTOM)
-        if (lateral.mode != GestureSettings.Mode.CUSTOM && bottom.mode != GestureSettings.Mode.CUSTOM) return@post
+        val on = listOf(left, right, bottom).filter { it.mode == GestureSettings.Mode.CUSTOM }
+        if (on.isEmpty()) return@post
 
         val manager = service.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         wm = manager
+        if (on.any { it.arrow }) addArrow(service, manager)
         val bounds = manager.currentWindowMetrics.bounds
-        val dm = service.resources.displayMetrics
-        val dp = dm.density
+        val dp = service.resources.displayMetrics.density
         val tint = GestureSettings.showStrips(service)
 
-        if (lateral.mode == GestureSettings.Mode.CUSTOM) {
-            val t = (lateral.thicknessDp * dp).toInt()
-            val len = (bounds.height() * lateral.lengthPct / 100f).toInt()
-            add(service, manager, EdgeSwipe.Edge.LEFT, lateral, t, len, Gravity.START or Gravity.CENTER_VERTICAL, tint)
-            add(service, manager, EdgeSwipe.Edge.RIGHT, lateral, t, len, Gravity.END or Gravity.CENTER_VERTICAL, tint)
+        // Each side strip has its own size; the strip is as tall as its own length setting says.
+        for ((edge, cfg, gravity) in listOf(
+            Triple(EdgeSwipe.Edge.LEFT, left, Gravity.START or Gravity.CENTER_VERTICAL),
+            Triple(EdgeSwipe.Edge.RIGHT, right, Gravity.END or Gravity.CENTER_VERTICAL),
+        )) {
+            if (cfg.mode != GestureSettings.Mode.CUSTOM) continue
+            add(service, manager, edge, cfg, (cfg.thicknessDp * dp).toInt(), (bounds.height() * cfg.lengthPct / 100f).toInt(), gravity, tint)
         }
         if (bottom.mode == GestureSettings.Mode.CUSTOM) {
             val t = (bottom.thicknessDp * dp).toInt()
@@ -71,8 +87,28 @@ object GestureStripsController {
 
     private fun removeAll() {
         val manager = wm
+        arrow = null
         for (v in strips) try { manager?.removeView(v) } catch (_: Exception) { }
         strips.clear()
+    }
+
+    /** Full-screen, non-touchable window for the arrow: touches pass straight through it. */
+    private fun addArrow(service: Q25AccessibilityService, manager: WindowManager) {
+        val view = GestureArrowView(service)
+        val lp = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT,
+        ).apply { title = "Q25 gesture arrow" }
+        try {
+            manager.addView(view, lp)
+            strips.add(view)
+            arrow = view
+        } catch (t: Throwable) {
+            android.util.Log.e("Q25Toolbox", "gesture arrow failed", t)
+        }
     }
 
     private fun add(
@@ -125,20 +161,39 @@ object GestureStripsController {
     }
 
     /** Runs [a] through the service (it knows about our Recents overlay). */
-    private fun perform(service: Q25AccessibilityService, a: Action) = service.performEdgeAction(a)
+    private fun perform(service: Q25AccessibilityService, a: GestureSettings.Action) = service.performEdgeAction(a)
 
     @SuppressLint("ViewConstructor")
     private class StripView(
         private val service: Q25AccessibilityService,
-        edge: EdgeSwipe.Edge,
+        private val edgeOf: EdgeSwipe.Edge,
         private val cfg: GestureSettings.Config,
         tint: Boolean,
     ) : View(service) {
-        private val swipe = EdgeSwipe(edge, cfg.distanceDp * service.resources.displayMetrics.density,
-            holdEnabled = edge == EdgeSwipe.Edge.BOTTOM)
-        private val isBottom = edge == EdgeSwipe.Edge.BOTTOM
+        private val isBottom = edgeOf == EdgeSwipe.Edge.BOTTOM
+        private val zone = when (edgeOf) {
+            EdgeSwipe.Edge.LEFT -> Zone.LEFT
+            EdgeSwipe.Edge.RIGHT -> Zone.RIGHT
+            EdgeSwipe.Edge.BOTTOM -> Zone.BOTTOM
+        }
+        // Side edges tell straight from diagonal; every zone can have a held variant.
+        private val swipe = EdgeSwipe(edgeOf, cfg.distanceDp * service.resources.displayMetrics.density,
+            holdEnabled = true, diagonals = !isBottom)
         private val holdTimer = Runnable {
-            if (swipe.onHoldElapsed()) { buzz(tick = false); perform(service, Action.RECENTS) }
+            // A hold with nothing assigned does not consume the gesture: releasing then runs the swipe action.
+            val a = GestureSettings.binding(service, zone, swipe.direction(), hold = true)
+            if (a != GestureSettings.Action.NONE && swipe.onHoldElapsed()) {
+                buzz(tick = false); perform(service, a)
+                if (cfg.arrow) arrow?.end(true)
+            }
+        }
+
+        /** Armed = releasing now would do something (a swipe action, or a hold action about to fire). */
+        private fun armed(): Boolean {
+            if (!swipe.isCrossed()) return false
+            val d = swipe.direction()
+            return GestureSettings.binding(service, zone, d, false) != GestureSettings.Action.NONE ||
+                GestureSettings.binding(service, zone, d, true) != GestureSettings.Action.NONE
         }
 
         init {
@@ -156,23 +211,24 @@ object GestureStripsController {
         // Absolute screen coordinates: the view itself is tiny, and the finger leaves it during the swipe.
         override fun onTouchEvent(e: MotionEvent): Boolean {
             when (e.actionMasked) {
-                MotionEvent.ACTION_DOWN -> swipe.onDown(e.rawX, e.rawY)
+                MotionEvent.ACTION_DOWN -> { swipe.onDown(e.rawX, e.rawY); if (cfg.arrow) arrow?.begin(edgeOf, e.rawX, e.rawY, GestureSettings.arrowStyle(service)) }
                 MotionEvent.ACTION_MOVE -> when (swipe.onMove(e.rawX, e.rawY)) {
                     EdgeSwipe.Result.CROSSED -> {
                         buzz(tick = true) // marks the distance: from here on, releasing completes the gesture
-                        if (isBottom) postDelayed(holdTimer, GestureSettings.HOLD_MS)
+                        postDelayed(holdTimer, GestureSettings.HOLD_MS)
                     }
                     EdgeSwipe.Result.CANCELLED -> removeCallbacks(holdTimer)
                     else -> {}
-                }
+                }.also { if (cfg.arrow) arrow?.update(e.rawX, e.rawY, swipe.fraction(), swipe.travelAngleDeg(), armed()) }
                 MotionEvent.ACTION_UP -> {
                     removeCallbacks(holdTimer)
                     if (swipe.onUp() == EdgeSwipe.Result.SWIPE) {
-                        buzz(tick = false)
-                        perform(service, if (isBottom) Action.HOME else Action.BACK)
-                    }
+                        val a = GestureSettings.binding(service, zone, swipe.direction(), hold = false)
+                        if (a != GestureSettings.Action.NONE) { buzz(tick = false); perform(service, a) }
+                        if (cfg.arrow) arrow?.end(a != GestureSettings.Action.NONE)
+                    } else if (cfg.arrow) arrow?.end(false)
                 }
-                MotionEvent.ACTION_CANCEL -> removeCallbacks(holdTimer)
+                MotionEvent.ACTION_CANCEL -> { removeCallbacks(holdTimer); if (cfg.arrow) arrow?.end(false) }
             }
             return true
         }

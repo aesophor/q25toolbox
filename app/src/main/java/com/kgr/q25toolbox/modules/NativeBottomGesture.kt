@@ -10,23 +10,26 @@ import com.kgr.q25toolbox.xposed.GestureHookInit
  */
 object NativeBottomGesture {
 
-    /** Pure rule: the native bottom gesture is switched off exactly when the custom bottom strip is on. */
-    internal fun shouldDisableNative(bottom: GestureSettings.Mode) = bottom == GestureSettings.Mode.CUSTOM
-
-    /** Writes the Settings.Global flag the hook reads (root; blocking: call off the main thread). */
-    fun sync(bottom: GestureSettings.Mode) {
-        val v = if (shouldDisableNative(bottom)) 1 else 0
+    /** Writes the Settings.Global flag the hook reads from the saved setting (root; blocking: off the main thread). */
+    fun sync(context: android.content.Context) {
+        val v = if (GestureSettings.nativeBottomOff(context)) 1 else 0
         RootShell.run("settings put global ${GestureHookInit.PREF_OFF} $v")
     }
+
+    /** Where the hook leaves its proof of life: inside the launcher's own `files/` dir. Pure, for tests. */
+    internal fun statePath(pkg: String) = "/data/user/0/$pkg/files/${GestureHookInit.STATE_FILE}"
 
     /** OK if the hook has run in the installed launcher build; UNKNOWN if not seen yet. Blocking (root). */
     fun hookHealth(): HookHealth {
         for (pkg in RecentsTweaksController.HOOK_PACKAGES) {
             val state = RootShell.run(
-                RecentsTweaksController.inGlobalNs("cat /data/user/0/$pkg/${GestureHookInit.STATE_FILE} 2>/dev/null")
+                RecentsTweaksController.inGlobalNs("cat ${statePath(pkg)} 2>/dev/null")
             ).outString
-            if (state.isBlank()) continue
-            return RecentsTweaksController.parseHandshake(state, RecentsTweaksController.installedVersionCode(pkg))
+            if (state.isBlank()) { android.util.Log.i("Q25Toolbox", "gestureHook[$pkg]: no state file at ${statePath(pkg)}"); continue }
+            val installed = RecentsTweaksController.installedVersionCode(pkg)
+            val h = RecentsTweaksController.parseHandshake(state, installed)
+            android.util.Log.i("Q25Toolbox", "gestureHook[$pkg]: state=${state.replace("\n", "|")} installed=$installed -> $h")
+            return h
         }
         return HookHealth.UNKNOWN
     }

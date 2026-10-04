@@ -1,19 +1,24 @@
 package com.kgr.q25toolbox.modules
 
 import android.content.Context
+import com.kgr.q25toolbox.service.EdgeSwipe
 import com.kgr.q25toolbox.service.Q25AccessibilityService
 
 /**
  * Persisted configuration for the custom edge gestures. Stored in the shared "q25tweaks" prefs (the service
  * already listens to that file, so a change is applied live) under the "gest_" prefix.
  *
- * Two zones are configured independently: LATERAL (both side edges share one setup) and BOTTOM. Each zone is
- * Off or Custom. A "Native" mode is deliberately absent: on the Q25's LineageOS the system gesture navigation
+ * Three zones are configured independently: LEFT, RIGHT and BOTTOM. Each zone is Off or Custom. LEFT and RIGHT
+ * fall back to the single side setup of earlier versions (`gest_lat_*`) for any value not yet saved, so an
+ * upgrade keeps what the user had on both sides. A "Native" mode is deliberately absent: on the Q25's LineageOS the system gesture navigation
  * cannot be switched on (see the lineage-support notes), so there is nothing native to hand over to.
  */
 object GestureSettings {
 
-    enum class Zone(val prefix: String) { LATERAL("gest_lat_"), BOTTOM("gest_bot_") }
+    enum class Zone(val prefix: String, val legacyPrefix: String? = null) {
+        LEFT("gest_left_", "gest_lat_"), RIGHT("gest_right_", "gest_lat_"), BOTTOM("gest_bot_");
+        val isSide get() = this != BOTTOM
+    }
     enum class Mode { OFF, CUSTOM }
 
     const val KEY_PREFIX = "gest_"
@@ -23,6 +28,7 @@ object GestureSettings {
     private const val K_LENGTH = "length_pct"
     private const val K_DISTANCE = "distance_dp"
     private const val K_HAPTIC = "haptic"
+    private const val K_ARROW = "arrow"
 
     // Ranges are in dp / percent so they scale with the display density.
     val THICKNESS_RANGE = 6f..32f
@@ -39,25 +45,35 @@ object GestureSettings {
         val lengthPct: Int,
         val distanceDp: Int,
         val haptic: Boolean,
+        /** Draw an arrow overlay that follows the finger during the swipe. */
+        val arrow: Boolean = false,
     )
 
     private fun defaults(zone: Zone) = when (zone) {
         // Side strips: thin, covering the middle 60% of the height (keeps clear of the corners and status bar).
-        Zone.LATERAL -> Config(Mode.OFF, 14, 60, 28, true)
+        Zone.LEFT, Zone.RIGHT -> Config(Mode.OFF, 14, 60, 28, true)
         // Bottom strip: thin so it takes little of the keyboard/app UI; 50% of the width, centred.
         Zone.BOTTOM -> Config(Mode.OFF, 12, 50, 32, true)
     }
 
+    /** Value of [suffix] for [zone]: its own key, else the legacy side key (LEFT/RIGHT only), else [def]. Pure, for tests. */
+    internal fun <T> pick(zone: Zone, suffix: String, lookup: (String) -> T?, def: T): T =
+        lookup(zone.prefix + suffix) ?: zone.legacyPrefix?.let { lookup(it + suffix) } ?: def
+
     fun get(context: Context, zone: Zone): Config {
         val p = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
         val d = defaults(zone)
-        val mode = runCatching { Mode.valueOf(p.getString(zone.prefix + K_MODE, d.mode.name)!!) }.getOrDefault(d.mode)
+        fun str(k: String) = if (p.contains(k)) p.getString(k, null) else null
+        fun int(k: String) = if (p.contains(k)) p.getInt(k, 0) else null
+        fun bool(k: String) = if (p.contains(k)) p.getBoolean(k, false) else null
+        val mode = runCatching { Mode.valueOf(pick(zone, K_MODE, ::str, d.mode.name)) }.getOrDefault(d.mode)
         return Config(
             mode = mode,
-            thicknessDp = p.getInt(zone.prefix + K_THICKNESS, d.thicknessDp).coerceIn(THICKNESS_RANGE.start.toInt(), THICKNESS_RANGE.endInclusive.toInt()),
-            lengthPct = p.getInt(zone.prefix + K_LENGTH, d.lengthPct).coerceIn(LENGTH_RANGE.start.toInt(), LENGTH_RANGE.endInclusive.toInt()),
-            distanceDp = p.getInt(zone.prefix + K_DISTANCE, d.distanceDp).coerceIn(DISTANCE_RANGE.start.toInt(), DISTANCE_RANGE.endInclusive.toInt()),
-            haptic = p.getBoolean(zone.prefix + K_HAPTIC, d.haptic),
+            thicknessDp = pick(zone, K_THICKNESS, ::int, d.thicknessDp).coerceIn(THICKNESS_RANGE.start.toInt(), THICKNESS_RANGE.endInclusive.toInt()),
+            lengthPct = pick(zone, K_LENGTH, ::int, d.lengthPct).coerceIn(LENGTH_RANGE.start.toInt(), LENGTH_RANGE.endInclusive.toInt()),
+            distanceDp = pick(zone, K_DISTANCE, ::int, d.distanceDp).coerceIn(DISTANCE_RANGE.start.toInt(), DISTANCE_RANGE.endInclusive.toInt()),
+            haptic = pick(zone, K_HAPTIC, ::bool, d.haptic),
+            arrow = pick(zone, K_ARROW, ::bool, d.arrow),
         )
     }
 
@@ -68,7 +84,26 @@ object GestureSettings {
             .putInt(zone.prefix + K_LENGTH, c.lengthPct)
             .putInt(zone.prefix + K_DISTANCE, c.distanceDp)
             .putBoolean(zone.prefix + K_HAPTIC, c.haptic)
+            .putBoolean(zone.prefix + K_ARROW, c.arrow)
             .apply()
+    }
+
+    // --- native bottom gesture (launcher swipe-up) --------------------------------------------------------
+
+    const val KEY_NATIVE_BOTTOM_OFF = "gest_bot_native_off"
+
+    /**
+     * Whether the launcher's native swipe-up should be switched off. Until the user chooses, it follows the bottom
+     * strip (off exactly while the strip is Custom), which is what earlier versions did; once chosen it is independent.
+     */
+    fun nativeBottomOff(context: Context): Boolean {
+        val p = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+        return if (p.contains(KEY_NATIVE_BOTTOM_OFF)) p.getBoolean(KEY_NATIVE_BOTTOM_OFF, false)
+        else get(context, Zone.BOTTOM).mode == Mode.CUSTOM
+    }
+
+    fun setNativeBottomOff(context: Context, off: Boolean) {
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_NATIVE_BOTTOM_OFF, off).apply()
     }
 
     // Vibration is shared by all zones (each zone still has its own on/off switch).
@@ -91,10 +126,126 @@ object GestureSettings {
             .putInt(KEY_VIB_TICK, v.tickMs).putInt(KEY_VIB_ACTION, v.actionMs).putInt(KEY_VIB_STRENGTH, v.strengthPct).apply()
     }
 
+    // --- what each gesture does -------------------------------------------------------------------------
+
+    /** Things a gesture can do. NONE leaves the gesture unassigned. Names are stored in prefs: do not rename. */
+    enum class Action {
+        NONE, BACK, HOME, RECENTS, NOTIFICATIONS, QUICK_SETTINGS, LOCK_SCREEN, SCREENSHOT, POWER_MENU, SPLIT_SCREEN, FLASHLIGHT, PREVIOUS_APP
+    }
+
+    /** Gestures offered per zone: side edges tell straight from the two diagonals, the bottom edge only swipes up. */
+    fun dirsOf(zone: Zone): List<EdgeSwipe.Dir> = when (zone) {
+        Zone.LEFT, Zone.RIGHT -> listOf(EdgeSwipe.Dir.STRAIGHT, EdgeSwipe.Dir.DIAG_A, EdgeSwipe.Dir.DIAG_B)
+        Zone.BOTTOM -> listOf(EdgeSwipe.Dir.STRAIGHT)
+    }
+
+    private fun bindingSuffix(dir: EdgeSwipe.Dir, hold: Boolean) = "act_${dir.name.lowercase()}_${if (hold) "hold" else "swipe"}"
+
+    private fun bindingKey(zone: Zone, dir: EdgeSwipe.Dir, hold: Boolean) = zone.prefix + bindingSuffix(dir, hold)
+
+    /**
+     * Defaults: side swipe = Back, side hold = Previous app, side diagonal down = Notifications, side diagonal up =
+     * Quick settings; bottom swipe = Home, bottom hold = Recents.
+     */
+    fun defaultBinding(zone: Zone, dir: EdgeSwipe.Dir, hold: Boolean): Action = when {
+        zone.isSide && dir == EdgeSwipe.Dir.STRAIGHT -> if (hold) Action.PREVIOUS_APP else Action.BACK
+        zone.isSide && dir == EdgeSwipe.Dir.DIAG_B && !hold -> Action.NOTIFICATIONS
+        zone.isSide && dir == EdgeSwipe.Dir.DIAG_A && !hold -> Action.QUICK_SETTINGS
+        zone == Zone.BOTTOM && dir == EdgeSwipe.Dir.STRAIGHT -> if (hold) Action.RECENTS else Action.HOME
+        else -> Action.NONE
+    }
+
+    fun binding(context: Context, zone: Zone, dir: EdgeSwipe.Dir, hold: Boolean): Action {
+        val p = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+        val d = defaultBinding(zone, dir, hold)
+        val name = pick(zone, bindingSuffix(dir, hold), { k -> if (p.contains(k)) p.getString(k, null) else null }, d.name)
+        return runCatching { Action.valueOf(name) }.getOrDefault(d)
+    }
+
+    /** Copies every setting and binding of [from] onto [to] (the side strips are configured separately). */
+    fun copyZone(context: Context, from: Zone, to: Zone) {
+        set(context, to, get(context, from))
+        for (d in dirsOf(from)) for (hold in listOf(false, true)) setBinding(context, to, d, hold, binding(context, from, d, hold))
+    }
+
+    fun setBinding(context: Context, zone: Zone, dir: EdgeSwipe.Dir, hold: Boolean, a: Action) {
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit()
+            .putString(bindingKey(zone, dir, hold), a.name).apply()
+    }
+
+    // --- apps where the strips are switched off ---------------------------------------------------------
+
+    private const val KEY_EXCLUDED = "gest_excluded_apps"
+
+    fun excludedApps(context: Context): Set<String> =
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+            .getStringSet(KEY_EXCLUDED, emptySet())?.toSet() ?: emptySet()
+
+    fun setExcludedApps(context: Context, apps: Set<String>) {
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit()
+            .putStringSet(KEY_EXCLUDED, apps).apply()
+    }
+
+    // --- look of the arrow overlay (shared by both zones) -----------------------------------------------
+
+    /** Colours are opaque RGB ints; the badge opacity is separate. All sizes in dp. */
+    data class ArrowStyle(
+        val arrowColor: Int = 0xFFFFFFFF.toInt(),
+        val inactiveColor: Int = 0xFF9E9E9E.toInt(),
+        val activeColor: Int = 0xFF000000.toInt(),
+        val sizeDp: Int = 22,          // badge radius
+        val travelDp: Int = 50,        // how far it slides out at the threshold
+        val opacityPct: Int = 70,
+        val thicknessDp: Int = 3,      // chevron stroke
+        val speedPct: Int = 100,       // animation speed: 200 = twice as fast
+        val showBadge: Boolean = false, // false = the bare arrow
+        val followTilt: Boolean = true // arrow turns with the finger's direction
+    )
+
+    val ARROW_SIZE_RANGE = 12f..40f
+    val ARROW_TRAVEL_RANGE = 30f..100f
+    val ARROW_OPACITY_RANGE = 30f..100f
+    val ARROW_THICKNESS_RANGE = 1f..6f
+    val ARROW_SPEED_RANGE = 25f..300f
+
+    private const val A = "gest_arrow_"
+
+    fun arrowStyle(context: Context): ArrowStyle {
+        val p = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+        val d = ArrowStyle()
+        fun i(k: String, def: Int, r: ClosedFloatingPointRange<Float>) = p.getInt(A + k, def).coerceIn(r.start.toInt(), r.endInclusive.toInt())
+        return ArrowStyle(
+            arrowColor = p.getInt(A + "color", d.arrowColor) or 0xFF000000.toInt(),
+            inactiveColor = p.getInt(A + "inactive", d.inactiveColor) or 0xFF000000.toInt(),
+            activeColor = p.getInt(A + "active", d.activeColor) or 0xFF000000.toInt(),
+            sizeDp = i("size", d.sizeDp, ARROW_SIZE_RANGE),
+            travelDp = i("travel", d.travelDp, ARROW_TRAVEL_RANGE),
+            opacityPct = i("opacity", d.opacityPct, ARROW_OPACITY_RANGE),
+            thicknessDp = i("thickness", d.thicknessDp, ARROW_THICKNESS_RANGE),
+            speedPct = i("speed", d.speedPct, ARROW_SPEED_RANGE),
+            showBadge = p.getBoolean(A + "badge", d.showBadge),
+            followTilt = p.getBoolean(A + "tilt", d.followTilt),
+        )
+    }
+
+    fun setArrowStyle(context: Context, s: ArrowStyle) {
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit()
+            .putInt(A + "color", s.arrowColor).putInt(A + "inactive", s.inactiveColor).putInt(A + "active", s.activeColor)
+            .putInt(A + "size", s.sizeDp).putInt(A + "travel", s.travelDp).putInt(A + "opacity", s.opacityPct)
+            .putInt(A + "thickness", s.thicknessDp).putInt(A + "speed", s.speedPct)
+            .putBoolean(A + "badge", s.showBadge).putBoolean(A + "tilt", s.followTilt).apply()
+    }
+
+    private val ARROW_KEYS = listOf("color", "inactive", "active", "size", "travel", "opacity", "thickness", "speed", "badge", "tilt").map { A + it }
+
     /** Every pref key this module owns (for backup/restore). */
-    fun allKeys(): List<String> = Zone.entries.flatMap { z ->
-        listOf(K_MODE, K_THICKNESS, K_LENGTH, K_DISTANCE, K_HAPTIC).map { z.prefix + it }
-    } + KEY_SHOW_STRIPS + listOf(KEY_VIB_TICK, KEY_VIB_ACTION, KEY_VIB_STRENGTH)
+    fun allKeys(): List<String> {
+        val suffixes = listOf(K_MODE, K_THICKNESS, K_LENGTH, K_DISTANCE, K_HAPTIC, K_ARROW)
+        val prefixes = Zone.entries.flatMap { listOfNotNull(it.prefix, it.legacyPrefix) }.distinct()
+        val dirs = EdgeSwipe.Dir.entries.flatMap { d -> listOf(false, true).map { bindingSuffix(d, it) } }
+        return prefixes.flatMap { pre -> (suffixes + dirs).map { pre + it } } + KEY_NATIVE_BOTTOM_OFF + KEY_EXCLUDED +
+            ARROW_KEYS + KEY_SHOW_STRIPS + listOf(KEY_VIB_TICK, KEY_VIB_ACTION, KEY_VIB_STRENGTH)
+    }
 
     fun showStrips(context: Context): Boolean =
         context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).getBoolean(KEY_SHOW_STRIPS, false)
