@@ -276,6 +276,7 @@ object SlimRecentsOverlayController {
      */
     fun hide(animate: Boolean = true, expandTaskId: Int? = EXPAND_HERO) = safeUi {
         closeIconMenu()
+        val shots = currentSnapshots // before it is cleared: decides whether a tile may expand (see below)
         currentSnapshots = emptyMap()
         val cards = HashMap(cardViews)
         val thumbs = HashMap(thumbViews)
@@ -292,8 +293,12 @@ object SlimRecentsOverlayController {
                 } catch (_: IllegalArgumentException) {
                 }
             }
-            val target = expandTaskId?.let { cards[if (it == EXPAND_HERO) heroId else it] }
-            val targetThumb = expandTaskId?.let { thumbs[if (it == EXPAND_HERO) heroId else it] }
+            // Only a tile with a real snapshot may grow to full screen: one without it is a dark placeholder, and
+            // expanding it would cover the screen with a black rectangle. Plain fade then.
+            val expandId = expandTaskId?.let { if (it == EXPAND_HERO) heroId else it }
+            val canExpand = expandId != null && shots.containsKey(expandId)
+            val target = if (canExpand) cards[expandId] else null
+            val targetThumb = if (canExpand) thumbs[expandId] else null
             v.animate().cancel()
             // Duration 0 (setting or system animator scale off): no animators at all, just drop the window.
             val animating = animate && animMs(v.context, CLOSE_MS) > 0L

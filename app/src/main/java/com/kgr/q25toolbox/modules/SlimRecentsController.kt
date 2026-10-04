@@ -349,8 +349,17 @@ object SlimRecentsController {
 
     // --- per-app banner colour ------------------------------------
 
-    private val bannerColorCache = HashMap<String, Int>()
+    // Concurrent: primed from the Recents worker, read from the main thread while the cards are built.
+    private val bannerColorCache = java.util.concurrent.ConcurrentHashMap<String, Int>()
     private val DEFAULT_BANNER = Color.rgb(38, 38, 38)
+
+    /**
+     * Warms [bannerColor] for every task off the main thread. Each miss is a Palette pass (~3-10 ms) that would
+     * otherwise land on the main thread while the cards are built. Call from the worker before showing the overlay.
+     */
+    fun primeBannerColors(tasks: List<SlimTask>) {
+        tasks.forEach { bannerColor(it.packageName, it.icon) }
+    }
 
     /**
      * A muted, desaturated colour drawn from the app's icon - the card's
@@ -402,8 +411,20 @@ object SlimRecentsController {
             ?.takeIf { it.isNotEmpty() }
     }
 
-    private fun labelAndIcon(pm: PackageManager, pkg: String): Pair<String, Drawable?> = runCatching {
-        val ai = pm.getApplicationInfo(pkg, 0)
-        pm.getApplicationLabel(ai).toString() to pm.getApplicationIcon(ai)
-    }.getOrElse { pkg to null }
+    // Label + icon per package (getApplicationIcon inflates the adaptive icon, a measurable slice of listTasks).
+    // Keyed by the package's lastUpdateTime so an app update refreshes its entry; a locale change does not
+    // (the label stays until the service restarts).
+    private class LabelIcon(val stamp: Long, val label: String, val icon: Drawable?)
+    private val labelIconCache = java.util.concurrent.ConcurrentHashMap<String, LabelIcon>()
+
+    private fun labelAndIcon(pm: PackageManager, pkg: String): Pair<String, Drawable?> {
+        val stamp = runCatching { pm.getPackageInfo(pkg, 0).lastUpdateTime }.getOrDefault(0L)
+        labelIconCache[pkg]?.let { if (it.stamp == stamp) return it.label to it.icon }
+        val (label, icon) = runCatching {
+            val ai = pm.getApplicationInfo(pkg, 0)
+            pm.getApplicationLabel(ai).toString() to pm.getApplicationIcon(ai)
+        }.getOrElse { pkg to null }
+        labelIconCache[pkg] = LabelIcon(stamp, label, icon)
+        return label to icon
+    }
 }

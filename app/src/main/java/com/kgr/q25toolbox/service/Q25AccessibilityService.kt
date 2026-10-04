@@ -566,6 +566,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 // Quilt and grid show snapshots (and a live shot of the app in front); the vertical list does not.
                 val cards = grid || mode == RecentsTweaksController.LayoutMode.QUILT
                 val tasks = SlimRecentsController.listTasks(this)
+                SlimRecentsController.primeBannerColors(tasks)
                 // The foreground app has no fresh stored snapshot (those are taken when a task goes
                 // to the background), so its tile gets a live screenshot, taken before our own window
                 // goes up so the scrim is not in the shot.

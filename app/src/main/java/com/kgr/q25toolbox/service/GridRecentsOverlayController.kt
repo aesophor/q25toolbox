@@ -203,6 +203,7 @@ object GridRecentsOverlayController {
         val thumbs = HashMap(thumbViews)
         val headers = HashMap(headerViews)
         val closeAll = closeAllView
+        val shots = snapshots // before clearState(): only a tile with a real snapshot may expand (see below)
         clearState()
         if (v == null) return@safeUi
         val remove: () -> Unit = {
@@ -210,8 +211,10 @@ object GridRecentsOverlayController {
         }
         v.animate().cancel()
         if (!animate || animMs(v.context, CLOSE_MS) <= 0L) { remove(); return@safeUi }
-        val target = expandTaskId?.let { tiles[it] }
-        val targetThumb = expandTaskId?.let { thumbs[it] }
+        // A tile without a stored snapshot is a dark placeholder: expanding it would cover the screen in black.
+        val canExpand = expandTaskId != null && shots.containsKey(expandTaskId)
+        val target = if (canExpand) tiles[expandTaskId] else null
+        val targetThumb = if (canExpand) thumbs[expandTaskId] else null
         if (target != null && targetThumb != null) {
             expandAndFade(v, tiles, headers, closeAll, target, targetThumb, remove)
         } else {
