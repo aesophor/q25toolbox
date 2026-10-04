@@ -294,6 +294,23 @@ object SlimRecentsController {
     fun animDurationPercent(sp: SharedPreferences): Int =
         sp.getInt(KEY_ANIM_DURATION, 100).coerceIn(0, 200)
 
+    /** Tile corner radius in dp for the standalone Grid (default matches the launcher's rounded cards). */
+    const val KEY_GRID_CORNER_DP = "recents_grid_corner_dp"
+
+    /** Tile corner radius in dp for the Masonry quilt (default 0 = the original square tiles). */
+    const val KEY_QUILT_CORNER_DP = "recents_quilt_corner_dp"
+
+    const val MAX_CORNER_DP = 40
+
+    fun gridCornerDp(sp: SharedPreferences): Int = sp.getInt(KEY_GRID_CORNER_DP, 22).coerceIn(0, MAX_CORNER_DP)
+    fun quiltCornerDp(sp: SharedPreferences): Int = sp.getInt(KEY_QUILT_CORNER_DP, 0).coerceIn(0, MAX_CORNER_DP)
+
+    fun gridCornerPx(context: Context): Int =
+        (gridCornerDp(prefs(context)) * context.resources.displayMetrics.density).toInt()
+
+    fun quiltCornerPx(context: Context): Int =
+        (quiltCornerDp(prefs(context)) * context.resources.displayMetrics.density).toInt()
+
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
 

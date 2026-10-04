@@ -112,6 +112,9 @@ object RomProfile {
 
     private val rebindUnsafe: Boolean by lazy { detectAuto().first == Rom.LINEAGE }
 
+    /** True when auto-detection says this is LineageOS (ignores the manual override): for hardware-level behaviour. */
+    fun autoDetectedLineage(): Boolean = rebindUnsafe
+
     /** True when the user still has to pick a ROM: detection failed and no override exists. */
     fun needsChoice(context: Context): Boolean = get(context).rom == Rom.UNKNOWN
 

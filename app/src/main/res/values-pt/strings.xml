@@ -363,12 +363,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força o reinício da SystemUI para aplicar uma alteração pendente</string>
     <string name="settings_quick_access_notifications_title">Acesso a notificações</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual para as Notificações tipo ticker se a concessão com root não pegou</string>
-    <string name="whats_new_title">Q25 Toolbox v3.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0</string>
     <string name="whats_new_ok">Entendido</string>
-    <string name="whats_new_headline">Três adições portadas do Key2 Toolbox: um bloqueador de anúncios, cópia de segurança/restauro e um bloqueio de telemetria mais amplo.</string>
-    <string name="whats_new_body">AdBlock (separador Rede) é um bloqueador de hosts sem modificar o sistema — instala um módulo do gestor de root e precisa de um reinício para ativar; depois as edições são em direto.\n\nCópia de segurança e restauro (separador Definições) exporta as definições dos módulos selecionados para um ficheiro JSON e restaura por fusão.\n\nO bloqueio de telemetria agora também cobre Firebase / Google Analytics e Performance Monitoring, verifica novamente a cada 10 minutos em vez de 30 e reage a instalações de apps.\n\nA grelha dos Recentes ainda precisa de uma framework Xposed (LSPosed / Vector), sem alterações desde a v3.0.</string>
+    <string name="whats_new_headline">Agora funciona também no LineageOS 22 e 23, além de BenOS e ZinwaOS.</string>
+    <string name="whats_new_body">A app deteta a sua ROM sozinha (mostrada junto ao título em Info; altera-se em Definições) e oculta o que não se aplica. Novidades: Recentes com Lista Fina, Mosaico e Grelha sem Xposed (abrem-se com a tecla física de Recentes), Zygisk Detach e, no LineageOS, Toque duplo para acordar e Call Proximity Sleep. Enter ou o pad abrem agora o PIN no ecrã de bloqueio (ativo por predefinição apenas no LineageOS).\n\nO bloqueio de telemetria é agora por app: se já o tinha ativo, as apps detetadas foram inscritas por si.\n\nO AdBlock funciona também em gestores de root que não montam os ficheiros dos módulos, e a cópia de segurança cobre agora KeyRemap, Recentes e Zygisk Detach.</string>
     <string name="whats_new_matrix_title">Que versão quero?</string>
-    <string name="whats_new_matrix">v3.0+  :  qualquer ROM de Q25 baseada em stock, com LSPosed / Vector\n2.1.1  :  BenOS beta3, sem framework Xposed\n2.0.5  :  BenOS pre-beta3a / stock mais antigo</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS e LineageOS 22/23 (Xposed opcional)\n3.1  :  ROM Q25 baseadas em stock, com LSPosed / Vector\n2.1.1  :  BenOS beta3, sem Xposed\n2.0.5  :  BenOS anterior à beta3a / stock antigo</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="settings_backup_restore">Cópia de segurança e restauro</string>
     <string name="settings_backup_desc">Exporta as definições dos módulos selecionados para um ficheiro JSON, ou restaura-as a partir de um. O restauro funde-se com as tuas definições atuais — nunca apaga o que não está no ficheiro.</string>
@@ -449,4 +449,55 @@
     <string name="recents_slim_anim_hint">Multiplica o tempo base e segue a escala de animação do sistema (Opções de programador). 100% corresponde à velocidade do sistema.</string>
     <string name="lockscreen_enter_opens_pin_label">Enter / pad abre o PIN no ecrã de bloqueio</string>
     <string name="lockscreen_enter_opens_pin_desc">No ecrã de bloqueio, Enter e o centro do pad abrem sempre o teclado do PIN. Sem isto, ativam o que tiver o foco (desbloquear, definições de rede, a notificação mais recente). Requer root e o serviço de acessibilidade.</string>
+    <!-- Telemetry per-app opt-in (ported from Key2 Toolbox) -->
+    <string name="telemetry_detect_apps">Detetar apps</string>
+    <string name="telemetry_app_list_title">Apps detetadas</string>
+    <string name="telemetry_app_list_desc">Marque uma app para bloquear a sua telemetria. Nada é bloqueado até o fazer.</string>
+    <string name="telemetry_app_list_empty">Nenhuma app com telemetria detetada.</string>
+    <string name="telemetry_app_status_blocked">Bloqueada</string>
+    <string name="telemetry_app_status_unblocked">Não bloqueada</string>
+    <!-- Standalone Grid overlay -->
+    <string name="recents_mode_grid_standalone">Grelha autónoma (duas filas, sem Xposed)</string>
+    <!-- Tile corner radius -->
+    <string name="recents_slim_corner_grid">Raio dos cantos da grelha</string>
+    <string name="recents_slim_corner_quilt">Raio dos cantos do mosaico</string>
+    <string name="recents_slim_corner_square">Quadrados</string>
+    <!-- Zygisk Detach (ported from Key2 Toolbox) -->
+    <string name="title_zygisk_detach">Zygisk Detach</string>
+    <string name="subtitle_zygisk_detach">Impede que a Play Store atualize à força as apps escolhidas</string>
+    <string name="desc_zygisk_detach">Desassocia as apps escolhidas da Play Store para que deixe de as atualizar apesar da sua definição de atualização automática. Ao ativar, instala o módulo zygisk-detach (um hook do Zygisk sobre libbinder); escolha abaixo as apps a desassociar. Ao desativar, o módulo é desativado mas a lista é mantida. Requer root e Zygisk (Magisk, ReZygisk ou Zygisk Next). Instalar, ativar ou desativar o módulo tem efeito no arranque; as alterações à lista, assim que a Play Store reiniciar.</string>
+    <string name="zygisk_detach_enable">Ativar Zygisk Detach</string>
+    <string name="zygisk_detach_module_version">Módulo: %1$s</string>
+    <string name="zygisk_detach_module_missing">Módulo: não instalado</string>
+    <string name="zygisk_detach_reboot_required">É preciso reiniciar para o hook do Zygisk aplicar esta alteração. Pode editar a lista agora, mas a desassociação só funciona após o reinício.</string>
+    <string name="zygisk_detach_no_zygisk">O Zygisk não parece ativo. Ative-o (definições do Magisk) ou instale o ReZygisk / Zygisk Next e reinicie: o hook não carrega sem ele.</string>
+    <string name="zygisk_detach_denylisted">A Play Store está na DenyList do Magisk (aplicada), por isso os módulos Zygisk não são carregados nela e desassociar não faz nada em silêncio.</string>
+    <string name="zygisk_detach_remove_from_denylist">Remover da DenyList</string>
+    <string name="zygisk_detach_section_apps">Apps desassociadas</string>
+    <string name="zygisk_detach_selected_count">%1$d selecionadas</string>
+    <string name="zygisk_detach_filter_user">Apps de utilizador</string>
+    <string name="zygisk_detach_filter_all">Todas as apps</string>
+    <string name="zygisk_detach_not_installed">não instalada</string>
+    <string name="zygisk_detach_no_match">Nenhuma app corresponde a \"%1$s\"</string>
+    <string name="zygisk_detach_loading_apps">A carregar apps…</string>
+    <string name="zygisk_detach_list_unreadable">Não foi possível ler a lista de desassociação: pode estar danificada. Aplicar substitui-a pela sua seleção atual.</string>
+    <string name="zygisk_detach_disabled_hint">Ative o Zygisk Detach acima para gerir a lista.</string>
+    <string name="status_zygisk_detach_installing_module">A instalar o módulo…</string>
+    <string name="status_zygisk_detach_enabled">Zygisk Detach ativado.</string>
+    <string name="status_zygisk_detach_disabled">Zygisk Detach desativado. Reinicie para descarregar o hook. A sua lista é mantida.</string>
+    <string name="status_zygisk_detach_module_failed">Falha ao instalar o módulo: %1$s</string>
+    <string name="status_zygisk_detach_applied">Aplicado. %1$d desassociadas; a Play Store foi parada para reler a lista.</string>
+    <string name="status_zygisk_detach_apply_failed">Não foi possível atualizar a lista: %1$s</string>
+    <string name="status_zygisk_detach_denylist_removed">Play Store removida da DenyList e parada. Carregará o hook no próximo arranque.</string>
+    <!-- Generic labels (from Key2 Toolbox) -->
+    <string name="generic_search_apps">Pesquisar apps</string>
+    <string name="generic_apply">Aplicar</string>
+    <string name="generic_clear">Limpar</string>
+    <!-- Call Proximity Sleep -->
+    <string name="title_call_proximity_sleep">Call Proximity Sleep</string>
+    <string name="subtitle_call_proximity_sleep">Ecrã desligado junto ao ouvido nas chamadas</string>
+    <string name="call_prox_enable_label">Desligar o ecrã junto ao ouvido</string>
+    <string name="call_prox_desc">Durante uma chamada, desliga o ecrã quando aproxima o telefone do ouvido e volta a ligá-lo quando o afasta. Substitui o tratamento do sistema onde este não consegue desligar o ecrã. Só atua no auricular (não com altifalante, Bluetooth ou auscultadores com fio) e liga sempre o ecrã quando a chamada termina. Requer root e o serviço de acessibilidade. Android 12 ou posterior.</string>
+    <string name="call_prox_sensor_title">Sensor de proximidade</string>
+    <string name="dt2w_desc_lineage">Acorda o dispositivo com um toque duplo no ecrã desligado. O controlador tátil continua a reportar toques com o ecrã desligado, por isso um pequeno listener de root corre apenas enquanto o ecrã está desligado e acorda com um toque duplo (dois toques em cerca de um segundo). Para quando o ecrã liga, pelo que não custa nada durante a utilização. Requer root e o serviço de acessibilidade. Um toque rápido perde-se por vezes: basta repetir.</string>
 </resources>

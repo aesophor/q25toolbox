@@ -22,12 +22,14 @@ sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes 
     data object AppScaling : Screen("app_scaling", R.string.title_app_scaling, R.string.subtitle_app_scaling)
     data object AutoFocus : Screen("auto_focus", R.string.title_auto_focus, R.string.subtitle_auto_focus)
     data object InCallShortcuts : Screen("in_call_shortcuts", R.string.title_in_call_shortcuts, R.string.subtitle_in_call_shortcuts)
+    data object CallProximitySleep : Screen("call_proximity_sleep", R.string.title_call_proximity_sleep, R.string.subtitle_call_proximity_sleep)
     data object CallScreenRecovery : Screen("call_screen_recovery", R.string.title_call_screen_recovery, R.string.subtitle_call_screen_recovery)
     data object ImeSuggestions : Screen("ime_suggestions", R.string.title_ime_suggestions, R.string.subtitle_ime_suggestions)
     data object BatteryUsage : Screen("battery_usage", R.string.title_battery_usage)
     data object TickerNotifications : Screen("ticker_notifications", R.string.title_ticker_notifications, R.string.subtitle_ticker_notifications)
     data object RecentsTweaks : Screen("recents_tweaks", R.string.title_recents_tweaks, R.string.subtitle_recents_tweaks)
     data object AdBlock : Screen("adblock", R.string.title_adblock, R.string.subtitle_adblock)
+    data object ZygiskDetach : Screen("zygisk_detach", R.string.title_zygisk_detach, R.string.subtitle_zygisk_detach)
 
     val title: String @Composable get() = stringResource(titleRes)
     val subtitle: String @Composable get() = if (subtitleRes != 0) stringResource(subtitleRes) else ""
@@ -78,12 +80,15 @@ val systemScreens = listOf(
     Screen.BesLoudness,
     Screen.AutoFocus,
     Screen.CallScreenRecovery,
+    Screen.CallProximitySleep,
     Screen.TickerNotifications,
+    Screen.Dt2w,
 )
 
 /** Screens listed under the Network tab. */
 val networkScreens = listOf(
     Screen.AdBlock,
+    Screen.ZygiskDetach,
     Screen.Telemetry,
     Screen.WirelessAdb,
     Screen.BtIdle,
@@ -99,5 +104,11 @@ val allScreens = keyboardScreens + screenScreens + systemScreens + networkScreen
  */
 fun Screen.availableOn(rom: Rom?): Boolean = when (this) {
     Screen.BesLoudness -> rom != Rom.LINEAGE
+    // On LineageOS the older stuck-proximity recovery is replaced by Call Proximity Sleep, which handles the
+    // opposite and more likely failure there (screen staying lit at the ear). BenOS keeps its own module.
+    Screen.CallScreenRecovery -> rom != Rom.LINEAGE
+    Screen.CallProximitySleep -> rom == Rom.LINEAGE
+    // The always-on BenOS watchdog stays hidden (it degraded SystemUI); the Lineage screen-off listener is safe to show.
+    Screen.Dt2w -> rom == Rom.LINEAGE
     else -> true
 }

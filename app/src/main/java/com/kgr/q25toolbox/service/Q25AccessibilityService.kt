@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.os.BatteryManager
 import android.util.Log
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,6 +20,8 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import com.kgr.q25toolbox.core.RootShell
+import com.kgr.q25toolbox.core.RomProfile
+import com.kgr.q25toolbox.modules.Dt2wController
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
 import com.kgr.q25toolbox.inputfix.CalculatorInputFix
@@ -65,6 +68,7 @@ class Q25AccessibilityService : AccessibilityService() {
         const val KEY_SCALING_APPS = "scaling_apps"       // StringSet "pkg=width" for per-app resolution
         const val KEY_IN_CALL_SHORTCUTS = "in_call_shortcuts_enabled"
         const val KEY_IME_SUGGESTIONS = "ime_suggestions_enabled" // Ctrl+W/E/R picks IME suggestion 1/2/3
+        const val KEY_CALL_PROXIMITY_SLEEP = "call_proximity_sleep_enabled" // screen off at the ear during calls
         const val KEY_LOCKSCREEN_ENTER_OPENS_PIN = "lockscreen_enter_opens_pin" // Enter / pad centre -> open the PIN pad
         const val KEY_LOCKSCREEN_NAV_BLOCK = "lockscreen_nav_block_enabled" // swallow D-pad/Enter/Space/Tab while keyguard is up
         const val KEY_CALL_SCREEN_RECOVERY = "call_screen_recovery_enabled" // force-wake if still dark after a call ends
@@ -128,11 +132,16 @@ class Q25AccessibilityService : AccessibilityService() {
     // Resets resolution to native when the screen turns off (lock button).
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_ON) {
+                // DT2W's listener exists only while the screen is off (root shell: never on the main thread).
+                worker.execute { try { Dt2wController.onScreenOn() } catch (_: Throwable) { } }
+            }
             if (intent?.action == Intent.ACTION_SCREEN_OFF) {
                 // An accessibility-overlay window can sit above the keyguard; never leave it up.
-                SlimRecentsOverlayController.hide(animate = false)
+                RecentsOverlays.hide(animate = false)
                 foregroundPkg = null
                 reconcileScaling()
+                worker.execute { try { Dt2wController.onScreenOff(this@Q25AccessibilityService) } catch (_: Throwable) { } }
             }
         }
     }
@@ -223,9 +232,25 @@ class Q25AccessibilityService : AccessibilityService() {
         if (key == KEY_SCALING_APPS) {
             reconcileScaling()
         }
+        if (key == KEY_CALL_PROXIMITY_SLEEP) reconcileCallProximity()
+    }
+
+    // Created only on Android 12+ (needs AudioManager.OnModeChangedListener); null elsewhere.
+    private var callProximity: CallProximitySleep? = null
+
+    private fun reconcileCallProximity() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        val want = prefs?.getBoolean(KEY_CALL_PROXIMITY_SLEEP, false) ?: false
+        if (want && callProximity == null) {
+            callProximity = CallProximitySleep(this, worker).also { it.start() }
+        } else if (!want) {
+            callProximity?.stop()
+            callProximity = null
+        }
     }
 
     override fun onServiceConnected() {
+        worker.execute { enterOpensPinDefault = RomProfile.autoDetectedLineage() }
         super.onServiceConnected()
         instance = this
         val p = getSharedPreferences(PREFS, MODE_PRIVATE)
@@ -252,7 +277,12 @@ class Q25AccessibilityService : AccessibilityService() {
         // notification - no global state to leave behind if this service dies.
         worker.execute { TickerController.syncSystemState(this) }
 
-        registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        reconcileCallProximity()
+
+        registerReceiver(screenOffReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+        })
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
@@ -264,7 +294,13 @@ class Q25AccessibilityService : AccessibilityService() {
     private fun imeBlockApps(): Set<String> =
         prefs?.getStringSet(KEY_IME_BLOCK_APPS, emptySet()) ?: emptySet()
     private fun inCallShortcutsEnabled() = prefs?.getBoolean(KEY_IN_CALL_SHORTCUTS, false) ?: false
-    private fun lockscreenEnterOpensPinEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_ENTER_OPENS_PIN, true) ?: true
+    /**
+     * Default for "Enter / pad opens the PIN": on only where it was verified (LineageOS); an explicit user choice
+     * always wins. Resolved off the main thread in onServiceConnected (it reads build props), hence the cached flag.
+     */
+    @Volatile private var enterOpensPinDefault = false
+    private fun lockscreenEnterOpensPinEnabled() =
+        prefs?.getBoolean(KEY_LOCKSCREEN_ENTER_OPENS_PIN, enterOpensPinDefault) ?: enterOpensPinDefault
     private fun lockscreenNavBlockEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_NAV_BLOCK, false) ?: false
     private fun callScreenRecoveryEnabled() = prefs?.getBoolean(KEY_CALL_SCREEN_RECOVERY, true) ?: true
 
@@ -484,9 +520,14 @@ class Q25AccessibilityService : AccessibilityService() {
     private fun openRecents() {
         val mode = RecentsTweaksController.getOverlayMode(this)
         if (!mode.isOverlay) { performGlobalAction(GLOBAL_ACTION_RECENTS); return }
+        // Read now, on the main thread and before our own window exists, so the overlay can tell which card is
+        // the app already in front (see SlimRecentsOverlayController.wireRow).
+        val frontPkg = foregroundPkg
         worker.execute {
             try {
-                val cards = mode == RecentsTweaksController.LayoutMode.QUILT
+                val grid = mode == RecentsTweaksController.LayoutMode.GRID_OVERLAY
+                // Quilt and grid show snapshots (and a live shot of the app in front); the vertical list does not.
+                val cards = grid || mode == RecentsTweaksController.LayoutMode.QUILT
                 val tasks = SlimRecentsController.listTasks(this)
                 // The foreground app has no fresh stored snapshot (those are taken when a task goes
                 // to the background), so its tile gets a live screenshot, taken before our own window
@@ -494,15 +535,21 @@ class Q25AccessibilityService : AccessibilityService() {
                 val liveTop = if (cards && tasks.isNotEmpty()) captureForRecents() else null
                 val topId = tasks.firstOrNull()?.taskId
                 mainHandler.post {
-                    SlimRecentsOverlayController.show(this, tasks, cards)
+                    if (grid) GridRecentsOverlayController.show(this, tasks, frontPkg)
+                    else SlimRecentsOverlayController.show(this, tasks, cards, frontPkg)
                     if (liveTop != null && topId != null) {
-                        SlimRecentsOverlayController.fillSnapshots(mapOf(topId to liveTop))
+                        val live = mapOf(topId to liveTop)
+                        if (grid) GridRecentsOverlayController.fillSnapshots(live)
+                        else SlimRecentsOverlayController.fillSnapshots(live)
                     }
                 }
                 if (cards && tasks.isNotEmpty()) {
                     val ids = if (liveTop != null) tasks.drop(1).map { it.taskId } else tasks.map { it.taskId }
                     val snaps = SlimRecentsController.loadSnapshots(ids)
-                    mainHandler.post { SlimRecentsOverlayController.fillSnapshots(snaps) }
+                    mainHandler.post {
+                        if (grid) GridRecentsOverlayController.fillSnapshots(snaps)
+                        else SlimRecentsOverlayController.fillSnapshots(snaps)
+                    }
                 }
             } catch (t: Throwable) {
                 Log.e("Q25Toolbox", "openRecents failed", t)
@@ -524,15 +571,15 @@ class Q25AccessibilityService : AccessibilityService() {
         // Recents overlay (Slim List / Masonry quilt). While it is showing, Back/Home/Recents close
         // or refresh it unconditionally, before any other feature gets a look at the key: the
         // overlay is FLAG_NOT_FOCUSABLE, so it can never receive keys itself.
-        if (SlimRecentsOverlayController.isShowing()) {
+        if (RecentsOverlays.isShowing()) {
             when (kc) {
                 KeyEvent.KEYCODE_BACK -> {
-                    if (event.action == KeyEvent.ACTION_DOWN) SlimRecentsOverlayController.hide()
+                    if (event.action == KeyEvent.ACTION_DOWN) RecentsOverlays.hide()
                     return true
                 }
                 KeyEvent.KEYCODE_HOME -> {
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        SlimRecentsOverlayController.hide()
+                        RecentsOverlays.hide()
                         performGlobalAction(GLOBAL_ACTION_HOME)
                     }
                     return true
@@ -1355,7 +1402,8 @@ class Q25AccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         if (instance === this) instance = null
-        SlimRecentsOverlayController.hide(animate = false)
+        RecentsOverlays.hide(animate = false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) callProximity?.stop()
         restoreImeBlock()
         restoreScaling()
         prefs?.unregisterOnSharedPreferenceChangeListener(prefListener)

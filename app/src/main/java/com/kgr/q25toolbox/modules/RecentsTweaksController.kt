@@ -63,10 +63,14 @@ object RecentsTweaksController {
         SLIM_LIST(3),
 
         /** Standalone snapshot quilt drawn as our own overlay; no Xposed, no launcher hook. */
-        QUILT(4);
+        QUILT(4),
 
-        /** True for the modes drawn by [com.kgr.q25toolbox.service.SlimRecentsOverlayController]. */
-        val isOverlay: Boolean get() = this == SLIM_LIST || this == QUILT
+        /** Standalone two-row grid (Launcher3 tablet look) drawn by
+         *  [com.kgr.q25toolbox.service.GridRecentsOverlayController]; no Xposed, no launcher hook. */
+        GRID_OVERLAY(5);
+
+        /** True for the modes drawn by one of our own overlay windows. */
+        val isOverlay: Boolean get() = this == SLIM_LIST || this == QUILT || this == GRID_OVERLAY
 
         companion object {
             fun fromValue(v: Int?): LayoutMode = entries.firstOrNull { it.value == v } ?: STOCK

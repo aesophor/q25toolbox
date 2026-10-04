@@ -165,11 +165,13 @@ private fun DetailHost(screen: Screen, onBack: () -> Unit) {
         Screen.AutoFocus -> AutoFocusScreen(onBack)
         Screen.InCallShortcuts -> InCallShortcutsScreen(onBack)
         Screen.CallScreenRecovery -> CallScreenRecoveryScreen(onBack)
+        Screen.CallProximitySleep -> CallProximitySleepScreen(onBack)
         Screen.ImeSuggestions -> ImeSuggestionsScreen(onBack)
         Screen.BatteryUsage -> BatteryUsageScreen(onBack)
         Screen.TickerNotifications -> TickerNotificationsScreen(onBack)
         Screen.RecentsTweaks -> RecentsTweaksScreen(onBack)
         Screen.AdBlock -> AdBlockScreen(onBack)
+        Screen.ZygiskDetach -> ZygiskDetachScreen(onBack)
     }
 }
 

@@ -53,6 +53,7 @@ object AdBlockController {
     private const val ASSET_MODULE_PROP = "adblock_module.prop"
     private const val ASSET_HOSTS_CTL = "adblock_hosts_ctl.sh"
     private const val ASSET_POST_FS_DATA = "adblock_post_fs_data.sh"
+    private const val ASSET_SERVICE = "adblock_service.sh"
     private const val ASSET_DEFAULT_HOSTS = "adblock_default_hosts.txt"
 
     /** Files under PERSIST that Backup & Restore round-trips verbatim. */
@@ -97,7 +98,7 @@ object AdBlockController {
      * First-time (or re-)deployment: seeds PERSIST with the bundled default
      * blacklist and empty edit files if not already present (so re-running
      * this after an uninstall doesn't clobber existing user edits), stages
-     * hosts_ctl.sh + post-fs-data.sh into the module dir, compiles an
+     * hosts_ctl.sh + post-fs-data.sh + service.sh into the module dir, compiles an
      * initial blacklist, then writes module.prop LAST so a half-deployed
      * module is never picked up by Magisk/APatch mid-write.
      */
@@ -133,11 +134,37 @@ object AdBlockController {
         val pfd = AssetInstaller.installFromAsset(context, ASSET_POST_FS_DATA, "$MODULE_DIR/post-fs-data.sh")
         if (!pfd.success) return pfd
 
+        val svc = AssetInstaller.installFromAsset(context, ASSET_SERVICE, "$MODULE_DIR/service.sh")
+        if (!svc.success) return svc
+
         val compile = RootShell.run("sh '$HOSTS_CTL' compile")
         if (!compile.success) return compile
 
         // module.prop written last - its presence is what makes root managers treat this as a real module.
-        return AssetInstaller.installFromAsset(context, ASSET_MODULE_PROP, "$MODULE_DIR/module.prop")
+        val prop = AssetInstaller.installFromAsset(context, ASSET_MODULE_PROP, "$MODULE_DIR/module.prop")
+        // Where the root manager does not overlay module files itself, mount now instead of waiting for a boot.
+        if (prop.success) applyFallbackMount()
+        return prop
+    }
+
+    /**
+     * Runs the module's fallback mount (see assets/adblock_service.sh) in the master mount namespace, so every
+     * process sees it. A no-op when the root manager already overlaid the hosts file, which is the case on
+     * Magisk, APatch and KernelSU with a metamodule; KernelSU Next without one mounts nothing from a module's
+     * system/ tree (verified on LineageOS 23), so there this is what makes the module work at all.
+     */
+    fun applyFallbackMount(): ShellResult = RootShell.run("su -M -c 'sh $MODULE_DIR/service.sh'")
+
+    /**
+     * Brings an existing install up to date: adds service.sh if the module predates it, and mounts the hosts
+     * file now if nothing has. Cheap when everything is already in place; called once per app launch.
+     */
+    fun ensureMounted(context: Context) {
+        if (!isInstalled()) return
+        if (!AssetInstaller.fileExists("$MODULE_DIR/service.sh")) {
+            AssetInstaller.installFromAsset(context, ASSET_SERVICE, "$MODULE_DIR/service.sh")
+        }
+        if (!isMounted()) applyFallbackMount()
     }
 
     /** Removes the module itself. Persisted blacklist/edits under PERSIST are kept - see [wipePersistedData]. */

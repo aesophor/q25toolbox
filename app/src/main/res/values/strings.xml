@@ -349,12 +349,12 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v3.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">Three additions ported from Key2 Toolbox: an ad blocker, backup/restore, and a wider telemetry block.</string>
-    <string name="whats_new_body">AdBlock (Network tab) is a systemless hosts blocker — it installs a root-manager module and needs one reboot to activate, then edits are live.\n\nBackup and Restore (Settings tab) exports the selected modules\' settings to a JSON file and restores by merge.\n\nThe Telemetry block now also covers Firebase / Google Analytics and Performance Monitoring, re-scans every 10 minutes instead of 30, and reacts to app installs.\n\nThe Recents grid still needs an Xposed framework (LSPosed / Vector), unchanged since v3.0.</string>
+    <string name="whats_new_headline">Now runs on LineageOS 22 and 23, besides BenOS and ZinwaOS.</string>
+    <string name="whats_new_body">The app detects your ROM on its own (shown next to the title in Info; change it in Settings) and hides what does not apply. New: Slim List, Masonry and Grid Recents with no Xposed (they open from the physical Recents key), Zygisk Detach, and on LineageOS Double-Tap to Wake and Call Proximity Sleep. Enter or the pad now opens the PIN on the lockscreen (on by default only on LineageOS).\n\nTelemetry blocking is now per app: if you already had it on, your detected apps were enrolled for you.\n\nAdBlock also works on root managers that do not mount module files, and Backup now covers KeyRemap, Recents and Zygisk Detach.</string>
     <string name="whats_new_matrix_title">Which version do I want?</string>
-    <string name="whats_new_matrix">v3.0+  :  any stock-based Q25 ROM, with LSPosed / Vector\n2.1.1  :  BenOS beta3, no Xposed framework\n2.0.5  :  BenOS pre-beta3a / older stock</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS and LineageOS 22/23 (Xposed optional)\n3.1  :  stock-based Q25 ROMs, with LSPosed / Vector\n2.1.1  :  BenOS beta3, no Xposed framework\n2.0.5  :  BenOS pre-beta3a / older stock</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
@@ -459,4 +459,55 @@
     <string name="recents_slim_anim_hint">Multiplies the base time and follows the system animation scale (Developer options). 100% matches the system speed.</string>
     <string name="lockscreen_enter_opens_pin_label">Enter / pad opens the PIN on the lockscreen</string>
     <string name="lockscreen_enter_opens_pin_desc">On the lockscreen, Enter and the pad centre always open the PIN pad. Without this, they activate whatever has focus (unlock, network settings, the newest notification). Needs root and the accessibility service.</string>
+    <!-- Telemetry per-app opt-in (ported from Key2 Toolbox) -->
+    <string name="telemetry_detect_apps">Detect Apps</string>
+    <string name="telemetry_app_list_title">Detected Apps</string>
+    <string name="telemetry_app_list_desc">Tick an app to block its telemetry. Nothing is blocked until you do.</string>
+    <string name="telemetry_app_list_empty">No apps with telemetry detected.</string>
+    <string name="telemetry_app_status_blocked">Blocked</string>
+    <string name="telemetry_app_status_unblocked">Not blocked</string>
+    <!-- Standalone Grid overlay -->
+    <string name="recents_mode_grid_standalone">Grid, standalone (two rows, no Xposed)</string>
+    <!-- Tile corner radius -->
+    <string name="recents_slim_corner_grid">Grid corner radius</string>
+    <string name="recents_slim_corner_quilt">Masonry corner radius</string>
+    <string name="recents_slim_corner_square">Square</string>
+    <!-- Zygisk Detach (ported from Key2 Toolbox) -->
+    <string name="title_zygisk_detach">Zygisk Detach</string>
+    <string name="subtitle_zygisk_detach">Stop the Play Store force-updating chosen apps</string>
+    <string name="desc_zygisk_detach">Detaches chosen apps from the Play Store so it stops updating them against your auto-update setting. Enabling installs the zygisk-detach module (a Zygisk hook on libbinder); pick the apps to detach below. Turning it off disables the module but keeps your detach list. Needs root and Zygisk (Magisk, ReZygisk or Zygisk Next). Installing, enabling or disabling the module takes effect at boot, while list changes apply as soon as Play Store restarts.</string>
+    <string name="zygisk_detach_enable">Enable Zygisk Detach</string>
+    <string name="zygisk_detach_module_version">Module: %1$s</string>
+    <string name="zygisk_detach_module_missing">Module: not installed</string>
+    <string name="zygisk_detach_reboot_required">Reboot required for the Zygisk hook to pick up this change. You can edit the list now, but detaching only takes effect after the reboot.</string>
+    <string name="zygisk_detach_no_zygisk">Zygisk doesn\'t look enabled. Turn it on (Magisk\'s settings) or install ReZygisk / Zygisk Next, then reboot - the hook can\'t load without it.</string>
+    <string name="zygisk_detach_denylisted">Play Store is on Magisk\'s DenyList (enforced), so Zygisk modules aren\'t loaded into it and detaching silently does nothing.</string>
+    <string name="zygisk_detach_remove_from_denylist">Remove from DenyList</string>
+    <string name="zygisk_detach_section_apps">Detached apps</string>
+    <string name="zygisk_detach_selected_count">%1$d selected</string>
+    <string name="zygisk_detach_filter_user">User apps</string>
+    <string name="zygisk_detach_filter_all">All apps</string>
+    <string name="zygisk_detach_not_installed">not installed</string>
+    <string name="zygisk_detach_no_match">No apps match \"%1$s\"</string>
+    <string name="zygisk_detach_loading_apps">Loading apps…</string>
+    <string name="zygisk_detach_list_unreadable">Couldn\'t read the detach list - it may be corrupted. Applying replaces it with your current selection.</string>
+    <string name="zygisk_detach_disabled_hint">Turn on Zygisk Detach above to manage the list.</string>
+    <string name="status_zygisk_detach_installing_module">Installing module…</string>
+    <string name="status_zygisk_detach_enabled">Zygisk Detach enabled.</string>
+    <string name="status_zygisk_detach_disabled">Zygisk Detach disabled. Reboot to unload the hook. Your detach list is kept.</string>
+    <string name="status_zygisk_detach_module_failed">Module install failed: %1$s</string>
+    <string name="status_zygisk_detach_applied">Applied. %1$d detached; Play Store was stopped so it re-reads the list.</string>
+    <string name="status_zygisk_detach_apply_failed">Couldn\'t update the detach list: %1$s</string>
+    <string name="status_zygisk_detach_denylist_removed">Play Store removed from the DenyList and stopped. It loads the hook the next time it starts.</string>
+    <!-- Generic labels (from Key2 Toolbox) -->
+    <string name="generic_search_apps">Search apps</string>
+    <string name="generic_apply">Apply</string>
+    <string name="generic_clear">Clear</string>
+    <!-- Call Proximity Sleep -->
+    <string name="title_call_proximity_sleep">Call Proximity Sleep</string>
+    <string name="subtitle_call_proximity_sleep">Screen off at the ear during calls</string>
+    <string name="call_prox_enable_label">Turn the screen off at the ear</string>
+    <string name="call_prox_desc">During a call, turns the screen off when the phone is held to your ear and back on when you move it away. Replaces the system\'s own handling where it fails to blank the screen. It only acts on the handset earpiece (not speakerphone, Bluetooth or a wired headset) and always wakes the screen when the call ends. Needs root and the accessibility service. Android 12 or later.</string>
+    <string name="call_prox_sensor_title">Proximity sensor</string>
+    <string name="dt2w_desc_lineage">Wake the device by double-tapping the screen while it is off. The touch controller keeps reporting touches with the screen off, so a small root listener runs only while the screen is off, and wakes the device on a double tap (two taps within about a second). It stops when the screen turns on, so it costs nothing during use. Needs root and the accessibility service. Fast taps are occasionally missed: just tap again.</string>
 </resources>

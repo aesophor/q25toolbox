@@ -51,6 +51,9 @@ object DaemonMaintenance {
                 BesLoudnessController.setScheduleEnabled(context, true, start, end)
             }
         }
+        AdBlockController.ensureMounted(context)
+        // Must run before the health check below: that one refreshes the watchdog to the per-app script.
+        TelemetryController.migrateToPerApp(context)
         if (TelemetryController.isPersisted() && !TelemetryController.isHealthy(context)) {
             TelemetryController.setEnabled(context, true)
         }

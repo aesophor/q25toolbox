@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kgr.q25toolbox.R
 import com.kgr.q25toolbox.modules.Dt2wController
+import com.kgr.q25toolbox.service.isQ25AccessibilityServiceEnabled
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,16 +33,22 @@ fun Dt2wScreen(onBack: () -> Unit) {
     var busy by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
 
+    var serviceEnabled by remember { mutableStateOf(true) }
+    val listener = remember { Dt2wController.usesScreenOffListener() }
+
     LaunchedEffect(Unit) {
+        serviceEnabled = isQ25AccessibilityServiceEnabled(context)
         withContext(Dispatchers.IO) {
-            enabled = Dt2wController.isPersisted()
+            enabled = Dt2wController.isPersisted(context)
             running = Dt2wController.isRunning()
         }
     }
 
     ScreenScaffold(title = stringResource(Screen.Dt2w.titleRes), onBack = onBack) {
         val stateStr = if (enabled) stringResource(R.string.dt2w_on) else stringResource(R.string.dt2w_off)
-        val bootNotice = if (enabled && !running) stringResource(R.string.dt2w_boot_notice) else ""
+        // The Lineage listener runs only with the screen off, so "not running" is normal there.
+        val bootNotice = if (!listener && enabled && !running) stringResource(R.string.dt2w_boot_notice) else ""
+        if (listener) AccessibilityServiceBanner(serviceEnabled)
         Text(stringResource(R.string.dt2w_state, "$stateStr$bootNotice"))
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -53,7 +60,7 @@ fun Dt2wScreen(onBack: () -> Unit) {
                     busy = true
                     scope.launch(Dispatchers.IO) {
                         Dt2wController.setEnabled(context, enable)
-                        enabled = Dt2wController.isPersisted()
+                        enabled = Dt2wController.isPersisted(context)
                         running = Dt2wController.isRunning()
                         busy = false
                         statusMessage = if (enable)
@@ -70,7 +77,7 @@ fun Dt2wScreen(onBack: () -> Unit) {
 
         DescriptionDivider()
         Text(
-            stringResource(R.string.dt2w_desc),
+            stringResource(if (listener) R.string.dt2w_desc_lineage else R.string.dt2w_desc),
             style = MaterialTheme.typography.bodySmall
         )
     }

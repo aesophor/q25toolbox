@@ -168,13 +168,15 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                 val options = if (onLineage) listOf(
                     LayoutMode.STOCK to R.string.recents_mode_stock,
                     LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
-                    LayoutMode.QUILT to R.string.recents_mode_quilt
+                    LayoutMode.QUILT to R.string.recents_mode_quilt,
+                    LayoutMode.GRID_OVERLAY to R.string.recents_mode_grid
                 ) else listOf(
                     LayoutMode.STOCK to R.string.recents_mode_stock,
                     LayoutMode.GRID to R.string.recents_mode_grid,
                     LayoutMode.MASONRY to R.string.recents_mode_masonry,
                     LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
-                    LayoutMode.QUILT to R.string.recents_mode_quilt_standalone
+                    LayoutMode.QUILT to R.string.recents_mode_quilt_standalone,
+                    LayoutMode.GRID_OVERLAY to R.string.recents_mode_grid_standalone
                 )
                 options.forEach { (value, labelRes) ->
                     Row(
@@ -198,7 +200,7 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        if (mode.isOverlay) OverlayAppearanceCard()
+        if (mode.isOverlay) OverlayAppearanceCard(mode)
 
         if (!onLineage) {
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -299,13 +301,15 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
  * opacity and blur. Saved straight to the shared prefs; the overlay reads them each time it opens.
  */
 @Composable
-private fun OverlayAppearanceCard() {
+private fun OverlayAppearanceCard(mode: LayoutMode) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE) }
     var colorMode by remember { mutableStateOf(SlimRecentsController.scrimColorMode(prefs)) }
     var opacity by remember { mutableFloatStateOf(SlimRecentsController.scrimOpacityPercent(prefs).toFloat()) }
     var blur by remember { mutableFloatStateOf(SlimRecentsController.scrimBlurPercent(prefs).toFloat()) }
     var animPct by remember { mutableFloatStateOf(SlimRecentsController.animDurationPercent(prefs).toFloat()) }
+    var gridCorner by remember { mutableFloatStateOf(SlimRecentsController.gridCornerDp(prefs).toFloat()) }
+    var quiltCorner by remember { mutableFloatStateOf(SlimRecentsController.quiltCornerDp(prefs).toFloat()) }
     // Cross-window blur can be unavailable (battery saver, unsupported GPU path): say so instead of a dead slider.
     val blurSupported = remember {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
@@ -343,6 +347,25 @@ private fun OverlayAppearanceCard() {
                 onChange = { blur = it },
                 onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_SCRIM_BLUR, blur.toInt()).apply() }
             )
+            // Corner radius only applies to the tile layouts; the vertical list has its own fixed pills.
+            if (mode == LayoutMode.GRID_OVERLAY) {
+                AppearanceSlider(
+                    label = stringResource(R.string.recents_slim_corner_grid), value = gridCorner,
+                    range = 0f..SlimRecentsController.MAX_CORNER_DP.toFloat(), unit = " dp",
+                    offLabel = stringResource(R.string.recents_slim_corner_square),
+                    onChange = { gridCorner = it },
+                    onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_GRID_CORNER_DP, gridCorner.toInt()).apply() }
+                )
+            }
+            if (mode == LayoutMode.QUILT) {
+                AppearanceSlider(
+                    label = stringResource(R.string.recents_slim_corner_quilt), value = quiltCorner,
+                    range = 0f..SlimRecentsController.MAX_CORNER_DP.toFloat(), unit = " dp",
+                    offLabel = stringResource(R.string.recents_slim_corner_square),
+                    onChange = { quiltCorner = it },
+                    onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_QUILT_CORNER_DP, quiltCorner.toInt()).apply() }
+                )
+            }
             AppearanceSlider(
                 label = stringResource(R.string.recents_slim_anim_duration), value = animPct, range = 0f..200f,
                 offLabel = stringResource(R.string.recents_slim_anim_off),
@@ -368,12 +391,12 @@ private fun OverlayAppearanceCard() {
 @Composable
 private fun AppearanceSlider(
     label: String, value: Float, range: ClosedFloatingPointRange<Float>,
-    enabled: Boolean = true, offLabel: String? = null, onChange: (Float) -> Unit, onCommit: () -> Unit
+    enabled: Boolean = true, offLabel: String? = null, unit: String = "%", onChange: (Float) -> Unit, onCommit: () -> Unit
 ) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, style = MaterialTheme.typography.bodyMedium)
-            Text(if (value.toInt() == 0 && offLabel != null) offLabel else "${value.toInt()}%", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+            Text(if (value.toInt() == 0 && offLabel != null) offLabel else "${value.toInt()}$unit", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
         }
         Slider(value = value, onValueChange = onChange, onValueChangeFinished = onCommit, valueRange = range, enabled = enabled)
     }

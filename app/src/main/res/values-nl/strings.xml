@@ -365,12 +365,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">SystemUI geforceerd herstarten om een openstaande wijziging toe te passen</string>
     <string name="settings_quick_access_notifications_title">Meldingstoegang</string>
     <string name="settings_quick_access_notifications_subtitle">Handmatige terugval voor tickermeldingen als de root-toekenning niet doorkwam</string>
-    <string name="whats_new_title">Q25 Toolbox v3.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0</string>
     <string name="whats_new_ok">Begrepen</string>
-    <string name="whats_new_headline">Drie toevoegingen overgezet uit Key2 Toolbox: een advertentieblokker, back-up/herstel en een bredere telemetrieblokkering.</string>
-    <string name="whats_new_body">AdBlock (tabblad Netwerk) is een systeemloze hosts-blokker — het installeert een root-manager-module en heeft één herstart nodig om te activeren; daarna zijn bewerkingen live.\n\nBack-up en herstel (tabblad Instellingen) exporteert de instellingen van de geselecteerde modules naar een JSON-bestand en herstelt via samenvoegen.\n\nDe telemetrieblokkering dekt nu ook Firebase / Google Analytics en Performance Monitoring, scant elke 10 minuten in plaats van 30 en reageert op app-installaties.\n\nHet Overzicht-raster heeft nog steeds een Xposed-framework nodig (LSPosed / Vector), ongewijzigd sinds v3.0.</string>
+    <string name="whats_new_headline">Draait nu ook op LineageOS 22 en 23, naast BenOS en ZinwaOS.</string>
+    <string name="whats_new_body">De app herkent je ROM zelf (naast de titel in Info; wijzigen in Instellingen) en verbergt wat niet van toepassing is. Nieuw: Recent-weergaven Slanke lijst, Mozaïek en Raster zonder Xposed (geopend met de fysieke Recent-toets), Zygisk Detach en op LineageOS Dubbeltik om te ontwaken en Call Proximity Sleep. Enter of het pad opent nu de pincode op het vergrendelscherm (standaard alleen aan op LineageOS).\n\nTelemetrieblokkering werkt nu per app: als je die al aan had, zijn de gedetecteerde apps voor je ingeschreven.\n\nAdBlock werkt ook met root-managers die modulebestanden niet koppelen, en de back-up omvat nu KeyRemap, Recent en Zygisk Detach.</string>
     <string name="whats_new_matrix_title">Welke versie wil ik?</string>
-    <string name="whats_new_matrix">v3.0+  :  elke stock-gebaseerde Q25-ROM, met LSPosed / Vector\n2.1.1  :  BenOS beta3, geen Xposed-framework\n2.0.5  :  BenOS pre-beta3a / ouder stock</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS en LineageOS 22/23 (Xposed optioneel)\n3.1  :  Op stock gebaseerde Q25-ROM\'s, met LSPosed / Vector\n2.1.1  :  BenOS beta3, zonder Xposed\n2.0.5  :  BenOS vóór beta3a / oudere stock</string>
     <string name="generic_cancel">Annuleren</string>
     <string name="settings_backup_restore">Back-up en herstel</string>
     <string name="settings_backup_desc">Exporteert de instellingen van de geselecteerde modules naar een JSON-bestand, of herstelt ze daaruit. Herstellen wordt samengevoegd met je huidige instellingen — het wist nooit wat niet in het bestand staat.</string>
@@ -452,4 +452,55 @@
     <string name="recents_slim_anim_hint">Vermenigvuldigt de basistijd en volgt de systeemanimatieschaal (Ontwikkelaarsopties). 100% komt overeen met de systeemsnelheid.</string>
     <string name="lockscreen_enter_opens_pin_label">Enter / pad opent de pincode op het vergrendelscherm</string>
     <string name="lockscreen_enter_opens_pin_desc">Op het vergrendelscherm openen Enter en het midden van het pad altijd het pincodeveld. Anders activeren ze wat de focus heeft (ontgrendelen, netwerkinstellingen, de nieuwste melding). Vereist root en de toegankelijkheidsservice.</string>
+    <!-- Telemetry per-app opt-in (ported from Key2 Toolbox) -->
+    <string name="telemetry_detect_apps">Apps detecteren</string>
+    <string name="telemetry_app_list_title">Gedetecteerde apps</string>
+    <string name="telemetry_app_list_desc">Vink een app aan om de telemetrie ervan te blokkeren. Er wordt niets geblokkeerd totdat je dat doet.</string>
+    <string name="telemetry_app_list_empty">Geen apps met telemetrie gedetecteerd.</string>
+    <string name="telemetry_app_status_blocked">Geblokkeerd</string>
+    <string name="telemetry_app_status_unblocked">Niet geblokkeerd</string>
+    <!-- Standalone Grid overlay -->
+    <string name="recents_mode_grid_standalone">Raster, zelfstandig (twee rijen, zonder Xposed)</string>
+    <!-- Tile corner radius -->
+    <string name="recents_slim_corner_grid">Hoekradius van het raster</string>
+    <string name="recents_slim_corner_quilt">Hoekradius van het mozaïek</string>
+    <string name="recents_slim_corner_square">Vierkant</string>
+    <!-- Zygisk Detach (ported from Key2 Toolbox) -->
+    <string name="title_zygisk_detach">Zygisk Detach</string>
+    <string name="subtitle_zygisk_detach">Voorkom dat de Play Store gekozen apps geforceerd bijwerkt</string>
+    <string name="desc_zygisk_detach">Koppelt gekozen apps los van de Play Store, zodat die ze niet meer bijwerkt ondanks je instelling voor automatisch bijwerken. Inschakelen installeert de module zygisk-detach (een Zygisk-hook op libbinder); kies hieronder de apps om los te koppelen. Uitschakelen schakelt de module uit maar bewaart je lijst. Vereist root en Zygisk (Magisk, ReZygisk of Zygisk Next). Installeren, inschakelen of uitschakelen van de module werkt na het opstarten; lijstwijzigingen zodra de Play Store herstart.</string>
+    <string name="zygisk_detach_enable">Zygisk Detach inschakelen</string>
+    <string name="zygisk_detach_module_version">Module: %1$s</string>
+    <string name="zygisk_detach_module_missing">Module: niet geïnstalleerd</string>
+    <string name="zygisk_detach_reboot_required">Herstart nodig zodat de Zygisk-hook deze wijziging oppakt. Je kunt de lijst nu bewerken, maar losgekoppeld werkt pas na de herstart.</string>
+    <string name="zygisk_detach_no_zygisk">Zygisk lijkt niet ingeschakeld. Schakel het in (Magisk-instellingen) of installeer ReZygisk / Zygisk Next en herstart: zonder kan de hook niet laden.</string>
+    <string name="zygisk_detach_denylisted">De Play Store staat op de DenyList van Magisk (afgedwongen), dus Zygisk-modules worden er niet in geladen en losgekoppeld doet stilzwijgend niets.</string>
+    <string name="zygisk_detach_remove_from_denylist">Van DenyList verwijderen</string>
+    <string name="zygisk_detach_section_apps">Losgekoppelde apps</string>
+    <string name="zygisk_detach_selected_count">%1$d geselecteerd</string>
+    <string name="zygisk_detach_filter_user">Gebruikersapps</string>
+    <string name="zygisk_detach_filter_all">Alle apps</string>
+    <string name="zygisk_detach_not_installed">niet geïnstalleerd</string>
+    <string name="zygisk_detach_no_match">Geen apps komen overeen met \"%1$s\"</string>
+    <string name="zygisk_detach_loading_apps">Apps laden…</string>
+    <string name="zygisk_detach_list_unreadable">De losgekoppelde lijst kon niet worden gelezen en is mogelijk beschadigd. Toepassen vervangt hem door je huidige selectie.</string>
+    <string name="zygisk_detach_disabled_hint">Schakel hierboven Zygisk Detach in om de lijst te beheren.</string>
+    <string name="status_zygisk_detach_installing_module">Module installeren…</string>
+    <string name="status_zygisk_detach_enabled">Zygisk Detach ingeschakeld.</string>
+    <string name="status_zygisk_detach_disabled">Zygisk Detach uitgeschakeld. Herstart om de hook te ontladen. Je lijst blijft bewaard.</string>
+    <string name="status_zygisk_detach_module_failed">Module-installatie mislukt: %1$s</string>
+    <string name="status_zygisk_detach_applied">Toegepast. %1$d losgekoppeld; de Play Store is gestopt zodat hij de lijst opnieuw leest.</string>
+    <string name="status_zygisk_detach_apply_failed">De lijst kon niet worden bijgewerkt: %1$s</string>
+    <string name="status_zygisk_detach_denylist_removed">Play Store van de DenyList verwijderd en gestopt. Hij laadt de hook bij de volgende start.</string>
+    <!-- Generic labels (from Key2 Toolbox) -->
+    <string name="generic_search_apps">Apps zoeken</string>
+    <string name="generic_apply">Toepassen</string>
+    <string name="generic_clear">Wissen</string>
+    <!-- Call Proximity Sleep -->
+    <string name="title_call_proximity_sleep">Call Proximity Sleep</string>
+    <string name="subtitle_call_proximity_sleep">Scherm uit bij het oor tijdens gesprekken</string>
+    <string name="call_prox_enable_label">Scherm uit bij het oor</string>
+    <string name="call_prox_desc">Schakelt tijdens een gesprek het scherm uit als je de telefoon naar je oor brengt en weer in als je hem weghaalt. Vervangt de afhandeling van het systeem waar die het scherm niet uitschakelt. Werkt alleen op de oorspeaker (niet bij luidspreker, Bluetooth of bekabelde headset) en zet het scherm altijd weer aan als het gesprek eindigt. Vereist root en de toegankelijkheidsservice. Android 12 of hoger.</string>
+    <string name="call_prox_sensor_title">Nabijheidssensor</string>
+    <string name="dt2w_desc_lineage">Maakt het apparaat wakker met een dubbeltik op het uitgeschakelde scherm. De aanraakcontroller blijft aanrakingen melden bij uitgeschakeld scherm, dus een kleine root-listener draait alleen zolang het scherm uit is en maakt wakker bij een dubbeltik (twee tikken binnen ongeveer een seconde). Hij stopt zodra het scherm aangaat en kost dus niets tijdens gebruik. Vereist root en de toegankelijkheidsservice. Snelle tikken worden af en toe gemist: tik gewoon opnieuw.</string>
 </resources>

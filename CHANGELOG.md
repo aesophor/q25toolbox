@@ -4,6 +4,58 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](../Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.0] - 2026-10-04
+
+Major release: the app now runs on **LineageOS 22 and 23** as well as BenOS and ZinwaOS. The ROM is detected from
+the build, everything that does not apply to it is hidden, and BenOS/ZinwaOS keep their existing code paths.
+versionCode 32 → 33.
+
+### Added
+
+- **ROM detection.** A badge next to the title in Info shows BenOS, ZinwaOS or LineageOS (with its major version).
+  A chooser appears only if the build cannot be recognised; Settings has a manual override. ZinwaOS detection is a
+  heuristic (not verified on stock ZinwaOS).
+- **Standalone Recents overlays, no Xposed.** Slim List (vertical), Masonry (a gap-free snapshot quilt) and **Grid**
+  (the launcher's tablet layout: a large tile for the newest app at the right, older tasks in two rows to its left,
+  scrolling horizontally). They are drawn by the accessibility service from `dumpsys activity recents` and the
+  system snapshot cache, so they do not depend on the launcher. Tap resumes an app, swiping a tile up (Grid) or
+  sideways (list) closes it, Close all clears everything. Settings: background colour (dark or Material You),
+  opacity, blur, animation length, and tile corner radius (Grid and Masonry).
+- **Recents key remap.** While an overlay mode is selected the physical Recents key is remapped to an inert key
+  code, because the system opens its own Overview on that key even when an accessibility service consumes it.
+- **Zygisk Detach** (Network): stops the Play Store force-updating chosen apps. Ported from Key2 Toolbox with its
+  bundled module; recognises ReZygisk and Zygisk Next as well as Magisk's Zygisk.
+- **Double-Tap to Wake on LineageOS.** The kernel has no gesture-wake, but the touch controller keeps reporting
+  touches with the screen off, so a root listener runs only while the screen is off (started and stopped by the
+  accessibility service) and wakes the device on a double tap.
+- **Call Proximity Sleep (LineageOS).** Turns the screen off at the ear during a call and back on when moved away,
+  event-driven instead of polling `dumpsys`.
+- **Lockscreen: Enter / D-pad centre opens the PIN pad.** On the lockscreen these keys activate whatever has focus
+  (unlock, network tile, newest notification); they now always open the PIN. On by default only on LineageOS, where
+  it was verified. An optional switch also blocks navigation keys on the lockscreen.
+- **Backup & Restore** covers KeyRemap, Recents, Zygisk Detach, Call Proximity Sleep, the per-app Telemetry list
+  and the new lockscreen switches.
+
+### Changed
+
+- **Telemetry Block is per app.** The watchdog only touches apps enrolled in the list (Detect Apps, then tick
+  them), as in Key2 Toolbox. Existing installs are migrated once: if the block was already on and no list exists,
+  every app it was covering is enrolled, so protection does not lapse on update.
+- **AdBlock** falls back to bind-mounting the compiled hosts file when the root manager does not overlay module
+  files (KernelSU Next without a metamodule). A no-op where the manager already does.
+- **KeyRemap on LineageOS no longer unbinds the keyboard driver.** On that kernel an unbind can panic the phone
+  (the driver leaves a display notifier registered). The layout is reloaded with a uevent remove/add instead, and
+  the bind-mounted copy gets the `vendor_keylayout_file` SELinux label. BenOS keeps the unbind/bind path.
+- **In-call shortcuts** also work in LineageOS' own dialer (`com.android.dialer`).
+- Hidden on LineageOS because they do not apply: BesLoudness, the keyboard respawn button and the stuck-proximity
+  recovery, the Recents provider repair, the OEM factory-test launcher, and the LSPosed Grid and hooked Masonry.
+
+### Fixed
+
+- KeyRemap's boot script refuses to mount an empty layout, which would have left the keyboard dead on every boot.
+- Recents overlay: tapping the app that is already in front no longer re-launches it, and an animation length of 0
+  creates no animators at all.
+
 ## [3.1] - 2026-08-29
 
 Ported from Key2 Toolbox: a hosts-based ad blocker, backup/restore, and a

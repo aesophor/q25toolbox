@@ -11,7 +11,13 @@ import com.kgr.q25toolbox.modules.Dt2wController
 import com.kgr.q25toolbox.modules.ExtraDimController
 import com.kgr.q25toolbox.modules.LocationIdleController
 import com.kgr.q25toolbox.modules.TelemetryController
+import com.kgr.q25toolbox.modules.KeyRemapController
+import com.kgr.q25toolbox.modules.RecentsTweaksController
+import com.kgr.q25toolbox.modules.SlimRecentsController
+import com.kgr.q25toolbox.core.Rom
+import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.modules.TickerController
+import com.kgr.q25toolbox.modules.ZygiskDetachController
 import com.kgr.q25toolbox.service.Q25AccessibilityService
 import org.json.JSONArray
 import org.json.JSONObject
@@ -49,8 +55,9 @@ import java.util.Locale
  *
  * Modules with a live-only effect (Extra Dim's / BesLoudness' on-off + level,
  * applied immediately as Settings writes) are out of scope - only what persists
- * across reboot is backed up. KeyRemap / ProximitySensor / RecentsTweaks are
- * not covered yet.
+ * across reboot is backed up. ProximitySensor is not covered. The ROM profile override is deliberately
+ * left out: it is a fact about the device it was set on, so restoring it onto another ROM would force
+ * the wrong profile.
  */
 object SettingsBackup {
 
@@ -73,6 +80,10 @@ object SettingsBackup {
         DT2W(R.string.title_dt2w),
         TELEMETRY(R.string.title_telemetry),
         TICKER_NOTIFICATIONS(R.string.title_ticker_notifications),
+        KEY_REMAP(R.string.title_key_remap),
+        RECENTS(R.string.title_recents_tweaks),
+        ZYGISK_DETACH(R.string.title_zygisk_detach),
+        CALL_PROXIMITY_SLEEP(R.string.title_call_proximity_sleep),
     }
 
     /** Which BackupModule owns each key in the shared "q25tweaks" prefs file. */
@@ -88,10 +99,21 @@ object SettingsBackup {
         Q25AccessibilityService.KEY_CALCULATOR to BackupModule.CALCULATOR,
         Q25AccessibilityService.KEY_IN_CALL_SHORTCUTS to BackupModule.IN_CALL_SHORTCUTS,
         Q25AccessibilityService.KEY_CALL_SCREEN_RECOVERY to BackupModule.CALL_SCREEN_RECOVERY,
+        Q25AccessibilityService.KEY_CALL_PROXIMITY_SLEEP to BackupModule.CALL_PROXIMITY_SLEEP,
+        TelemetryController.KEY_BLOCKED_PACKAGES to BackupModule.TELEMETRY,
         Q25AccessibilityService.KEY_SCALING_APPS to BackupModule.APP_SCALING,
         AutoFocusController.KEY_AUTO_FOCUS to BackupModule.AUTO_FOCUS,
         AutoFocusController.KEY_AUTO_FOCUS_APPS to BackupModule.AUTO_FOCUS,
         BatteryUsageController.KEY_RESET_THRESHOLD to BackupModule.BATTERY_USAGE,
+        KeyRemapController.KEY_REMAP_ENABLED to BackupModule.KEY_REMAP,
+        KeyRemapController.KEY_REMAP_SOURCE to BackupModule.KEY_REMAP,
+        // The overlay's look. The Recents key remap pref is NOT listed: it is derived from the layout mode.
+        SlimRecentsController.KEY_SCRIM_COLOR_MODE to BackupModule.RECENTS,
+        SlimRecentsController.KEY_SCRIM_OPACITY to BackupModule.RECENTS,
+        SlimRecentsController.KEY_SCRIM_BLUR to BackupModule.RECENTS,
+        SlimRecentsController.KEY_ANIM_DURATION to BackupModule.RECENTS,
+        SlimRecentsController.KEY_GRID_CORNER_DP to BackupModule.RECENTS,
+        SlimRecentsController.KEY_QUILT_CORNER_DP to BackupModule.RECENTS,
     )
 
     private const val Q25TWEAKS_PREFS = "q25tweaks"
@@ -183,6 +205,21 @@ object SettingsBackup {
         }
         if (BackupModule.TELEMETRY in modules && TelemetryController.isPersisted()) {
             root.put("telemetry", JSONObject().put("enabled", true))
+        }
+        if (BackupModule.ZYGISK_DETACH in modules && ZygiskDetachController.isInstalled()) {
+            // The list itself belongs to the module (/data/adb/zygisk-detach); it is read through the module's CLI.
+            ZygiskDetachController.detachedPackages()?.let { list ->
+                root.put("zygisk_detach", JSONObject()
+                    .put("enabled", ZygiskDetachController.isEnabled())
+                    .put("packages", JSONArray(list)))
+            }
+        }
+        if (BackupModule.RECENTS in modules) {
+            // The layout mode is stored in Settings.Global (read with root), not in SharedPreferences.
+            try {
+                root.put("recents", JSONObject().put("mode", RecentsTweaksController.getLayoutMode().name))
+            } catch (_: Exception) {
+            }
         }
 
         return root
@@ -302,6 +339,10 @@ object SettingsBackup {
                 }
             }
         }
+        // The per-app list was restored with the prefs above; the watchdog reads its own copy.
+        if (BackupModule.TELEMETRY in modules) {
+            try { TelemetryController.resyncBlocklist(context) } catch (_: Exception) { }
+        }
         if (BackupModule.TELEMETRY in modules) {
             root.optJSONObject("telemetry")?.let { j ->
                 if (j.optBoolean("enabled", false)) {
@@ -311,6 +352,47 @@ object SettingsBackup {
                     } catch (_: Exception) {
                     }
                 }
+            }
+        }
+
+        if (BackupModule.ZYGISK_DETACH in modules) {
+            root.optJSONObject("zygisk_detach")?.let { j ->
+                try {
+                    val arr = j.optJSONArray("packages")
+                    val pkgs = (0 until (arr?.length() ?: 0)).map { arr!!.getString(it) }
+                    if (j.optBoolean("enabled", false)) {
+                        ZygiskDetachController.enable(context)
+                        // Needs the module's CLI, which exists as soon as enable() has deployed it.
+                        ZygiskDetachController.applyDetached(pkgs)
+                        scriptModulesRestored += BackupModule.ZYGISK_DETACH
+                    }
+                } catch (_: Exception) {
+                }
+            }
+        }
+
+        // KeyRemap: the prefs are back, but the live keylayout mount and the boot script follow from them.
+        // Also covers the Recents overlay trigger, which is a second remap in the same script.
+        if (BackupModule.KEY_REMAP in modules || BackupModule.RECENTS in modules) {
+            try {
+                val sp = context.getSharedPreferences(Q25TWEAKS_PREFS, Context.MODE_PRIVATE)
+                if (BackupModule.RECENTS in modules) {
+                    root.optJSONObject("recents")?.optString("mode")?.let { name ->
+                        val mode = RecentsTweaksController.LayoutMode.entries.firstOrNull { it.name == name }
+                        // Grid and the hooked Masonry are LSPosed modes for BenOS' launcher. Restoring one onto
+                        // LineageOS would switch Recents to a mode that cannot work there, so it is skipped.
+                        val applicable = mode != null &&
+                            (mode.isOverlay || RomProfile.get(context).rom != Rom.LINEAGE)
+                        if (applicable && mode != null) {
+                            RecentsTweaksController.setLayoutMode(mode)
+                            KeyRemapController.setRecentsOverlayRemap(sp, mode.isOverlay)
+                            scriptModulesRestored += BackupModule.RECENTS
+                        }
+                    }
+                }
+                KeyRemapController.applySettings(sp)
+                if (BackupModule.KEY_REMAP in modules) scriptModulesRestored += BackupModule.KEY_REMAP
+            } catch (_: Exception) {
             }
         }
 

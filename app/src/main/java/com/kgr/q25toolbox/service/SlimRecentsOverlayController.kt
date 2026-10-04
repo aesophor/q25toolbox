@@ -62,6 +62,21 @@ object SlimRecentsOverlayController {
     private const val CLOSE_SCALE = 0.96f
     private const val CLOSE_MS = 170L
 
+    /** Masonry open: the newest tile (the app you were in) shrinks from full screen into place while the rest fade in. */
+    private const val ENTRANCE_MS = 340L
+    /**
+     * Masonry close: the chosen tile (or the newest, on Back) grows to full screen while the window fades out
+     * over the last part of the same time, so the whole exit is one phase. Shorter than the entrance on purpose:
+     * the user is waiting for the app, and the app is usually already back behind the overlay by then.
+     */
+    private const val EXPAND_MS = 230L
+    private const val EXPAND_FADE_START = 0.4f
+    /** Extra fade after the growth has finished, so the hand-over to the app is soft rather than a cut. */
+    private const val EXPAND_FADE_TAIL_MS = 60L
+
+    /** Default for [hide]'s expandTaskId: grow the newest tile. Pass null for a plain fade. */
+    const val EXPAND_HERO = Int.MIN_VALUE
+
     // Resume / dismiss issue root shell commands - never run those on the
     // main thread that's servicing row touch events.
     private val ioExecutor = Executors.newSingleThreadExecutor()
@@ -72,6 +87,10 @@ object SlimRecentsOverlayController {
     private var currentSnapshots: Map<Int, android.graphics.Bitmap> = emptyMap()
     private var cardsMode: Boolean = false
     private val thumbViews = HashMap<Int, ImageView>()
+    // Masonry only: taskId -> the whole tile / its name strip, used by the shared-element open/close motion.
+    private val cardViews = HashMap<Int, View>()
+    private val headerViews = HashMap<Int, View>()
+    private var pendingEntrance = false
     private var menuScrim: View? = null
     private var menuCard: View? = null
 
@@ -176,7 +195,7 @@ object SlimRecentsOverlayController {
                 safeUi {
                     closeIconMenu()
                     openAppInfo(svc, task.packageName)
-                    hide()
+                    hide(expandTaskId = null)
                 }
             }
         }
@@ -208,6 +227,9 @@ object SlimRecentsOverlayController {
         return (baseMs * user * sys / applied).toLong()
     }
 
+    /** App that was in the foreground when this overlay opened (null if unknown). See [wireRow]. */
+    private var frontPackage: String? = null
+
     private fun closeIconMenu() {
         menuCard?.let { (it.parent as? ViewGroup)?.removeView(it) }
         menuScrim?.let { (it.parent as? ViewGroup)?.removeView(it) }
@@ -232,8 +254,12 @@ object SlimRecentsOverlayController {
         svc: AccessibilityService,
         tasks: List<SlimTask>,
         cards: Boolean = false,
+        frontPkg: String? = null,
     ) = safeUi {
         cardsMode = cards
+        // Package that was in front when Recents was opened. Captured by the caller BEFORE the window goes up,
+        // so it cannot be confused with this overlay; kept across refreshes while the window stays showing.
+        if (root == null) frontPackage = frontPkg
         if (!cards) currentSnapshots = emptyMap()
         Log.d("Q25Toolbox", "SlimRecents.show: ${tasks.size} tasks, mode=${if (cards) "cards" else "lean"}")
         if (root != null) {
@@ -248,10 +274,15 @@ object SlimRecentsOverlayController {
      * and service teardown pass false, since animations do not run with the screen off and the window must
      * be gone immediately. [isShowing] turns false at once either way.
      */
-    fun hide(animate: Boolean = true) = safeUi {
+    fun hide(animate: Boolean = true, expandTaskId: Int? = EXPAND_HERO) = safeUi {
         closeIconMenu()
         currentSnapshots = emptyMap()
-        thumbViews.clear()
+        val cards = HashMap(cardViews)
+        val thumbs = HashMap(thumbViews)
+        val headers = HashMap(headerViews)
+        val heroId = currentTasks.firstOrNull()?.taskId
+        thumbViews.clear(); cardViews.clear(); headerViews.clear()
+        pendingEntrance = false
         val v = root
         root = null
         if (v != null) {
@@ -261,8 +292,14 @@ object SlimRecentsOverlayController {
                 } catch (_: IllegalArgumentException) {
                 }
             }
-            if (animate) {
-                v.animate().cancel()
+            val target = expandTaskId?.let { cards[if (it == EXPAND_HERO) heroId else it] }
+            val targetThumb = expandTaskId?.let { thumbs[if (it == EXPAND_HERO) heroId else it] }
+            v.animate().cancel()
+            // Duration 0 (setting or system animator scale off): no animators at all, just drop the window.
+            val animating = animate && animMs(v.context, CLOSE_MS) > 0L
+            if (animating && cardsMode && target != null && targetThumb != null) {
+                expandAndFade(v, cards, headers, target, targetThumb, remove)
+            } else if (animating) {
                 v.animate()
                     .alpha(0f).scaleX(CLOSE_SCALE).scaleY(CLOSE_SCALE)
                     .setDuration(animMs(v.context, CLOSE_MS))
@@ -271,6 +308,105 @@ object SlimRecentsOverlayController {
                     .start()
             } else remove()
         }
+    }
+
+    /**
+     * Transform that makes [thumb] (inside [card]) cover the whole screen: uniform "cover" scale around the
+     * thumbnail's centre, then a translation moving that centre to the screen centre. Applying it to [card]
+     * makes the tile look like the app's own full-screen window; clearing it returns the tile to its slot.
+     */
+    private class CoverTransform(val scale: Float, val dx: Float, val dy: Float, val pivotX: Float, val pivotY: Float)
+
+    private fun coverTransform(ctx: Context, thumb: View): CoverTransform? {
+        if (thumb.width <= 0 || thumb.height <= 0) return null
+        val dm = ctx.resources.displayMetrics
+        val loc = IntArray(2)
+        thumb.getLocationOnScreen(loc)
+        val cx = loc[0] + thumb.width / 2f
+        val cy = loc[1] + thumb.height / 2f
+        val scale = maxOf(dm.widthPixels / thumb.width.toFloat(), dm.heightPixels / thumb.height.toFloat())
+        return CoverTransform(scale, dm.widthPixels / 2f - cx, dm.heightPixels / 2f - cy,
+            thumb.left + thumb.width / 2f, thumb.top + thumb.height / 2f)
+    }
+
+    private fun expandAndFade(
+        window: View, cards: Map<Int, View>, headers: Map<Int, View>,
+        target: View, thumb: View, remove: () -> Unit,
+    ) {
+        val ctx = window.context
+        val t = coverTransform(ctx, thumb)
+        if (t == null) { remove(); return }
+        val dur = animMs(ctx, EXPAND_MS)
+        val ease = PathInterpolator(0.2f, 0f, 0f, 1f) // emphasized
+        cards.values.filter { it !== target }.forEach {
+            it.animate().alpha(0f).setDuration(dur / 2).start()
+        }
+        (headers.entries.firstOrNull { cards[it.key] === target })?.value
+            ?.animate()?.alpha(0f)?.setDuration(dur / 2)?.start()
+        target.translationZ = 8f
+        target.pivotX = t.pivotX
+        target.pivotY = t.pivotY
+        target.animate()
+            .scaleX(t.scale).scaleY(t.scale).translationX(t.dx).translationY(t.dy)
+            .setDuration(dur).setInterpolator(ease)
+            .start()
+        // The window starts fading partway through the growth and finishes a moment after it, then is removed.
+        val fadeStart = (dur * EXPAND_FADE_START).toLong()
+        window.animate().alpha(0f).setStartDelay(fadeStart)
+            .setDuration(dur - fadeStart + animMs(ctx, EXPAND_FADE_TAIL_MS))
+            .withEndAction { safeUi(remove) }.start()
+        // The scrim goes with the other tiles, so the growing tile ends up over whatever is behind it.
+        (window.background as? android.graphics.drawable.ColorDrawable)?.let { bg ->
+            ValueAnimator.ofInt(bg.alpha, 0).apply {
+                duration = dur
+                addUpdateListener { bg.alpha = it.animatedValue as Int }
+                start()
+            }
+        }
+    }
+
+    /** Masonry open: see [ENTRANCE_MS]. Runs once, on the first layout pass, before the first frame is drawn. */
+    private fun playEntrance(svc: AccessibilityService) {
+        val window = root ?: return
+        val heroId = currentTasks.firstOrNull()?.taskId
+        val hero = heroId?.let { cardViews[it] }
+        val thumb = heroId?.let { thumbViews[it] }
+        val dur = animMs(svc, ENTRANCE_MS)
+        if (dur <= 0L) return // animations off: tiles stay where they are, scrim stays at full alpha
+        val ease = PathInterpolator(0.05f, 0.7f, 0.1f, 1f) // emphasized decelerate
+        val density = svc.resources.displayMetrics.density
+
+        var order = 0
+        cardViews.forEach { (_, v) ->
+            if (v === hero) return@forEach
+            v.alpha = 0f
+            v.translationY = 28 * density
+            v.animate().alpha(1f).translationY(0f)
+                .setStartDelay((dur / 5) + order * 22L).setDuration(dur).setInterpolator(ease).start()
+            order++
+        }
+        (window.background as? android.graphics.drawable.ColorDrawable)?.let { bg ->
+            val full = bg.alpha
+            bg.alpha = 0
+            ValueAnimator.ofInt(0, full).apply {
+                duration = dur
+                addUpdateListener { bg.alpha = it.animatedValue as Int }
+                start()
+            }
+        }
+        val t = if (hero != null && thumb != null) coverTransform(svc, thumb) else null
+        if (hero == null || t == null) return
+        hero.translationZ = 8f
+        hero.pivotX = t.pivotX
+        hero.pivotY = t.pivotY
+        hero.scaleX = t.scale; hero.scaleY = t.scale
+        hero.translationX = t.dx; hero.translationY = t.dy
+        headerViews[heroId]?.apply { alpha = 0f; animate().alpha(1f).setStartDelay(dur / 2).setDuration(dur / 2).start() }
+        hero.animate()
+            .scaleX(1f).scaleY(1f).translationX(0f).translationY(0f)
+            .setDuration(dur).setInterpolator(ease)
+            .withEndAction { hero.translationZ = 0f }
+            .start()
     }
 
     // ------------------------------------------------------------- internals
@@ -285,6 +421,7 @@ object SlimRecentsOverlayController {
 
         val container = FrameLayout(svc).apply {
             setBackgroundColor(SlimRecentsController.scrimColor(svc))
+            clipChildren = false // the newest tile scales beyond its slot during open/close (cards mode)
         }
 
         val list = LinearLayout(svc).apply {
@@ -293,9 +430,13 @@ object SlimRecentsOverlayController {
             // room for the Close All button + the toolbelt strip below it
             val bottomClearance = (88 * svc.resources.displayMetrics.density).toInt() + belt
             setPadding(pad, pad, pad, bottomClearance)
+            clipChildren = false
+            clipToPadding = false
         }
         val scroller = ScrollView(svc).apply {
             isFillViewport = true
+            clipChildren = false
+            clipToPadding = false
             addView(list, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         // Tap empty space (anywhere not on a row - rows get first dispatch as
@@ -355,7 +496,7 @@ object SlimRecentsOverlayController {
                 safeUi {
                     val tasks = currentTasks
                     runSafely { SlimRecentsController.dismissAll(tasks) }
-                    hide()
+                    hide(expandTaskId = null)
                 }
             }
         }
@@ -395,20 +536,27 @@ object SlimRecentsOverlayController {
             }
         }
 
-        // Start invisible and slightly small, then ease in (see OPEN_*).
-        container.alpha = 0f
-        container.scaleX = OPEN_SCALE
-        container.scaleY = OPEN_SCALE
+        // Slim List: the whole window starts invisible and slightly small, then eases in (see OPEN_*).
+        // Masonry: the window stays as is and the tiles do the moving (see playEntrance).
+        val openMs = animMs(svc, OPEN_MS)
+        if (!cardsMode && openMs > 0L) {
+            container.alpha = 0f
+            container.scaleX = OPEN_SCALE
+            container.scaleY = OPEN_SCALE
+        }
         try {
             wm.addView(container, lp)
         } catch (_: Exception) {
             return
         }
-        container.animate()
-            .alpha(1f).scaleX(1f).scaleY(1f)
-            .setDuration(animMs(svc, OPEN_MS))
-            .setInterpolator(PathInterpolator(0.05f, 0.7f, 0.1f, 1f)) // emphasized decelerate
-            .start()
+        if (!cardsMode && openMs > 0L) {
+            container.animate()
+                .alpha(1f).scaleX(1f).scaleY(1f)
+                .setDuration(openMs)
+                .setInterpolator(PathInterpolator(0.05f, 0.7f, 0.1f, 1f)) // emphasized decelerate
+                .start()
+        }
+        pendingEntrance = cardsMode
         windowManager = wm
         root = container
         buildRows(svc, list, tasks)
@@ -423,7 +571,7 @@ object SlimRecentsOverlayController {
     private fun buildRows(svc: AccessibilityService, list: LinearLayout, tasks: List<SlimTask>) {
         closeIconMenu()
         currentTasks = tasks
-        thumbViews.clear()
+        thumbViews.clear(); cardViews.clear(); headerViews.clear()
         list.removeAllViews()
         val density = svc.resources.displayMetrics.density
         fun px(dp: Int) = (dp * density).toInt()
@@ -459,6 +607,9 @@ object SlimRecentsOverlayController {
     }
 
     /** Jump to the bottom (newest) before the first frame draws - no visible auto-scroll. */
+    /** The accessibility service owning [v]'s window (its views are all created with it as context). */
+    private fun svcRef(v: View): AccessibilityService = v.context as AccessibilityService
+
     private fun landAtBottom(sv: ScrollView) {
         sv.viewTreeObserver.addOnPreDrawListener(object : android.view.ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
@@ -536,7 +687,7 @@ object SlimRecentsOverlayController {
         val colW = ((contentW - gap * (MASONRY_COLUMNS - 1)) / MASONRY_COLUMNS).coerceAtLeast(px(48))
         fun cell(n: Int) = n * colW + (n - 1) * gap
 
-        val quilt = FrameLayout(svc)
+        val quilt = FrameLayout(svc).apply { clipChildren = false }
         list.addView(quilt, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
         val blocks = packBlocks(tasks)
@@ -556,7 +707,20 @@ object SlimRecentsOverlayController {
             blockTop -= gap
         }
         quilt.minimumHeight = totalH.coerceAtLeast(0)
-        (list.parent as? ScrollView)?.let(::landAtBottom)
+        (list.parent as? ScrollView)?.let { sv ->
+            landAtBottom(sv)
+            if (pendingEntrance) {
+                // Registered after landAtBottom's listener, so the scroll position is final when this runs.
+                sv.viewTreeObserver.addOnPreDrawListener(object : android.view.ViewTreeObserver.OnPreDrawListener {
+                    override fun onPreDraw(): Boolean {
+                        sv.viewTreeObserver.removeOnPreDrawListener(this)
+                        pendingEntrance = false
+                        safeUi { playEntrance(svcRef(sv)) }
+                        return true
+                    }
+                })
+            }
+        }
     }
 
     /** Fill (or update) the streamed-in snapshots. Missing ids keep their placeholder. */
@@ -605,7 +769,8 @@ object SlimRecentsOverlayController {
         val headerPx = px(CARD_HEADER_DP)
         val card = LinearLayout(svc).apply {
             orientation = LinearLayout.VERTICAL
-            background = GradientDrawable().apply { cornerRadius = 0f; setColor(Color.rgb(18, 18, 18)) }
+            // Square by default; the radius is a setting (Recents > Appearance). clipToOutline rounds the header strip too.
+            background = GradientDrawable().apply { cornerRadius = SlimRecentsController.quiltCornerPx(svc).toFloat(); setColor(Color.rgb(18, 18, 18)) }
             clipToOutline = true
             isClickable = true
         }
@@ -622,6 +787,7 @@ object SlimRecentsOverlayController {
         )
         header.addView(appLabel(svc, task, 12f), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         header.addView(closeBtn(svc, task) { card }, LinearLayout.LayoutParams(headerPx, headerPx))
+        headerViews[task.taskId] = header
         card.addView(header, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, headerPx))
 
         val thumb = ImageView(svc).apply {
@@ -632,6 +798,7 @@ object SlimRecentsOverlayController {
         thumbViews[task.taskId] = thumb
         card.addView(thumb, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (h - headerPx).coerceAtLeast(0)))
 
+        cardViews[task.taskId] = card
         wireRow(svc, card, task)
         return card
     }
@@ -670,6 +837,7 @@ object SlimRecentsOverlayController {
         setOnClickListener {
             safeUi {
                 runSafely { SlimRecentsController.dismissTask(task) }
+                cardViews.remove(task.taskId); headerViews.remove(task.taskId); thumbViews.remove(task.taskId)
                 val v = rowOf()
                 (v.parent as? ViewGroup)?.removeView(v)
             }
@@ -683,8 +851,12 @@ object SlimRecentsOverlayController {
     private fun wireRow(svc: AccessibilityService, row: View, task: SlimTask) {
         row.setOnClickListener {
             safeUi {
-                runSafely { SlimRecentsController.resumeTask(task) }
-                hide()
+                // Already in front (the newest task and the app we came from): skip `am start`. The system would
+                // log it as an activity restart attempt and re-run the launch transition right as the overlay
+                // fades. Both conditions are required so a stale package can never swallow a real app switch.
+                val alreadyFront = task.packageName == frontPackage && task.taskId == currentTasks.firstOrNull()?.taskId
+                if (!alreadyFront) runSafely { SlimRecentsController.resumeTask(task) }
+                hide(expandTaskId = task.taskId)
             }
         }
         val slop = ViewConfiguration.get(svc).scaledTouchSlop
@@ -723,6 +895,7 @@ object SlimRecentsOverlayController {
                             val w = v.width.coerceAtLeast(1)
                             if (kotlin.math.abs(v.translationX) > w * 0.4f || kotlin.math.abs(vx) > 1200f) {
                                 runSafely { SlimRecentsController.dismissTask(task) }
+                                cardViews.remove(task.taskId); headerViews.remove(task.taskId); thumbViews.remove(task.taskId)
                                 (v.parent as? ViewGroup)?.removeView(v)
                             } else {
                                 v.animate().translationX(0f).alpha(1f).setDuration(150).start()
