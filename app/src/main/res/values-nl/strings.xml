@@ -330,12 +330,6 @@
     <string name="recents_transparency_desc">Hoeveel van de achtergrond doorschijnt achter de kaarten. Herstart Launcher3 om toe te passen.</string>
     <string name="recents_restart_launcher">Launcher3 herstarten</string>
     <string name="recents_restart_systemui">SystemUI herstarten</string>
-    <string name="recents_repair_title">Reparatie van Recents-provider</string>
-    <string name="recents_repair_desc">Als Recents/Overzicht na een systeemupdate niet meer werkt, gebruik dit om het te herstellen.</string>
-    <string name="recents_repair_button">Recents-provider repareren</string>
-    <string name="recents_repair_success">Recents-provider gerepareerd.</string>
-    <string name="recents_repair_needs_reboot">Reparatie toegepast — herstart je toestel om Recents volledig te herstellen.</string>
-    <string name="recents_repair_failed">Reparatie mislukt. Probeer het opnieuw na een herstart.</string>
 
     <string name="prox_live_status">Live sensormonitor</string>
     <string name="prox_unavailable">De nabijheidssensor is niet beschikbaar op dit apparaat.</string>
@@ -365,12 +359,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">SystemUI geforceerd herstarten om een openstaande wijziging toe te passen</string>
     <string name="settings_quick_access_notifications_title">Meldingstoegang</string>
     <string name="settings_quick_access_notifications_subtitle">Handmatige terugval voor tickermeldingen als de root-toekenning niet doorkwam</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Begrepen</string>
-    <string name="whats_new_headline">Draait nu ook op LineageOS 22 en 23, naast BenOS en ZinwaOS.</string>
-    <string name="whats_new_body">De app herkent je ROM zelf (naast de titel in Info; wijzigen in Instellingen) en verbergt wat niet van toepassing is. Nieuw: Recent-weergaven Slanke lijst, Mozaïek en Raster zonder Xposed (geopend met de fysieke Recent-toets), Zygisk Detach en op LineageOS Dubbeltik om te ontwaken en Call Proximity Sleep. Enter of het pad opent nu de pincode op het vergrendelscherm (standaard alleen aan op LineageOS).\n\nTelemetrieblokkering werkt nu per app: als je die al aan had, zijn de gedetecteerde apps voor je ingeschreven.\n\nAdBlock werkt ook met root-managers die modulebestanden niet koppelen, en de back-up omvat nu KeyRemap, Recent en Zygisk Detach.</string>
+    <string name="whats_new_headline">Draait nu ook op LineageOS 23, naast BenOS en ZinwaOS.</string>
+    <string name="whats_new_body">De app herkent je ROM zelf (naast de titel in Info; wijzigen in Instellingen) en verbergt wat niet van toepassing is. Nieuw: Recent-weergaven Slanke lijst, Mozaïek en Raster zonder Xposed (geopend met de fysieke Recent-toets), Zygisk Detach en op LineageOS Dubbeltik om te ontwaken en Call Proximity Sleep. Enter of het pad opent nu de pincode op het vergrendelscherm (standaard alleen aan op LineageOS).\n\nTelemetrieblokkering werkt nu per app: als je die al aan had, zijn de gedetecteerde apps voor je ingeschreven.\n\nAdBlock werkt ook met root-managers die modulebestanden niet koppelen, en de back-up omvat nu KeyRemap, Recent en Zygisk Detach.\n\nNieuw in 4.0.1: Raster gebruikt nu het LSPosed-raster als dat in je launcher werkt en anders het zelfstandige, dus LSPosed is niet meer verplicht. De herstelknop voor Recent is verdwenen.</string>
     <string name="whats_new_matrix_title">Welke versie wil ik?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS en LineageOS 22/23 (Xposed optioneel)\n3.1  :  Op stock gebaseerde Q25-ROM\'s, met LSPosed / Vector\n2.1.1  :  BenOS beta3, zonder Xposed\n2.0.5  :  BenOS vóór beta3a / oudere stock</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS en LineageOS 23 (Xposed optioneel)\n3.1  :  Op stock gebaseerde Q25-ROM\'s, met LSPosed / Vector\n2.1.1  :  BenOS beta3, zonder Xposed\n2.0.5  :  BenOS vóór beta3a / oudere stock</string>
     <string name="generic_cancel">Annuleren</string>
     <string name="settings_backup_restore">Back-up en herstel</string>
     <string name="settings_backup_desc">Exporteert de instellingen van de geselecteerde modules naar een JSON-bestand, of herstelt ze daaruit. Herstellen wordt samengevoegd met je huidige instellingen — het wist nooit wat niet in het bestand staat.</string>
@@ -460,7 +454,7 @@
     <string name="telemetry_app_status_blocked">Geblokkeerd</string>
     <string name="telemetry_app_status_unblocked">Niet geblokkeerd</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Raster, zelfstandig (twee rijen, zonder Xposed)</string>
+    <string name="recents_mode_grid_standalone">Raster, zelfstandig (twee rijen, gebruikt nooit LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Hoekradius van het raster</string>
     <string name="recents_slim_corner_quilt">Hoekradius van het mozaïek</string>
@@ -503,4 +497,12 @@
     <string name="call_prox_desc">Schakelt tijdens een gesprek het scherm uit als je de telefoon naar je oor brengt en weer in als je hem weghaalt. Vervangt de afhandeling van het systeem waar die het scherm niet uitschakelt. Werkt alleen op de oorspeaker (niet bij luidspreker, Bluetooth of bekabelde headset) en zet het scherm altijd weer aan als het gesprek eindigt. Vereist root en de toegankelijkheidsservice. Android 12 of hoger.</string>
     <string name="call_prox_sensor_title">Nabijheidssensor</string>
     <string name="dt2w_desc_lineage">Maakt het apparaat wakker met een dubbeltik op het uitgeschakelde scherm. De aanraakcontroller blijft aanrakingen melden bij uitgeschakeld scherm, dus een kleine root-listener draait alleen zolang het scherm uit is en maakt wakker bij een dubbeltik (twee tikken binnen ongeveer een seconde). Hij stopt zodra het scherm aangaat en kost dus niets tijdens gebruik. Vereist root en de toegankelijkheidsservice. Snelle tikken worden af en toe gemist: tik gewoon opnieuw.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Raster (LSPosed indien beschikbaar, anders zelfstandig)</string>
+    <string name="recents_grid_using_hook">Het raster gebruikt de LSPosed-hook (het eigen overzicht van de launcher).</string>
+    <string name="recents_grid_using_overlay">Het raster gebruikt de zelfstandige overlay.</string>
+    <string name="recents_hook_status_ok">LSPosed-hook: werkt in de launcher.</string>
+    <string name="recents_hook_status_broken">LSPosed-hook: hij kon niet in deze launcherversie haken, dus het zelfstandige raster wordt gebruikt.</string>
+    <string name="recents_hook_status_unknown">LSPosed-hook: nog niet gezien in de launcher. Schakel de module in LSPosed in voor de launcher en herstart de launcher.</string>
+    <string name="recents_hook_recheck">Opnieuw controleren</string>
 </resources>

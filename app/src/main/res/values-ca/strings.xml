@@ -328,12 +328,6 @@
     <string name="recents_transparency_desc">Quant es veu el fons de pantalla darrere de les targetes. Reinicia Launcher3 per aplicar-ho.</string>
     <string name="recents_restart_launcher">Reinicia Launcher3</string>
     <string name="recents_restart_systemui">Reinicia SystemUI</string>
-    <string name="recents_repair_title">Reparació del proveïdor de Recents</string>
-    <string name="recents_repair_desc">Si Recents/Overview ha deixat de funcionar després d\'una actualització del sistema, fes servir això per restaurar-lo.</string>
-    <string name="recents_repair_button">Repara el proveïdor de Recents</string>
-    <string name="recents_repair_success">Proveïdor de Recents reparat.</string>
-    <string name="recents_repair_needs_reboot">Reparació aplicada — reinicia el dispositiu per acabar de restaurar Recents.</string>
-    <string name="recents_repair_failed">La reparació ha fallat. Torna-ho a provar després de reiniciar.</string>
 
     <string name="prox_live_status">Monitor de sensor en directe</string>
     <string name="prox_unavailable">El sensor de proximitat no està disponible en aquest dispositiu.</string>
@@ -363,12 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força el reinici de la SystemUI per aplicar un canvi pendent</string>
     <string name="settings_quick_access_notifications_title">Accés a les notificacions</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual per a les Notificacions tipus ticker si la concessió amb root no s\'ha aplicat</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Entesos</string>
-    <string name="whats_new_headline">Ara també funciona a LineageOS 22 i 23, a més de BenOS i ZinwaOS.</string>
-    <string name="whats_new_body">L\'app detecta la teva ROM sola (es veu al costat del títol a Info; es canvia a Configuració) i amaga el que no s\'aplica. Novetats: Recents amb Llista Prima, Mosaic i Quadrícula sense Xposed (s\'obren amb la tecla física de Recents), Zygisk Detach i, a LineageOS, Doble toc per despertar i Call Proximity Sleep. Retorn o el pad obren ara el PIN a la pantalla de bloqueig (activat per defecte només a LineageOS).\n\nEl bloqueig de telemetria és ara per app: si ja el tenies activat, s\'han enrolat les apps detectades per tu.\n\nAdBlock també funciona en gestors de root que no munten els fitxers dels mòduls, i la còpia de seguretat cobreix ara KeyRemap, Recents i Zygisk Detach.</string>
+    <string name="whats_new_headline">Ara també funciona a LineageOS 23, a més de BenOS i ZinwaOS.</string>
+    <string name="whats_new_body">L\'app detecta la teva ROM sola (es veu al costat del títol a Info; es canvia a Configuració) i amaga el que no s\'aplica. Novetats: Recents amb Llista Prima, Mosaic i Quadrícula sense Xposed (s\'obren amb la tecla física de Recents), Zygisk Detach i, a LineageOS, Doble toc per despertar i Call Proximity Sleep. Retorn o el pad obren ara el PIN a la pantalla de bloqueig (activat per defecte només a LineageOS).\n\nEl bloqueig de telemetria és ara per app: si ja el tenies activat, s\'han enrolat les apps detectades per tu.\n\nAdBlock també funciona en gestors de root que no munten els fitxers dels mòduls, i la còpia de seguretat cobreix ara KeyRemap, Recents i Zygisk Detach.\n\nNovetat a 4.0.1: Quadrícula fa servir ara la de LSPosed quan funciona al teu launcher i la independent si no, així que LSPosed ja no és obligatori. El botó de reparar Recents ha desaparegut.</string>
     <string name="whats_new_matrix_title">Quina versió vull?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS i LineageOS 22/23 (Xposed opcional)\n3.1  :  ROM Q25 basades en stock, amb LSPosed / Vector\n2.1.1  :  BenOS beta3, sense Xposed\n2.0.5  :  BenOS anterior a beta3a / stock antic</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS i LineageOS 23 (Xposed opcional)\n3.1  :  ROM Q25 basades en stock, amb LSPosed / Vector\n2.1.1  :  BenOS beta3, sense Xposed\n2.0.5  :  BenOS anterior a beta3a / stock antic</string>
     <string name="generic_cancel">Cancel·la</string>
     <string name="settings_backup_restore">Còpia de seguretat i restauració</string>
     <string name="settings_backup_desc">Exporta els ajustos dels mòduls seleccionats a un fitxer JSON, o restaura\'ls des d\'un. La restauració es fusiona amb els teus ajustos actuals — mai esborra el que no és al fitxer.</string>
@@ -458,7 +452,7 @@
     <string name="telemetry_app_status_blocked">Bloquejada</string>
     <string name="telemetry_app_status_unblocked">Sense bloquejar</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Quadrícula independent (dues files, sense Xposed)</string>
+    <string name="recents_mode_grid_standalone">Quadrícula independent (dues files, mai no fa servir LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Radi de les cantonades de la quadrícula</string>
     <string name="recents_slim_corner_quilt">Radi de les cantonades del mosaic</string>
@@ -501,4 +495,12 @@
     <string name="call_prox_desc">Durant una trucada, apaga la pantalla quan acostes el telèfon a l\'orella i l\'encén en separar-lo. Substitueix la gestió del sistema quan aquest no aconsegueix apagar la pantalla. Només actua amb l\'auricular (no amb altaveu, Bluetooth ni auriculars amb cable) i sempre encén la pantalla en acabar la trucada. Requereix root i el servei d\'accessibilitat. Android 12 o posterior.</string>
     <string name="call_prox_sensor_title">Sensor de proximitat</string>
     <string name="dt2w_desc_lineage">Desperta el dispositiu amb un doble toc a la pantalla apagada. El controlador tàctil continua informant dels tocs amb la pantalla apagada, així que un petit listener de root s\'executa només mentre la pantalla és apagada i desperta amb un doble toc (dos tocs en prop d\'un segon). S\'atura en encendre la pantalla, per tant no costa res durant l\'ús. Requereix root i el servei d\'accessibilitat. De vegades es perd algun toc ràpid: n\'hi ha prou de repetir.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Quadrícula (LSPosed si està disponible, si no la independent)</string>
+    <string name="recents_grid_using_hook">La quadrícula fa servir el hook de LSPosed (la vista general del mateix launcher).</string>
+    <string name="recents_grid_using_overlay">La quadrícula fa servir la superposició independent.</string>
+    <string name="recents_hook_status_ok">Hook de LSPosed: funciona al launcher.</string>
+    <string name="recents_hook_status_broken">Hook de LSPosed: no s\'ha pogut enganxar a aquesta versió del launcher, així que es fa servir la quadrícula independent.</string>
+    <string name="recents_hook_status_unknown">Hook de LSPosed: encara no s\'ha vist al launcher. Activa el mòdul per al launcher a LSPosed i reinicia el launcher.</string>
+    <string name="recents_hook_recheck">Comprova de nou</string>
 </resources>

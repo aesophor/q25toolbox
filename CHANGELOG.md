@@ -4,9 +4,36 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](../Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.0.1] - 2026-10-04
+
+versionCode 33 → 34.
+
+### Changed
+
+- **"Grid" chooses its implementation by itself.** If the LSPosed module is working in the launcher that is
+  installed, Grid is the launcher's own two-row Overview forced by the hook; otherwise it is the standalone Grid
+  overlay. This removes the biggest v3 problem, needing a different build per ROM or launcher version. "Working" is
+  proven, not assumed: the hook leaves a handshake file in the launcher (it records whether all four hooks Grid needs
+  installed, plus the launcher's `versionCode`), and only a matching "ok" turns the hook on. A launcher update, a
+  failed hook, or no module at all falls back to the standalone Grid. Installs updating from v3 keep their working
+  hook until the new one has run once. The Recents screen shows the hook's status, which implementation Grid is
+  using, and a "Check again" button. "Grid, standalone" never uses LSPosed.
+- The LSPosed status card is now shown on every ROM, not only BenOS/ZinwaOS.
+
+### Removed
+
+- **Recents Provider Repair** (the on-device realign and re-sign of a launcher APK that a BenOS OTA shipped
+  misaligned), with `ApkAligner` and `OnDeviceApkSigner`. The standalone overlays do not need the launcher's Recents
+  provider. A bind mount left by an earlier repair is not touched.
+
+### Fixed
+
+- Supported-ROM statements: the app, README and release notes said LineageOS 22/23, but only 23 was ever tested.
+  They now say LineageOS 23 (the 24 beta should work, untested).
+
 ## [4.0] - 2026-10-04
 
-Major release: the app now runs on **LineageOS 22 and 23** as well as BenOS and ZinwaOS. The ROM is detected from
+Major release: the app now runs on **LineageOS 23** (the 24 beta should work too, untested) as well as BenOS and ZinwaOS. The ROM is detected from
 the build, everything that does not apply to it is hidden, and BenOS/ZinwaOS keep their existing code paths.
 versionCode 32 → 33.
 

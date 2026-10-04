@@ -2,7 +2,7 @@
 
 A root app for the Zinwa Q25 (MediaTek-based, physical QWERTY keyboard) that
 bundles a set of tweaks into one UI, organised into six bottom-bar sections.
-It runs on **BenOS, ZinwaOS and LineageOS 22/23**: the ROM is detected from the
+It runs on **BenOS, ZinwaOS and LineageOS 23** (the 24 beta should work too; untested): the ROM is detected from the
 build (shown next to the title in Info, overridable in Settings) and the
 modules that do not apply to it are hidden.
 
@@ -38,7 +38,7 @@ hardware underneath several modules did not, so a few Key2-only features
 
 | App version | Use it if | Recents grid |
 | --- | --- | --- |
-| **v4.0+** | BenOS, ZinwaOS or LineageOS 22/23; Xposed optional | standalone overlay (any ROM), plus the LSPosed hook on BenOS/ZinwaOS |
+| **v4.0+** | BenOS, ZinwaOS or LineageOS 23 (24 beta untested); Xposed optional | standalone overlay (any ROM), plus the LSPosed hook on BenOS/ZinwaOS |
 | **v3.0+** | any stock-based Q25 ROM, with an Xposed framework (LSPosed / Vector) available | LSPosed hook, survives OTAs |
 | **2.1.1** | BenOS beta3, no Xposed framework | bundled patched-launcher bind-mount |
 | **2.0.5** | BenOS pre-beta3a / older stock | older patched-launcher |
@@ -263,9 +263,23 @@ the build script. Until then, both build types are signed with the debug key.
 | ![Grid Recents](docs/recents-grid.png) | ![Masonry Recents](docs/recents-masonry.png) |
 
 As of v3.0 this is an **LSPosed module**, not a binary patch. It needs an
-Xposed framework (LSPosed / Vector on KernelSU / APatch / Magisk); without
-one, Recents stays stock and nothing else is affected. The Recents screen
-shows whether the module is active and how to scope it.
+Xposed framework (LSPosed / Vector on KernelSU / APatch / Magisk). The Recents
+screen shows whether the module is active and how to scope it.
+
+**Grid (auto), v4.0.1:** the single "Grid" choice uses this hook when it is
+demonstrably working in the launcher that is installed, and the standalone
+Grid overlay otherwise, so no per-ROM or per-launcher-build variant of the app
+is needed any more. "Demonstrably working" is a handshake: once per launcher
+process the hook writes `files/q25toolbox_hook.state` in the launcher's data
+dir (`ok=1` only if all four hooks Grid needs installed: `isTablet`, the
+hotseat guard, the `DeviceProfile` fixup and `showAsGrid`, plus the launcher's
+`versionCode`), and the app reads it as root. A missing file or another
+`versionCode` (a launcher update) is "unknown" and a failed hook is "broken";
+only "ok" turns the hook on, with one exception: an install updating from v3,
+whose old hook never wrote the file, keeps the hook that already works until
+the new one has run once. The check runs when the Recents screen opens, on each
+app launch and when the accessibility service connects. "Grid, standalone"
+never uses the hook.
 
 - Forces the real two-row Grid Recents overview (multiple task cards
   on-screen, not one-app-per-swipe) on `SearchLauncherQuickStep.apk`, the
@@ -315,29 +329,10 @@ shows whether the module is active and how to scope it.
 - "Restart Launcher" / "Restart SystemUI" actions use a hard `kill -9` on the
   actual PID - `am force-stop` is a no-op for persistent processes.
 
-- **Recents Provider Repair** is unchanged and still APK-level. It is the
-  recovery path for the BenOS OTA that ships `SearchLauncherQuickStep.apk`
-  with `resources.arsc` stored uncompressed but not 4-byte aligned - which
-  PackageManager silently refuses at its boot-time scan, so
-  `com.android.launcher3` never registers and there is no Recents provider at
-  all. Repair pulls whatever launcher build is actually installed, realigns
-  and re-signs it on-device, bind-mounts the result (persisted via a
-  `service.d` boot script), and says whether a reboot is still needed (the
-  alignment check only runs at PackageManager's own boot-time scan). It uses
-  the device's own apk, so it has no version-lock problem.
-- The realign/re-sign step is `ApkAligner` + `OnDeviceApkSigner` in `core/`.
-  `ApkAligner` is a from-scratch pure-Kotlin reimplementation of `zipalign`'s
-  alignment step (padding each STORED entry's local-header extra field, then
-  rewriting the Central Directory/EOCD offsets), so no arm64 `zipalign` binary
-  has to be bundled; it throws rather than emit a corrupt apk on layouts it
-  can't handle safely (data descriptors, ZIP64), and has unit-test coverage
-  including a regression test for an already-signed input whose APK Signing
-  Block sits between the last entry and the Central Directory.
-  `OnDeviceApkSigner` re-signs v2/v3 via Google's `apksig` with a throwaway key
-  generated into, and never leaving, AndroidKeyStore - which is safe *because*
-  the target is installed by priv-app folder placement rather than
-  `pm install`, so its permission grants are folder-based, not
-  signature-based.
+- The v3 "Recents Provider Repair" (an on-device realign and re-sign of a launcher APK that a BenOS OTA shipped
+  misaligned) was removed in v4.0.1, together with `ApkAligner` and `OnDeviceApkSigner`. The standalone overlays
+  draw Recents themselves and do not need the launcher's Recents provider. A bind mount left by an earlier
+  repair is not touched.
 
 ### Ticker Notifications (`TickerController` + `TickerOverlayController`)
 - A "Super Status Bar"-style scrolling banner instead of heads-up popups.

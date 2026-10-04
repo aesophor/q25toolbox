@@ -70,16 +70,13 @@ object DaemonMaintenance {
             }
         }
         // v3: tear down the pre-v3 bind-mounted grid patch (module + patched
-        // apk + boot script + mount). Runs before the repair-heal check so a
-        // stale legacy boot script does not look like a repair that needs
-        // healing. The grid/masonry layout is an LSPosed hook now.
+        // apk + boot script + mount). The hooked grid/masonry layout is an LSPosed module now.
         RecentsTweaksController.cleanupLegacyGridPatch()
 
-        // Only heals the OTA "no Recents provider" repair bind-mount, if the
-        // user ever ran it.
-        if (RecentsTweaksController.isPersisted() && !RecentsTweaksController.isHealthy(context)) {
-            RecentsTweaksController.repairRecentsProvider(context)
-        }
+        // v3.x kept the LSPosed Grid under its own key; adopt it as Grid (auto), then settle hook-or-overlay for
+        // whatever the launcher can do right now (a launcher update or a newly enabled module changes the answer).
+        RecentsTweaksController.migrateLegacyGrid(context)
+        RecentsTweaksController.reconcileGrid(context)
 
         for ((script, lock) in DEPRECATED_SCRIPTS) {
             RootShell.run("kill \$(pgrep -f $script) 2>/dev/null; rm -f /data/adb/service.d/$script /data/adb/$lock")

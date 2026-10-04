@@ -349,12 +349,12 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">Now runs on LineageOS 22 and 23, besides BenOS and ZinwaOS.</string>
-    <string name="whats_new_body">The app detects your ROM on its own (shown next to the title in Info; change it in Settings) and hides what does not apply. New: Slim List, Masonry and Grid Recents with no Xposed (they open from the physical Recents key), Zygisk Detach, and on LineageOS Double-Tap to Wake and Call Proximity Sleep. Enter or the pad now opens the PIN on the lockscreen (on by default only on LineageOS).\n\nTelemetry blocking is now per app: if you already had it on, your detected apps were enrolled for you.\n\nAdBlock also works on root managers that do not mount module files, and Backup now covers KeyRemap, Recents and Zygisk Detach.</string>
+    <string name="whats_new_headline">Now runs on LineageOS 23, besides BenOS and ZinwaOS.</string>
+    <string name="whats_new_body">The app detects your ROM on its own (shown next to the title in Info; change it in Settings) and hides what does not apply. New: Slim List, Masonry and Grid Recents with no Xposed (they open from the physical Recents key), Zygisk Detach, and on LineageOS Double-Tap to Wake and Call Proximity Sleep. Enter or the pad now opens the PIN on the lockscreen (on by default only on LineageOS).\n\nTelemetry blocking is now per app: if you already had it on, your detected apps were enrolled for you.\n\nAdBlock also works on root managers that do not mount module files, and Backup now covers KeyRemap, Recents and Zygisk Detach.\n\nNew in 4.0.1: Grid now picks the LSPosed Grid when it works in your launcher and the standalone one otherwise, so LSPosed is no longer required. The Recents repair button is gone.</string>
     <string name="whats_new_matrix_title">Which version do I want?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS and LineageOS 22/23 (Xposed optional)\n3.1  :  stock-based Q25 ROMs, with LSPosed / Vector\n2.1.1  :  BenOS beta3, no Xposed framework\n2.0.5  :  BenOS pre-beta3a / older stock</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS and LineageOS 23 (Xposed optional)\n3.1  :  stock-based Q25 ROMs, with LSPosed / Vector\n2.1.1  :  BenOS beta3, no Xposed framework\n2.0.5  :  BenOS pre-beta3a / older stock</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
@@ -369,12 +369,6 @@
     <string name="recents_transparency_desc">How much of the wallpaper shows through behind the cards. Restarts the launcher to apply.</string>
     <string name="recents_restart_launcher">Restart Launcher</string>
     <string name="recents_restart_systemui">Restart SystemUI</string>
-    <string name="recents_repair_title">Recents Provider Repair</string>
-    <string name="recents_repair_desc">If Recents/Overview stopped working after a system update, use this to restore it.</string>
-    <string name="recents_repair_button">Repair Recents Provider</string>
-    <string name="recents_repair_success">Recents provider repaired.</string>
-    <string name="recents_repair_needs_reboot">Repair applied — reboot your device to finish restoring Recents.</string>
-    <string name="recents_repair_failed">Repair failed. Try again after a reboot.</string>
     <string name="generic_cancel">Cancel</string>
     <string name="settings_backup_restore">Backup &amp; Restore</string>
     <string name="settings_backup_desc">Export the selected modules\' settings to a JSON file, or restore them from one. Restore merges into your current settings — it never wipes what isn\'t in the file.</string>
@@ -467,7 +461,7 @@
     <string name="telemetry_app_status_blocked">Blocked</string>
     <string name="telemetry_app_status_unblocked">Not blocked</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Grid, standalone (two rows, no Xposed)</string>
+    <string name="recents_mode_grid_standalone">Grid, standalone (two rows, never uses LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Grid corner radius</string>
     <string name="recents_slim_corner_quilt">Masonry corner radius</string>
@@ -510,4 +504,12 @@
     <string name="call_prox_desc">During a call, turns the screen off when the phone is held to your ear and back on when you move it away. Replaces the system\'s own handling where it fails to blank the screen. It only acts on the handset earpiece (not speakerphone, Bluetooth or a wired headset) and always wakes the screen when the call ends. Needs root and the accessibility service. Android 12 or later.</string>
     <string name="call_prox_sensor_title">Proximity sensor</string>
     <string name="dt2w_desc_lineage">Wake the device by double-tapping the screen while it is off. The touch controller keeps reporting touches with the screen off, so a small root listener runs only while the screen is off, and wakes the device on a double tap (two taps within about a second). It stops when the screen turns on, so it costs nothing during use. Needs root and the accessibility service. Fast taps are occasionally missed: just tap again.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Grid (LSPosed if available, otherwise standalone)</string>
+    <string name="recents_grid_using_hook">Grid is using the LSPosed hook (the launcher\'s own Overview).</string>
+    <string name="recents_grid_using_overlay">Grid is using the standalone overlay.</string>
+    <string name="recents_hook_status_ok">LSPosed hook: working in the launcher.</string>
+    <string name="recents_hook_status_broken">LSPosed hook: it could not hook this launcher build, so the standalone Grid is used.</string>
+    <string name="recents_hook_status_unknown">LSPosed hook: not seen in the launcher yet. Enable the module for the launcher in LSPosed, then restart the launcher.</string>
+    <string name="recents_hook_recheck">Check again</string>
 </resources>

@@ -328,12 +328,6 @@
     <string name="recents_transparency_desc">Wie viel vom Hintergrundbild hinter den Karten durchscheint. Startet Launcher3 neu, um es anzuwenden.</string>
     <string name="recents_restart_launcher">Launcher3 neu starten</string>
     <string name="recents_restart_systemui">SystemUI neu starten</string>
-    <string name="recents_repair_title">Reparatur des Recents-Providers</string>
-    <string name="recents_repair_desc">Falls Recents/Übersicht nach einem Systemupdate nicht mehr funktioniert, damit wiederherstellen.</string>
-    <string name="recents_repair_button">Recents-Provider reparieren</string>
-    <string name="recents_repair_success">Recents-Provider repariert.</string>
-    <string name="recents_repair_needs_reboot">Reparatur angewendet — Gerät neu starten, um Recents vollständig wiederherzustellen.</string>
-    <string name="recents_repair_failed">Reparatur fehlgeschlagen. Nach einem Neustart erneut versuchen.</string>
 
     <string name="prox_live_status">Live-Sensorüberwachung</string>
     <string name="prox_unavailable">Der Näherungssensor ist auf diesem Gerät nicht verfügbar.</string>
@@ -363,12 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">SystemUI zwangsweise neu starten, um eine ausstehende Änderung anzuwenden</string>
     <string name="settings_quick_access_notifications_title">Benachrichtigungszugriff</string>
     <string name="settings_quick_access_notifications_subtitle">Manuelle Alternative für Ticker-Benachrichtigungen, falls die Root-Freigabe nicht griff</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Verstanden</string>
-    <string name="whats_new_headline">Läuft jetzt auch auf LineageOS 22 und 23, zusätzlich zu BenOS und ZinwaOS.</string>
-    <string name="whats_new_body">Die App erkennt Ihre ROM selbst (neben dem Titel in Info; änderbar in den Einstellungen) und blendet aus, was nicht zutrifft. Neu: Zuletzt-Ansichten Schmale Liste, Mosaik und Raster ohne Xposed (geöffnet mit der physischen Übersicht-Taste), Zygisk Detach und unter LineageOS Doppeltippen zum Wecken sowie Call Proximity Sleep. Eingabe oder das Pad öffnen jetzt die PIN auf dem Sperrbildschirm (nur unter LineageOS standardmäßig an).\n\nDie Telemetrie-Sperre gilt jetzt pro App: Wenn sie schon aktiv war, wurden die erkannten Apps für Sie eingetragen.\n\nAdBlock funktioniert auch mit Root-Managern, die Moduldateien nicht einhängen, und die Sicherung umfasst jetzt KeyRemap, Zuletzt und Zygisk Detach.</string>
+    <string name="whats_new_headline">Läuft jetzt auch auf LineageOS 23, zusätzlich zu BenOS und ZinwaOS.</string>
+    <string name="whats_new_body">Die App erkennt Ihre ROM selbst (neben dem Titel in Info; änderbar in den Einstellungen) und blendet aus, was nicht zutrifft. Neu: Zuletzt-Ansichten Schmale Liste, Mosaik und Raster ohne Xposed (geöffnet mit der physischen Übersicht-Taste), Zygisk Detach und unter LineageOS Doppeltippen zum Wecken sowie Call Proximity Sleep. Eingabe oder das Pad öffnen jetzt die PIN auf dem Sperrbildschirm (nur unter LineageOS standardmäßig an).\n\nDie Telemetrie-Sperre gilt jetzt pro App: Wenn sie schon aktiv war, wurden die erkannten Apps für Sie eingetragen.\n\nAdBlock funktioniert auch mit Root-Managern, die Moduldateien nicht einhängen, und die Sicherung umfasst jetzt KeyRemap, Zuletzt und Zygisk Detach.\n\nNeu in 4.0.1: Raster nutzt jetzt das LSPosed-Raster, wenn es in Ihrem Launcher funktioniert, sonst das eigenständige; LSPosed ist damit nicht mehr nötig. Die Reparatur-Schaltfläche für Zuletzt ist entfernt.</string>
     <string name="whats_new_matrix_title">Welche Version brauche ich?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS und LineageOS 22/23 (Xposed optional)\n3.1  :  Stock-basierte Q25-ROMs, mit LSPosed / Vector\n2.1.1  :  BenOS beta3, ohne Xposed\n2.0.5  :  BenOS vor beta3a / älterer Stock</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS und LineageOS 23 (Xposed optional)\n3.1  :  Stock-basierte Q25-ROMs, mit LSPosed / Vector\n2.1.1  :  BenOS beta3, ohne Xposed\n2.0.5  :  BenOS vor beta3a / älterer Stock</string>
     <string name="generic_cancel">Abbrechen</string>
     <string name="settings_backup_restore">Sichern &amp; Wiederherstellen</string>
     <string name="settings_backup_desc">Exportiert die Einstellungen der ausgewählten Module in eine JSON-Datei oder stellt sie daraus wieder her. Die Wiederherstellung führt mit deinen aktuellen Einstellungen zusammen — sie löscht nie, was nicht in der Datei steht.</string>
@@ -458,7 +452,7 @@
     <string name="telemetry_app_status_blocked">Blockiert</string>
     <string name="telemetry_app_status_unblocked">Nicht blockiert</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Raster, eigenständig (zwei Reihen, ohne Xposed)</string>
+    <string name="recents_mode_grid_standalone">Raster, eigenständig (zwei Reihen, nutzt nie LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Eckenradius des Rasters</string>
     <string name="recents_slim_corner_quilt">Eckenradius des Mosaiks</string>
@@ -501,4 +495,12 @@
     <string name="call_prox_desc">Schaltet während eines Anrufs den Bildschirm aus, wenn Sie das Telefon ans Ohr halten, und wieder ein, wenn Sie es wegnehmen. Ersetzt die Systembehandlung, wo diese den Bildschirm nicht abschaltet. Wirkt nur beim Hörer (nicht bei Lautsprecher, Bluetooth oder Kabel-Headset) und schaltet den Bildschirm am Anrufende immer wieder ein. Benötigt Root und den Bedienungshilfen-Dienst. Android 12 oder neuer.</string>
     <string name="call_prox_sensor_title">Näherungssensor</string>
     <string name="dt2w_desc_lineage">Weckt das Gerät durch Doppeltippen auf den ausgeschalteten Bildschirm. Der Touch-Controller meldet Berührungen auch bei ausgeschaltetem Bildschirm, daher läuft ein kleiner Root-Listener nur, solange der Bildschirm aus ist, und weckt bei einem Doppeltipp (zwei Tipps innerhalb von etwa einer Sekunde). Beim Einschalten des Bildschirms stoppt er und kostet im Betrieb nichts. Benötigt Root und den Bedienungshilfen-Dienst. Schnelle Tipps gehen gelegentlich verloren: einfach erneut tippen.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Raster (LSPosed, falls verfügbar, sonst eigenständig)</string>
+    <string name="recents_grid_using_hook">Das Raster nutzt den LSPosed-Hook (die Übersicht des Launchers selbst).</string>
+    <string name="recents_grid_using_overlay">Das Raster nutzt die eigenständige Überlagerung.</string>
+    <string name="recents_hook_status_ok">LSPosed-Hook: funktioniert im Launcher.</string>
+    <string name="recents_hook_status_broken">LSPosed-Hook: Er konnte sich nicht in diese Launcher-Version einklinken, daher wird das eigenständige Raster verwendet.</string>
+    <string name="recents_hook_status_unknown">LSPosed-Hook: im Launcher noch nicht gesehen. Aktivieren Sie das Modul in LSPosed für den Launcher und starten Sie ihn neu.</string>
+    <string name="recents_hook_recheck">Erneut prüfen</string>
 </resources>

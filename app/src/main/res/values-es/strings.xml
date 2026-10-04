@@ -328,12 +328,6 @@
     <string name="recents_transparency_desc">Cuánto se ve el fondo de pantalla detrás de las tarjetas. Reinicia Launcher3 para aplicarlo.</string>
     <string name="recents_restart_launcher">Reiniciar Launcher3</string>
     <string name="recents_restart_systemui">Reiniciar SystemUI</string>
-    <string name="recents_repair_title">Reparación del proveedor de Recientes</string>
-    <string name="recents_repair_desc">Si Recientes/Overview dejó de funcionar tras una actualización del sistema, usa esto para restaurarlo.</string>
-    <string name="recents_repair_button">Reparar proveedor de Recientes</string>
-    <string name="recents_repair_success">Proveedor de Recientes reparado.</string>
-    <string name="recents_repair_needs_reboot">Reparación aplicada — reinicia el dispositivo para terminar de restaurar Recientes.</string>
-    <string name="recents_repair_failed">La reparación falló. Vuelve a intentarlo tras reiniciar.</string>
 
     <string name="prox_live_status">Monitor de sensor en vivo</string>
     <string name="prox_unavailable">El sensor de proximidad no está disponible en este dispositivo.</string>
@@ -363,12 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Fuerza el reinicio de la SystemUI para aplicar un cambio pendiente</string>
     <string name="settings_quick_access_notifications_title">Acceso a notificaciones</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual para las Notificaciones tipo ticker si la concesión con root no se aplicó</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Entendido</string>
-    <string name="whats_new_headline">Ahora funciona también en LineageOS 22 y 23, además de BenOS y ZinwaOS.</string>
-    <string name="whats_new_body">La app detecta tu ROM sola (se ve junto al título en Info; se cambia en Ajustes) y oculta lo que no aplica. Novedades: Recientes con Lista Fina, Mosaico y Cuadrícula sin Xposed (se abren con la tecla física de Recientes), Zygisk Detach y, en LineageOS, Doble toque para despertar y Call Proximity Sleep. Intro o el pad abren ahora el PIN en la pantalla de bloqueo (activado por defecto solo en LineageOS).\n\nEl bloqueo de telemetría es ahora por app: si ya lo tenías activado, se enrolaron por ti las apps detectadas.\n\nAdBlock también funciona en gestores de root que no montan los archivos de los módulos, y la copia de seguridad cubre ahora KeyRemap, Recientes y Zygisk Detach.</string>
+    <string name="whats_new_headline">Ahora funciona también en LineageOS 23, además de BenOS y ZinwaOS.</string>
+    <string name="whats_new_body">La app detecta tu ROM sola (se ve junto al título en Info; se cambia en Ajustes) y oculta lo que no aplica. Novedades: Recientes con Lista Fina, Mosaico y Cuadrícula sin Xposed (se abren con la tecla física de Recientes), Zygisk Detach y, en LineageOS, Doble toque para despertar y Call Proximity Sleep. Intro o el pad abren ahora el PIN en la pantalla de bloqueo (activado por defecto solo en LineageOS).\n\nEl bloqueo de telemetría es ahora por app: si ya lo tenías activado, se enrolaron por ti las apps detectadas.\n\nAdBlock también funciona en gestores de root que no montan los archivos de los módulos, y la copia de seguridad cubre ahora KeyRemap, Recientes y Zygisk Detach.\n\nNovedad en 4.0.1: Cuadrícula usa ahora la de LSPosed cuando funciona en tu launcher y la independiente si no, así que LSPosed ya no es obligatorio. El botón de reparar Recientes ha desaparecido.</string>
     <string name="whats_new_matrix_title">¿Qué versión quiero?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS y LineageOS 22/23 (Xposed opcional)\n3.1  :  ROM Q25 basadas en stock, con LSPosed / Vector\n2.1.1  :  BenOS beta3, sin Xposed\n2.0.5  :  BenOS anterior a beta3a / stock antiguo</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS y LineageOS 23 (Xposed opcional)\n3.1  :  ROM Q25 basadas en stock, con LSPosed / Vector\n2.1.1  :  BenOS beta3, sin Xposed\n2.0.5  :  BenOS anterior a beta3a / stock antiguo</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="settings_backup_restore">Copia de seguridad y restauración</string>
     <string name="settings_backup_desc">Exporta los ajustes de los módulos seleccionados a un archivo JSON, o restáuralos desde uno. La restauración se fusiona con tus ajustes actuales — nunca borra lo que no está en el archivo.</string>
@@ -458,7 +452,7 @@
     <string name="telemetry_app_status_blocked">Bloqueada</string>
     <string name="telemetry_app_status_unblocked">Sin bloquear</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Cuadrícula independiente (dos filas, sin Xposed)</string>
+    <string name="recents_mode_grid_standalone">Cuadrícula independiente (dos filas, nunca usa LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Radio de esquinas de la cuadrícula</string>
     <string name="recents_slim_corner_quilt">Radio de esquinas del mosaico</string>
@@ -501,4 +495,12 @@
     <string name="call_prox_desc">Durante una llamada, apaga la pantalla cuando acercas el teléfono a la oreja y la enciende al separarlo. Sustituye al manejo del sistema cuando este no consigue apagar la pantalla. Solo actúa con el auricular (no con altavoz, Bluetooth ni auriculares con cable) y siempre enciende la pantalla al terminar la llamada. Requiere root y el servicio de accesibilidad. Android 12 o posterior.</string>
     <string name="call_prox_sensor_title">Sensor de proximidad</string>
     <string name="dt2w_desc_lineage">Despierta el dispositivo con un doble toque en la pantalla apagada. El controlador táctil sigue informando de los toques con la pantalla apagada, así que un pequeño listener de root se ejecuta solo mientras la pantalla está apagada y despierta con un doble toque (dos toques en cerca de un segundo). Se detiene al encender la pantalla, por lo que no cuesta nada durante el uso. Requiere root y el servicio de accesibilidad. A veces se pierde algún toque rápido: basta con repetir.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Cuadrícula (LSPosed si está disponible, si no la independiente)</string>
+    <string name="recents_grid_using_hook">La cuadrícula usa el hook de LSPosed (la vista general del propio launcher).</string>
+    <string name="recents_grid_using_overlay">La cuadrícula usa la superposición independiente.</string>
+    <string name="recents_hook_status_ok">Hook de LSPosed: funcionando en el launcher.</string>
+    <string name="recents_hook_status_broken">Hook de LSPosed: no pudo engancharse a esta versión del launcher, así que se usa la cuadrícula independiente.</string>
+    <string name="recents_hook_status_unknown">Hook de LSPosed: aún no se ha visto en el launcher. Activa el módulo para el launcher en LSPosed y reinicia el launcher.</string>
+    <string name="recents_hook_recheck">Comprobar de nuevo</string>
 </resources>

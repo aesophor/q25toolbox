@@ -328,12 +328,6 @@
     <string name="recents_transparency_desc">Quelle part du fond d\'écran est visible derrière les cartes. Redémarre Launcher3 pour appliquer.</string>
     <string name="recents_restart_launcher">Redémarrer Launcher3</string>
     <string name="recents_restart_systemui">Redémarrer SystemUI</string>
-    <string name="recents_repair_title">Réparation du fournisseur de Récents</string>
-    <string name="recents_repair_desc">Si Récents/Aperçu a cessé de fonctionner après une mise à jour système, utilise ceci pour le restaurer.</string>
-    <string name="recents_repair_button">Réparer le fournisseur de Récents</string>
-    <string name="recents_repair_success">Fournisseur de Récents réparé.</string>
-    <string name="recents_repair_needs_reboot">Réparation appliquée — redémarre l\'appareil pour terminer la restauration de Récents.</string>
-    <string name="recents_repair_failed">Échec de la réparation. Réessaie après un redémarrage.</string>
 
     <string name="prox_live_status">Moniteur du capteur en direct</string>
     <string name="prox_unavailable">Le capteur de proximité n\'est pas disponible sur cet appareil.</string>
@@ -363,12 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Force le redémarrage de SystemUI pour appliquer un réglage en attente</string>
     <string name="settings_quick_access_notifications_title">Accès aux notifications</string>
     <string name="settings_quick_access_notifications_subtitle">Solution de repli manuelle pour les notifications ticker si l\'autorisation root n\'a pas pris</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Compris</string>
-    <string name="whats_new_headline">Fonctionne désormais aussi sous LineageOS 22 et 23, en plus de BenOS et ZinwaOS.</string>
-    <string name="whats_new_body">L\'appli détecte seule votre ROM (affichée à côté du titre dans Info ; modifiable dans Réglages) et masque ce qui ne s\'applique pas. Nouveautés : Récents en Liste Fine, Mosaïque et Grille sans Xposed (ouverts par la touche physique Récents), Zygisk Detach et, sous LineageOS, Double appui pour réveiller et Call Proximity Sleep. Entrée ou le pad ouvrent désormais le code PIN sur l\'écran verrouillé (activé par défaut uniquement sous LineageOS).\n\nLe blocage de la télémétrie est maintenant par appli : si vous l\'aviez déjà activé, les applis détectées ont été enrôlées pour vous.\n\nAdBlock fonctionne aussi avec les gestionnaires root qui ne montent pas les fichiers des modules, et la sauvegarde couvre maintenant KeyRemap, Récents et Zygisk Detach.</string>
+    <string name="whats_new_headline">Fonctionne désormais aussi sous LineageOS 23, en plus de BenOS et ZinwaOS.</string>
+    <string name="whats_new_body">L\'appli détecte seule votre ROM (affichée à côté du titre dans Info ; modifiable dans Réglages) et masque ce qui ne s\'applique pas. Nouveautés : Récents en Liste Fine, Mosaïque et Grille sans Xposed (ouverts par la touche physique Récents), Zygisk Detach et, sous LineageOS, Double appui pour réveiller et Call Proximity Sleep. Entrée ou le pad ouvrent désormais le code PIN sur l\'écran verrouillé (activé par défaut uniquement sous LineageOS).\n\nLe blocage de la télémétrie est maintenant par appli : si vous l\'aviez déjà activé, les applis détectées ont été enrôlées pour vous.\n\nAdBlock fonctionne aussi avec les gestionnaires root qui ne montent pas les fichiers des modules, et la sauvegarde couvre maintenant KeyRemap, Récents et Zygisk Detach.\n\nNouveau dans 4.0.1 : Grille utilise désormais celle de LSPosed quand elle fonctionne dans votre lanceur, et l\'autonome sinon ; LSPosed n\'est donc plus obligatoire. Le bouton de réparation de Récents a disparu.</string>
     <string name="whats_new_matrix_title">Quelle version me faut-il ?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS et LineageOS 22/23 (Xposed facultatif)\n3.1  :  ROM Q25 basées sur stock, avec LSPosed / Vector\n2.1.1  :  BenOS beta3, sans Xposed\n2.0.5  :  BenOS antérieur à beta3a / stock ancien</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS et LineageOS 23 (Xposed facultatif)\n3.1  :  ROM Q25 basées sur stock, avec LSPosed / Vector\n2.1.1  :  BenOS beta3, sans Xposed\n2.0.5  :  BenOS antérieur à beta3a / stock ancien</string>
     <string name="generic_cancel">Annuler</string>
     <string name="settings_backup_restore">Sauvegarde et restauration</string>
     <string name="settings_backup_desc">Exporte les réglages des modules sélectionnés dans un fichier JSON, ou les restaure depuis un. La restauration fusionne avec tes réglages actuels — elle n\'efface jamais ce qui n\'est pas dans le fichier.</string>
@@ -458,7 +452,7 @@
     <string name="telemetry_app_status_blocked">Bloquée</string>
     <string name="telemetry_app_status_unblocked">Non bloquée</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Grille autonome (deux rangées, sans Xposed)</string>
+    <string name="recents_mode_grid_standalone">Grille autonome (deux rangées, n\'utilise jamais LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Rayon des coins de la grille</string>
     <string name="recents_slim_corner_quilt">Rayon des coins de la mosaïque</string>
@@ -501,4 +495,12 @@
     <string name="call_prox_desc">Pendant un appel, éteint l\'écran quand vous approchez le téléphone de l\'oreille et le rallume quand vous l\'éloignez. Remplace la gestion du système lorsqu\'elle n\'éteint pas l\'écran. N\'agit que sur l\'écouteur (pas en haut-parleur, Bluetooth ni casque filaire) et rallume toujours l\'écran à la fin de l\'appel. Nécessite root et le service d\'accessibilité. Android 12 ou version ultérieure.</string>
     <string name="call_prox_sensor_title">Capteur de proximité</string>
     <string name="dt2w_desc_lineage">Réveille l\'appareil par un double appui sur l\'écran éteint. Le contrôleur tactile continue de signaler les appuis écran éteint : un petit listener root ne tourne donc que lorsque l\'écran est éteint et réveille l\'appareil sur un double appui (deux appuis en environ une seconde). Il s\'arrête à l\'allumage de l\'écran et ne coûte rien pendant l\'utilisation. Nécessite root et le service d\'accessibilité. Un appui rapide est parfois manqué : il suffit de recommencer.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Grille (LSPosed si disponible, sinon autonome)</string>
+    <string name="recents_grid_using_hook">La grille utilise le hook LSPosed (l\'aperçu du lanceur lui-même).</string>
+    <string name="recents_grid_using_overlay">La grille utilise la superposition autonome.</string>
+    <string name="recents_hook_status_ok">Hook LSPosed : fonctionne dans le lanceur.</string>
+    <string name="recents_hook_status_broken">Hook LSPosed : il n\'a pas pu s\'accrocher à cette version du lanceur, la grille autonome est donc utilisée.</string>
+    <string name="recents_hook_status_unknown">Hook LSPosed : pas encore détecté dans le lanceur. Activez le module pour le lanceur dans LSPosed, puis redémarrez le lanceur.</string>
+    <string name="recents_hook_recheck">Vérifier à nouveau</string>
 </resources>

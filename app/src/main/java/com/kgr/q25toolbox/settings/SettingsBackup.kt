@@ -378,14 +378,17 @@ object SettingsBackup {
                 val sp = context.getSharedPreferences(Q25TWEAKS_PREFS, Context.MODE_PRIVATE)
                 if (BackupModule.RECENTS in modules) {
                     root.optJSONObject("recents")?.optString("mode")?.let { name ->
-                        val mode = RecentsTweaksController.LayoutMode.entries.firstOrNull { it.name == name }
-                        // Grid and the hooked Masonry are LSPosed modes for BenOS' launcher. Restoring one onto
-                        // LineageOS would switch Recents to a mode that cannot work there, so it is skipped.
+                        val parsed = RecentsTweaksController.LayoutMode.entries.firstOrNull { it.name == name }
+                        // A backup from v3.x holds the hooked Grid (GRID); in v4 that choice is Grid (auto).
+                        val mode = if (parsed == RecentsTweaksController.LayoutMode.GRID)
+                            RecentsTweaksController.LayoutMode.GRID_AUTO else parsed
+                        // The hooked Masonry is an LSPosed mode for BenOS' launcher. Restoring it onto LineageOS
+                        // would switch Recents to a mode that is not offered there, so it is skipped.
                         val applicable = mode != null &&
-                            (mode.isOverlay || RomProfile.get(context).rom != Rom.LINEAGE)
+                            (mode != RecentsTweaksController.LayoutMode.MASONRY || RomProfile.get(context).rom != Rom.LINEAGE)
                         if (applicable && mode != null) {
-                            RecentsTweaksController.setLayoutMode(mode)
-                            KeyRemapController.setRecentsOverlayRemap(sp, mode.isOverlay)
+                            // Stores the choice, settles hook-or-overlay for Grid (auto), and remaps the Recents key.
+                            RecentsTweaksController.applyMode(context, mode)
                             scriptModulesRestored += BackupModule.RECENTS
                         }
                     }

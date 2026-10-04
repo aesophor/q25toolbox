@@ -65,6 +65,13 @@ class RecentsHookInit : IXposedHookLoadPackage {
         const val MODE_GRID = 1
         const val MODE_MASONRY = 2
 
+        /** File the app reads (as root) to learn whether the Grid hooks installed in this launcher build. */
+        private const val HANDSHAKE_FILE = "q25toolbox_hook.state"
+
+        /** Whether every hook the Grid layout needs was installed in this process. */
+        @Volatile private var gridHooksOk = false
+        @Volatile private var handshakeWritten = false
+
         /** Per-tile height multipliers for Masonry, indexed by task id modulo size. */
         private val MOSAIC_FACTORS = floatArrayOf(1.0f, 0.78f, 0.93f, 0.70f, 0.86f, 0.74f)
 
@@ -83,10 +90,13 @@ class RecentsHookInit : IXposedHookLoadPackage {
 
         XposedBridge.log("[$TAG] loaded in ${lpparam.packageName}, installing Recents hooks")
         val cl = lpparam.classLoader
-        forceOverviewTablet(cl)
-        guardHotseatRecalc(cl)
-        fixupOverviewDeviceProfile(cl)
-        forceShowAsGrid(cl)
+        // The four hooks the Grid layout cannot work without. Masonry, corners and scrim are cosmetic extras.
+        // The app's "Grid (auto)" only uses this hook when all four are in (see writeHandshake).
+        val tablet = forceOverviewTablet(cl)
+        val hotseat = guardHotseatRecalc(cl)
+        val profile = fixupOverviewDeviceProfile(cl)
+        val asGrid = forceShowAsGrid(cl)
+        gridHooksOk = tablet && hotseat && profile && asGrid
         mosaicTileHeights(cl)
         squareTaskCorners(cl)
         scaleOverviewScrim(cl)
@@ -103,7 +113,27 @@ class RecentsHookInit : IXposedHookLoadPackage {
     /** Grid or Masonry: both need the tablet two-row Overview path. */
     private fun gridActive(): Boolean {
         val ctx = currentApplication() ?: return false
+        writeHandshake(ctx)
         return mode(ctx) != MODE_STOCK
+    }
+
+    /**
+     * Tells the app, once per launcher process, whether the Grid hooks installed, together with the launcher's
+     * versionCode so the verdict cannot outlive a launcher update. Done from the first hook callback because that
+     * is the first moment an Application context exists; it runs at launcher start whatever the layout mode is, so
+     * the app learns the answer before it ever turns the hook on. Never allowed to throw into the launcher.
+     */
+    private fun writeHandshake(ctx: Context) {
+        if (handshakeWritten) return
+        handshakeWritten = true
+        try {
+            @Suppress("DEPRECATION")
+            val versionCode = ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionCode
+            java.io.File(ctx.filesDir, HANDSHAKE_FILE)
+                .writeText("ok=${if (gridHooksOk) 1 else 0}\nlauncher=$versionCode\n")
+        } catch (t: Throwable) {
+            XposedBridge.log("[$TAG] handshake write failed: ${t.message}")
+        }
     }
 
     private fun scrimAlpha(context: Context): Float = try {
@@ -115,8 +145,8 @@ class RecentsHookInit : IXposedHookLoadPackage {
     // --- hooks ---------------------------------------------------------
 
     /** `DisplayController.Info.isTablet(WindowBounds)` -> true while a grid mode is active. */
-    private fun forceOverviewTablet(cl: ClassLoader) {
-        try {
+    private fun forceOverviewTablet(cl: ClassLoader): Boolean {
+        return try {
             XposedHelpers.findAndHookMethod(
                 "com.android.launcher3.util.DisplayController\$Info", cl,
                 "isTablet", "com.android.launcher3.util.WindowBounds",
@@ -127,8 +157,10 @@ class RecentsHookInit : IXposedHookLoadPackage {
                 }
             )
             XposedBridge.log("[$TAG] hooked DisplayController.Info.isTablet")
+            true
         } catch (t: Throwable) {
             XposedBridge.log("[$TAG] Info.isTablet hook failed: ${t.message}")
+            false
         }
     }
 
@@ -142,8 +174,8 @@ class RecentsHookInit : IXposedHookLoadPackage {
      * anyway (the home launcher is a third party one), so no-op the recalc while
      * a grid mode is active.
      */
-    private fun guardHotseatRecalc(cl: ClassLoader) {
-        try {
+    private fun guardHotseatRecalc(cl: ClassLoader): Boolean {
+        return try {
             XposedHelpers.findAndHookMethod(
                 "com.android.launcher3.DeviceProfile", cl,
                 "recalculateHotseatWidthAndBorderSpace",
@@ -154,8 +186,10 @@ class RecentsHookInit : IXposedHookLoadPackage {
                 }
             )
             XposedBridge.log("[$TAG] hooked DeviceProfile.recalculateHotseatWidthAndBorderSpace")
+            true
         } catch (t: Throwable) {
             XposedBridge.log("[$TAG] hotseat recalc guard failed: ${t.message}")
+            false
         }
     }
 
@@ -165,12 +199,12 @@ class RecentsHookInit : IXposedHookLoadPackage {
      * backfill the grid dimens that are 0 in the phone resource bucket (0-size
      * task icons, no row gap otherwise).
      */
-    private fun fixupOverviewDeviceProfile(cl: ClassLoader) {
+    private fun fixupOverviewDeviceProfile(cl: ClassLoader): Boolean {
         val dp = try {
             XposedHelpers.findClass("com.android.launcher3.DeviceProfile", cl)
         } catch (t: Throwable) {
             XposedBridge.log("[$TAG] DeviceProfile not found: ${t.message}")
-            return
+            return false
         }
         val density = currentApplication()?.resources?.displayMetrics?.density ?: 2.0f
         fun px(dpValue: Int) = (dpValue * density).toInt()
@@ -209,11 +243,12 @@ class RecentsHookInit : IXposedHookLoadPackage {
             }
         }
         XposedBridge.log("[$TAG] overview profile fixup on $n DeviceProfile constructor(s)")
+        return n > 0
     }
 
     /** Pin `RecentsView.showAsGrid()` for a deterministic Stock (off) state. */
-    private fun forceShowAsGrid(cl: ClassLoader) {
-        try {
+    private fun forceShowAsGrid(cl: ClassLoader): Boolean {
+        return try {
             XposedHelpers.findAndHookMethod(
                 "com.android.quickstep.views.RecentsView", cl, "showAsGrid",
                 object : XC_MethodHook() {
@@ -224,8 +259,10 @@ class RecentsHookInit : IXposedHookLoadPackage {
                 }
             )
             XposedBridge.log("[$TAG] hooked RecentsView.showAsGrid")
+            true
         } catch (t: Throwable) {
             XposedBridge.log("[$TAG] showAsGrid hook failed: ${t.message}")
+            false
         }
     }
 

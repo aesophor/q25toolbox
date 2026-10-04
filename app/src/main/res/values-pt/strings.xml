@@ -328,12 +328,6 @@
     <string name="recents_transparency_desc">Quanto do papel de parede aparece atrás dos cartões. Reinicia o Launcher3 para aplicar.</string>
     <string name="recents_restart_launcher">Reiniciar Launcher3</string>
     <string name="recents_restart_systemui">Reiniciar SystemUI</string>
-    <string name="recents_repair_title">Reparo do provedor de Recentes</string>
-    <string name="recents_repair_desc">Se Recentes/Overview parou de funcionar após uma atualização do sistema, use isto para restaurá-lo.</string>
-    <string name="recents_repair_button">Reparar provedor de Recentes</string>
-    <string name="recents_repair_success">Provedor de Recentes reparado.</string>
-    <string name="recents_repair_needs_reboot">Reparo aplicado — reinicie o dispositivo para concluir a restauração de Recentes.</string>
-    <string name="recents_repair_failed">O reparo falhou. Tente novamente após reiniciar.</string>
 
     <string name="prox_live_status">Monitor de sensor ao vivo</string>
     <string name="prox_unavailable">O sensor de proximidade não está disponível neste dispositivo.</string>
@@ -363,12 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força o reinício da SystemUI para aplicar uma alteração pendente</string>
     <string name="settings_quick_access_notifications_title">Acesso a notificações</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual para as Notificações tipo ticker se a concessão com root não pegou</string>
-    <string name="whats_new_title">Q25 Toolbox v4.0</string>
+    <string name="whats_new_title">Q25 Toolbox v4.0.1</string>
     <string name="whats_new_ok">Entendido</string>
-    <string name="whats_new_headline">Agora funciona também no LineageOS 22 e 23, além de BenOS e ZinwaOS.</string>
-    <string name="whats_new_body">A app deteta a sua ROM sozinha (mostrada junto ao título em Info; altera-se em Definições) e oculta o que não se aplica. Novidades: Recentes com Lista Fina, Mosaico e Grelha sem Xposed (abrem-se com a tecla física de Recentes), Zygisk Detach e, no LineageOS, Toque duplo para acordar e Call Proximity Sleep. Enter ou o pad abrem agora o PIN no ecrã de bloqueio (ativo por predefinição apenas no LineageOS).\n\nO bloqueio de telemetria é agora por app: se já o tinha ativo, as apps detetadas foram inscritas por si.\n\nO AdBlock funciona também em gestores de root que não montam os ficheiros dos módulos, e a cópia de segurança cobre agora KeyRemap, Recentes e Zygisk Detach.</string>
+    <string name="whats_new_headline">Agora funciona também no LineageOS 23, além de BenOS e ZinwaOS.</string>
+    <string name="whats_new_body">A app deteta a sua ROM sozinha (mostrada junto ao título em Info; altera-se em Definições) e oculta o que não se aplica. Novidades: Recentes com Lista Fina, Mosaico e Grelha sem Xposed (abrem-se com a tecla física de Recentes), Zygisk Detach e, no LineageOS, Toque duplo para acordar e Call Proximity Sleep. Enter ou o pad abrem agora o PIN no ecrã de bloqueio (ativo por predefinição apenas no LineageOS).\n\nO bloqueio de telemetria é agora por app: se já o tinha ativo, as apps detetadas foram inscritas por si.\n\nO AdBlock funciona também em gestores de root que não montam os ficheiros dos módulos, e a cópia de segurança cobre agora KeyRemap, Recentes e Zygisk Detach.\n\nNovidade na 4.0.1: Grelha usa agora a do LSPosed quando funciona no seu launcher e a autónoma caso contrário, pelo que o LSPosed já não é obrigatório. O botão de reparar Recentes foi removido.</string>
     <string name="whats_new_matrix_title">Que versão quero?</string>
-    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS e LineageOS 22/23 (Xposed opcional)\n3.1  :  ROM Q25 baseadas em stock, com LSPosed / Vector\n2.1.1  :  BenOS beta3, sem Xposed\n2.0.5  :  BenOS anterior à beta3a / stock antigo</string>
+    <string name="whats_new_matrix">v4.0+  :  BenOS, ZinwaOS e LineageOS 23 (Xposed opcional)\n3.1  :  ROM Q25 baseadas em stock, com LSPosed / Vector\n2.1.1  :  BenOS beta3, sem Xposed\n2.0.5  :  BenOS anterior à beta3a / stock antigo</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="settings_backup_restore">Cópia de segurança e restauro</string>
     <string name="settings_backup_desc">Exporta as definições dos módulos selecionados para um ficheiro JSON, ou restaura-as a partir de um. O restauro funde-se com as tuas definições atuais — nunca apaga o que não está no ficheiro.</string>
@@ -457,7 +451,7 @@
     <string name="telemetry_app_status_blocked">Bloqueada</string>
     <string name="telemetry_app_status_unblocked">Não bloqueada</string>
     <!-- Standalone Grid overlay -->
-    <string name="recents_mode_grid_standalone">Grelha autónoma (duas filas, sem Xposed)</string>
+    <string name="recents_mode_grid_standalone">Grelha autónoma (duas filas, nunca usa LSPosed)</string>
     <!-- Tile corner radius -->
     <string name="recents_slim_corner_grid">Raio dos cantos da grelha</string>
     <string name="recents_slim_corner_quilt">Raio dos cantos do mosaico</string>
@@ -500,4 +494,12 @@
     <string name="call_prox_desc">Durante uma chamada, desliga o ecrã quando aproxima o telefone do ouvido e volta a ligá-lo quando o afasta. Substitui o tratamento do sistema onde este não consegue desligar o ecrã. Só atua no auricular (não com altifalante, Bluetooth ou auscultadores com fio) e liga sempre o ecrã quando a chamada termina. Requer root e o serviço de acessibilidade. Android 12 ou posterior.</string>
     <string name="call_prox_sensor_title">Sensor de proximidade</string>
     <string name="dt2w_desc_lineage">Acorda o dispositivo com um toque duplo no ecrã desligado. O controlador tátil continua a reportar toques com o ecrã desligado, por isso um pequeno listener de root corre apenas enquanto o ecrã está desligado e acorda com um toque duplo (dois toques em cerca de um segundo). Para quando o ecrã liga, pelo que não custa nada durante a utilização. Requer root e o serviço de acessibilidade. Um toque rápido perde-se por vezes: basta repetir.</string>
+    <!-- Grid (auto) / LSPosed hook status -->
+    <string name="recents_mode_grid_auto">Grelha (LSPosed se disponível, senão autónoma)</string>
+    <string name="recents_grid_using_hook">A grelha usa o hook do LSPosed (a vista geral do próprio launcher).</string>
+    <string name="recents_grid_using_overlay">A grelha usa a sobreposição autónoma.</string>
+    <string name="recents_hook_status_ok">Hook do LSPosed: a funcionar no launcher.</string>
+    <string name="recents_hook_status_broken">Hook do LSPosed: não conseguiu ligar-se a esta versão do launcher, por isso usa-se a grelha autónoma.</string>
+    <string name="recents_hook_status_unknown">Hook do LSPosed: ainda não foi visto no launcher. Ative o módulo para o launcher no LSPosed e reinicie o launcher.</string>
+    <string name="recents_hook_recheck">Verificar de novo</string>
 </resources>

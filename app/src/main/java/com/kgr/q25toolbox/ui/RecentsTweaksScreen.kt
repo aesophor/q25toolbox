@@ -36,13 +36,12 @@ import android.view.WindowManager
 import android.os.Build
 import com.kgr.q25toolbox.service.Q25AccessibilityService
 import com.kgr.q25toolbox.service.isQ25AccessibilityServiceEnabled
-import com.kgr.q25toolbox.modules.KeyRemapController
 import android.content.Context
 import com.kgr.q25toolbox.core.Rom
 import com.kgr.q25toolbox.modules.RecentsTweaksController
+import com.kgr.q25toolbox.modules.RecentsTweaksController.HookHealth
 import com.kgr.q25toolbox.modules.RecentsTweaksController.LayoutMode
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -54,31 +53,44 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
     var xposedActive by remember { mutableStateOf(RecentsTweaksController.isXposedActive()) }
     var mode by remember { mutableStateOf(LayoutMode.STOCK) }
     var scrimAlpha by remember { mutableFloatStateOf(1f) }
-    var repairMessage by remember { mutableStateOf<String?>(null) }
     var serviceEnabled by remember { mutableStateOf(true) }
+    var health by remember { mutableStateOf(HookHealth.UNKNOWN) }
+    var hookInUse by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { serviceEnabled = isQ25AccessibilityServiceEnabled(context) }
     val onLineage = rememberRom().value == Rom.LINEAGE
 
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
+    // Reads everything the screen shows from the device (root); also used after any change.
+    fun refresh() {
+        scope.launch(Dispatchers.IO) {
             val m = RecentsTweaksController.getLayoutMode()
             val a = RecentsTweaksController.getScrimAlpha()
+            val h = RecentsTweaksController.hookHealth()
+            val inUse = RecentsTweaksController.gridUsesHook()
             withContext(Dispatchers.Main) {
                 mode = m
                 scrimAlpha = a
+                health = h
+                hookInUse = inUse
                 xposedActive = RecentsTweaksController.isXposedActive()
             }
         }
     }
+    LaunchedEffect(Unit) { refresh() }
 
     fun setModeAsync(newMode: LayoutMode) {
         mode = newMode
         scope.launch(Dispatchers.IO) {
-            RecentsTweaksController.setLayoutMode(newMode)
-            // Overlay modes need the physical Recents key hidden from the system (see KeyRemapController).
-            val prefs = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
-            KeyRemapController.setRecentsOverlayRemap(prefs, newMode.isOverlay)
-            KeyRemapController.applySettings(prefs)
+            // Stores the choice, settles hook-or-overlay for Grid (auto), and remaps the physical Recents key
+            // exactly when one of our overlays is what will open (see KeyRemapController).
+            RecentsTweaksController.applyMode(context, newMode)
+            refresh()
+        }
+    }
+
+    fun recheckAsync() {
+        scope.launch(Dispatchers.IO) {
+            RecentsTweaksController.reconcileGrid(context)
+            refresh()
         }
     }
 
@@ -89,18 +101,10 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
         }
     }
 
-    fun repairRecentsProviderAsync() {
-        scope.launch(Dispatchers.IO) {
-            val result = RecentsTweaksController.repairRecentsProvider(context)
-            delay(200)
-            val message = when {
-                result.needsReboot -> context.getString(R.string.recents_repair_needs_reboot)
-                result.mounted -> context.getString(R.string.recents_repair_success)
-                else -> context.getString(R.string.recents_repair_failed)
-            }
-            withContext(Dispatchers.Main) { repairMessage = message }
-        }
-    }
+    // A v3.x install stores the hooked Grid as GRID until the first launch of v4 adopts it as Grid (auto).
+    val shownMode = if (mode == LayoutMode.GRID) LayoutMode.GRID_AUTO else mode
+    // One of our own windows will open (needs the accessibility service and the remapped Recents key).
+    val overlayInUse = shownMode.isOverlay && !(shownMode == LayoutMode.GRID_AUTO && hookInUse)
 
     ScreenScaffold(
         title = stringResource(R.string.title_recents_tweaks),
@@ -110,10 +114,8 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             stringResource(R.string.recents_intro),
             style = MaterialTheme.typography.bodySmall
         )
-        // Overlay modes depend on the service receiving the (remapped) Recents key.
-        if (mode.isOverlay) AccessibilityServiceBanner(serviceEnabled)
+        if (overlayInUse) AccessibilityServiceBanner(serviceEnabled)
 
-        if (!onLineage) {
         DescriptionDivider()
         Text(
             stringResource(R.string.recents_section_lsposed),
@@ -143,8 +145,33 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                // What the launcher itself reports: has the hook installed everything Grid needs in THIS build?
+                Text(
+                    stringResource(
+                        when (health) {
+                            HookHealth.OK -> R.string.recents_hook_status_ok
+                            HookHealth.BROKEN -> R.string.recents_hook_status_broken
+                            HookHealth.UNKNOWN -> R.string.recents_hook_status_unknown
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (shownMode == LayoutMode.GRID_AUTO) {
+                    Text(
+                        stringResource(
+                            if (hookInUse) R.string.recents_grid_using_hook else R.string.recents_grid_using_overlay
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                OutlinedButton(
+                    onClick = { recheckAsync() },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) { Text(stringResource(R.string.recents_hook_recheck)) }
             }
-        }
         }
 
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -163,16 +190,17 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
-                // Grid/Masonry are LSPosed hooks into BenOS' launcher and do not apply on LineageOS, where
-                // the standalone overlays (labelled "Masonry" there) are the way to go. BenOS keeps its list.
+                // "Grid" picks the LSPosed Grid when the hook works in this launcher and the standalone one otherwise;
+                // "Grid, standalone" never touches the hook. The hooked Masonry is offered on BenOS/ZinwaOS only.
                 val options = if (onLineage) listOf(
                     LayoutMode.STOCK to R.string.recents_mode_stock,
                     LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
                     LayoutMode.QUILT to R.string.recents_mode_quilt,
-                    LayoutMode.GRID_OVERLAY to R.string.recents_mode_grid
+                    LayoutMode.GRID_AUTO to R.string.recents_mode_grid_auto,
+                    LayoutMode.GRID_OVERLAY to R.string.recents_mode_grid_standalone
                 ) else listOf(
                     LayoutMode.STOCK to R.string.recents_mode_stock,
-                    LayoutMode.GRID to R.string.recents_mode_grid,
+                    LayoutMode.GRID_AUTO to R.string.recents_mode_grid_auto,
                     LayoutMode.MASONRY to R.string.recents_mode_masonry,
                     LayoutMode.SLIM_LIST to R.string.recents_mode_slim,
                     LayoutMode.QUILT to R.string.recents_mode_quilt_standalone,
@@ -186,7 +214,7 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = mode == value, onClick = { setModeAsync(value) })
+                        RadioButton(selected = shownMode == value, onClick = { setModeAsync(value) })
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(labelRes), style = MaterialTheme.typography.bodyMedium)
                     }
@@ -194,48 +222,51 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
             }
         }
 
-        Text(
-            stringResource(R.string.recents_overlay_trigger_note),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        if (overlayInUse) {
+            Text(
+                stringResource(R.string.recents_overlay_trigger_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
-        if (mode.isOverlay) OverlayAppearanceCard(mode)
+        if (shownMode.isOverlay) OverlayAppearanceCard(shownMode)
 
-        if (!onLineage) {
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+        // The scrim slider is a launcher property: only the hooked layouts use it.
+        if (shownMode == LayoutMode.MASONRY || (shownMode == LayoutMode.GRID_AUTO && hookInUse)) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(R.string.recents_transparency_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "${(scrimAlpha * 100).toInt()}%",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Text(
-                        stringResource(R.string.recents_transparency_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        stringResource(R.string.recents_transparency_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        "${(scrimAlpha * 100).toInt()}%",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    Slider(
+                        value = scrimAlpha,
+                        onValueChange = { scrimAlpha = it },
+                        onValueChangeFinished = { commitScrimAlphaAsync(scrimAlpha) },
+                        valueRange = 0f..1f
                     )
                 }
-                Text(
-                    stringResource(R.string.recents_transparency_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = scrimAlpha,
-                    onValueChange = { scrimAlpha = it },
-                    onValueChangeFinished = { commitScrimAlphaAsync(scrimAlpha) },
-                    valueRange = 0f..1f
-                )
             }
-        }
         }
 
         Row(
@@ -252,39 +283,6 @@ fun RecentsTweaksScreen(onBack: () -> Unit) {
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp)
             ) { Text(stringResource(R.string.recents_restart_systemui)) }
-        }
-
-        // The OTA corruption this repairs is specific to BenOS' launcher package.
-        if (rememberRom().value != Rom.LINEAGE) {
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    stringResource(R.string.recents_repair_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    stringResource(R.string.recents_repair_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedButton(
-                    onClick = {
-                        repairMessage = null
-                        repairRecentsProviderAsync()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
-                ) { Text(stringResource(R.string.recents_repair_button)) }
-                repairMessage?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-
         }
 
         DescriptionDivider()
@@ -348,7 +346,7 @@ private fun OverlayAppearanceCard(mode: LayoutMode) {
                 onCommit = { prefs.edit().putInt(SlimRecentsController.KEY_SCRIM_BLUR, blur.toInt()).apply() }
             )
             // Corner radius only applies to the tile layouts; the vertical list has its own fixed pills.
-            if (mode == LayoutMode.GRID_OVERLAY) {
+            if (mode == LayoutMode.GRID_OVERLAY || mode == LayoutMode.GRID_AUTO) {
                 AppearanceSlider(
                     label = stringResource(R.string.recents_slim_corner_grid), value = gridCorner,
                     range = 0f..SlimRecentsController.MAX_CORNER_DP.toFloat(), unit = " dp",

@@ -250,7 +250,11 @@ class Q25AccessibilityService : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
-        worker.execute { enterOpensPinDefault = RomProfile.autoDetectedLineage() }
+        worker.execute {
+            enterOpensPinDefault = RomProfile.autoDetectedLineage()
+            // Grid (auto): re-check whether the LSPosed hook works with the launcher that is installed now.
+            try { RecentsTweaksController.reconcileGrid(this) } catch (t: Throwable) { Log.e("Q25Toolbox", "reconcileGrid failed", t) }
+        }
         super.onServiceConnected()
         instance = this
         val p = getSharedPreferences(PREFS, MODE_PRIVATE)
