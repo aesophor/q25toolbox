@@ -12,6 +12,7 @@ import com.kgr.q25toolbox.modules.ExtraDimController
 import com.kgr.q25toolbox.modules.LocationIdleController
 import com.kgr.q25toolbox.modules.TelemetryController
 import com.kgr.q25toolbox.modules.GestureSettings
+import com.kgr.q25toolbox.modules.ImeCompat
 import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.modules.RecentsTweaksController
 import com.kgr.q25toolbox.modules.SlimRecentsController
@@ -97,6 +98,7 @@ object SettingsBackup {
         Q25AccessibilityService.KEY_IME_BLOCK_APPS to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SAVED to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SUGGESTIONS to BackupModule.IME_SUGGESTIONS,
+        ImeCompat.KEY_ENABLED to BackupModule.IME_SUGGESTIONS,
         Q25AccessibilityService.KEY_CHAT_COMPOSER to BackupModule.CHAT_COMPOSER,
         Q25AccessibilityService.KEY_CALCULATOR to BackupModule.CALCULATOR,
         Q25AccessibilityService.KEY_IN_CALL_SHORTCUTS to BackupModule.IN_CALL_SHORTCUTS,

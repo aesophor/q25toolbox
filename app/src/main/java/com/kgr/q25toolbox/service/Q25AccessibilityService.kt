@@ -23,6 +23,7 @@ import com.kgr.q25toolbox.core.RootShell
 import com.kgr.q25toolbox.core.RomProfile
 import com.kgr.q25toolbox.modules.Dt2wController
 import com.kgr.q25toolbox.modules.GestureSettings
+import com.kgr.q25toolbox.modules.ImeCompat
 import com.kgr.q25toolbox.modules.KeyRemapController
 import com.kgr.q25toolbox.modules.NativeBottomGesture
 import com.kgr.q25toolbox.modules.RecentsTweaksController
@@ -270,6 +271,7 @@ class Q25AccessibilityService : AccessibilityService() {
         worker.execute {
             enterOpensPinDefault = RomProfile.autoDetectedLineage()
             onLineage = enterOpensPinDefault
+            if (onLineage) try { ImeCompat.sync(this) } catch (_: Throwable) { }
             // Grid (auto): re-check whether the LSPosed hook works with the launcher that is installed now.
             try { RecentsTweaksController.reconcileGrid(this) } catch (t: Throwable) { Log.e("Q25Toolbox", "reconcileGrid failed", t) }
         }

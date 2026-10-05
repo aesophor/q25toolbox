@@ -3,6 +3,20 @@ package com.kgr.q25toolbox.ui
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import com.kgr.q25toolbox.core.RomProfile
+import com.kgr.q25toolbox.modules.ImeCompat
+import com.kgr.q25toolbox.modules.RecentsTweaksController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -50,10 +64,55 @@ fun ImeSuggestionsScreen(onBack: () -> Unit) {
             )
         }
 
+        if (remember { RomProfile.autoDetectedLineage() }) ImeCompatCard()
+
         DescriptionDivider()
         Text(
             stringResource(R.string.ime_suggestions_desc),
             style = MaterialTheme.typography.bodySmall
         )
+    }
+}
+
+/** LineageOS: keeps the BlackBerry keyboard on its suggestions strip (LSPosed hook in the keyboard's process). */
+@Composable
+private fun ImeCompatCard() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var on by remember { mutableStateOf(ImeCompat.isEnabled(context)) }
+    var health by remember { mutableStateOf<RecentsTweaksController.HookHealth?>(null) } // null = checking
+    var check by remember { mutableIntStateOf(0) }
+    LaunchedEffect(check) {
+        health = null
+        health = withContext(Dispatchers.IO) { ImeCompat.health() }
+    }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Switch(checked = on, onCheckedChange = {
+                    on = it
+                    ImeCompat.setEnabled(context, it)
+                    scope.launch(Dispatchers.IO) { ImeCompat.sync(context) }
+                })
+                Text(stringResource(R.string.ime_compat_title), modifier = Modifier.weight(1f))
+            }
+            Text(stringResource(R.string.ime_compat_desc), style = MaterialTheme.typography.bodySmall)
+            if (on) {
+                Text(
+                    stringResource(when (health) {
+                        null -> R.string.ime_compat_checking
+                        RecentsTweaksController.HookHealth.OK -> R.string.ime_compat_ok
+                        else -> R.string.ime_compat_unknown
+                    }),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = {
+                        scope.launch(Dispatchers.IO) { ImeCompat.sync(context); ImeCompat.restartKeyboard() }
+                    }) { Text(stringResource(R.string.ime_compat_restart)) }
+                    OutlinedButton(onClick = { check++ }) { Text(stringResource(R.string.recents_hook_recheck)) }
+                }
+            }
+        }
     }
 }
