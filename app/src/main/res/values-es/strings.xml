@@ -578,4 +578,11 @@ En mis pruebas aguantó los cambios de tamaño de pantalla (que antes lo rompía
     <string name="ime_compat_checking">Comprobando...</string>
     <string name="title_ime_compat">Franja del teclado BlackBerry (LineageOS)</string>
     <string name="subtitle_ime_compat">Mantiene la franja de sugerencias en vez del teclado completo</string>
+    <string name="gestures_color_material_you">Colores Material You (elige una familia y luego un tono)</string>
+    <string name="gestures_color_primary">Primario</string>
+    <string name="gestures_color_secondary">Secundario</string>
+    <string name="gestures_color_tertiary">Terciario</string>
+    <string name="gestures_color_neutral">Neutro</string>
+    <string name="gestures_color_neutral_variant">Neutro variante</string>
+    <string name="gestures_color_follows">Sigue tu fondo de pantalla. Elige otro color para dejar de seguirlo.</string>
 </resources>

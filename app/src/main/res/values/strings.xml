@@ -587,4 +587,11 @@ In my tests it held through display-size changes (which used to break it every t
     <string name="ime_compat_checking">Checking...</string>
     <string name="title_ime_compat">BlackBerry keyboard strip (LineageOS)</string>
     <string name="subtitle_ime_compat">Keeps the suggestions strip instead of the full keyboard</string>
+    <string name="gestures_color_material_you">Material You colours (pick a family, then a shade)</string>
+    <string name="gestures_color_primary">Primary</string>
+    <string name="gestures_color_secondary">Secondary</string>
+    <string name="gestures_color_tertiary">Tertiary</string>
+    <string name="gestures_color_neutral">Neutral</string>
+    <string name="gestures_color_neutral_variant">Neutral variant</string>
+    <string name="gestures_color_follows">Follows your wallpaper. Pick another colour to stop.</string>
 </resources>

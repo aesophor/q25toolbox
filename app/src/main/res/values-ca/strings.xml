@@ -578,4 +578,11 @@ En les meves proves va aguantar els canvis de mida de pantalla (que abans el tre
     <string name="ime_compat_checking">Comprovant...</string>
     <string name="title_ime_compat">Franja del teclat BlackBerry (LineageOS)</string>
     <string name="subtitle_ime_compat">Manté la franja de suggeriments en lloc del teclat complet</string>
+    <string name="gestures_color_material_you">Colors Material You (tria una família i després un to)</string>
+    <string name="gestures_color_primary">Primari</string>
+    <string name="gestures_color_secondary">Secundari</string>
+    <string name="gestures_color_tertiary">Terciari</string>
+    <string name="gestures_color_neutral">Neutre</string>
+    <string name="gestures_color_neutral_variant">Neutre variant</string>
+    <string name="gestures_color_follows">Segueix el teu fons de pantalla. Tria un altre color per deixar de seguir-lo.</string>
 </resources>

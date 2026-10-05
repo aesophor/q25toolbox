@@ -216,11 +216,16 @@ object GestureSettings {
     fun arrowStyle(context: Context): ArrowStyle {
         val p = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
         val d = ArrowStyle()
+        // A colour picked from the Material You palette is stored as a reference and resolved now, so it follows
+        // the wallpaper; the saved int is only the fallback (and what older readers see).
+        fun colour(slot: String, def: Int): Int =
+            colorRef(context, slot)?.let { parseMyRef(it) }?.let { (f, t) -> myColor(context, f, t) }
+                ?: (p.getInt(A + slot, def) or 0xFF000000.toInt())
         fun i(k: String, def: Int, r: ClosedFloatingPointRange<Float>) = p.getInt(A + k, def).coerceIn(r.start.toInt(), r.endInclusive.toInt())
         return ArrowStyle(
-            arrowColor = p.getInt(A + "color", d.arrowColor) or 0xFF000000.toInt(),
-            inactiveColor = p.getInt(A + "inactive", d.inactiveColor) or 0xFF000000.toInt(),
-            activeColor = p.getInt(A + "active", d.activeColor) or 0xFF000000.toInt(),
+            arrowColor = colour("color", d.arrowColor),
+            inactiveColor = colour("inactive", d.inactiveColor),
+            activeColor = colour("active", d.activeColor),
             sizeDp = i("size", d.sizeDp, ARROW_SIZE_RANGE),
             travelDp = i("travel", d.travelDp, ARROW_TRAVEL_RANGE),
             opacityPct = i("opacity", d.opacityPct, ARROW_OPACITY_RANGE),
@@ -239,7 +244,47 @@ object GestureSettings {
             .putBoolean(A + "badge", s.showBadge).putBoolean(A + "tilt", s.followTilt).apply()
     }
 
-    private val ARROW_KEYS = listOf("color", "inactive", "active", "size", "travel", "opacity", "thickness", "speed", "badge", "tilt").map { A + it }
+    // --- Material You palette references (Android 12+) ---------------------------------------------------
+
+    /** Dynamic-colour families, the framework resources `system_<family>_<tone>`, in the order ColorBlendr lists them. */
+    val MY_FAMILIES = listOf("accent1", "accent2", "accent3", "neutral1", "neutral2")
+    val MY_TONES = listOf(0, 10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000)
+
+    /** The three arrow colours that can hold a palette reference. */
+    val COLOR_SLOTS = listOf("color", "inactive", "active")
+
+    fun myRef(family: String, tone: Int) = "$family:$tone"
+
+    /** "accent1:500" -> (accent1, 500); null if [ref] is not a valid reference. Pure, for tests. */
+    internal fun parseMyRef(ref: String?): Pair<String, Int>? {
+        val parts = ref?.split(':') ?: return null
+        if (parts.size != 2) return null
+        val tone = parts[1].toIntOrNull() ?: return null
+        return if (parts[0] in MY_FAMILIES && tone in MY_TONES) parts[0] to tone else null
+    }
+
+    /** Current value of a palette colour (it changes with the wallpaper); null below Android 12 or for an unknown name. */
+    fun myColor(context: Context, family: String, tone: Int): Int? {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return null
+        val id = context.resources.getIdentifier("system_${family}_$tone", "color", "android")
+        return if (id == 0) null else runCatching { context.getColor(id) or 0xFF000000.toInt() }.getOrNull()
+    }
+
+    fun colorRef(context: Context, slot: String): String? =
+        context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE)
+            .getString(A + slot + "_ref", null)?.takeIf { parseMyRef(it) != null }
+
+    /** Sets (or, with null, clears) the palette reference of [slot]; picking any other colour clears it. */
+    fun setColorRef(context: Context, slot: String, ref: String?) {
+        val e = context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit()
+        if (ref == null) e.remove(A + slot + "_ref") else e.putString(A + slot + "_ref", ref)
+        e.apply()
+    }
+
+    fun clearColorRefs(context: Context) { for (slot in COLOR_SLOTS) setColorRef(context, slot, null) }
+
+    private val ARROW_KEYS = listOf("color", "inactive", "active", "size", "travel", "opacity", "thickness", "speed", "badge", "tilt").map { A + it } +
+        COLOR_SLOTS.map { A + it + "_ref" }
 
     /** Every pref key this module owns (for backup/restore). */
     fun allKeys(): List<String> {
