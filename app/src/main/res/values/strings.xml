@@ -349,10 +349,12 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.1.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.2</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">The Recents key can be handled by Key Mapper (LineageOS), and the Recents overlay closes like Key2\'s.</string>
-    <string name="whats_new_body">New on LineageOS: a switch under Keyboard, Key Remapper, "Leave the Recents key to another app". The key stays remapped, so Android ignores it, but this app stops acting on it and Key Mapper sees it as PROG_RED (keycode 183, scancode 580). Set short, double and long presses there (with vibration). To open this app\'s Recents overlay from Key Mapper, use Send intent, Broadcast, action com.kgr.q25toolbox.action.RUN, package com.kgr.q25toolbox; the extra \"action\" (PREVIOUS_APP, HOME, NOTIFICATIONS, FLASHLIGHT...) runs another action. Key Mapper\'s own Recents action opens the system Overview, not this overlay.\n\nRecents overlays: the exit now works like in Key2 Toolbox. In the quilt and list the overlay waits for the app you picked to be in front before the tile expands; in the grid, Back or a tap on the background expands the newest tile. The opening is unchanged.</string>
+    <string name="whats_new_headline">The BlackBerry keyboard stays on its suggestions strip (LineageOS).</string>
+    <string name="whats_new_body">New on LineageOS: Keyboard, BlackBerry keyboard strip. The full on-screen keyboard sometimes replaced the suggestions strip. The cause: the keyboard targets an old SDK, so on this square screen Android gives it a configuration with the status bar taken off the height, which reads as landscape, and it shows the full keyboard in landscape. The switch turns on Android\'s per-app override OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION for the keyboard only, so it gets the display\'s own (portrait) configuration. No Xposed needed. It is off by default; turning it on or off restarts the keyboard for a moment.
+
+In my tests it held through display-size changes (which used to break it every time). Other triggers and a reboot were not tested one by one.</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
@@ -583,4 +585,6 @@
     <string name="ime_compat_ok">Active: the keyboard gets the display\'s portrait configuration.</string>
     <string name="ime_compat_off">Off: the keyboard still gets the legacy configuration.</string>
     <string name="ime_compat_checking">Checking...</string>
+    <string name="title_ime_compat">BlackBerry keyboard strip (LineageOS)</string>
+    <string name="subtitle_ime_compat">Keeps the suggestions strip instead of the full keyboard</string>
 </resources>

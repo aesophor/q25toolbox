@@ -87,6 +87,7 @@ object SettingsBackup {
         ZYGISK_DETACH(R.string.title_zygisk_detach),
         CALL_PROXIMITY_SLEEP(R.string.title_call_proximity_sleep),
         GESTURES(R.string.title_gestures),
+        IME_COMPAT(R.string.title_ime_compat),
     }
 
     /** Which BackupModule owns each key in the shared "q25tweaks" prefs file. */
@@ -98,7 +99,7 @@ object SettingsBackup {
         Q25AccessibilityService.KEY_IME_BLOCK_APPS to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SAVED to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SUGGESTIONS to BackupModule.IME_SUGGESTIONS,
-        ImeCompat.KEY_ENABLED to BackupModule.IME_SUGGESTIONS,
+        ImeCompat.KEY_ENABLED to BackupModule.IME_COMPAT,
         Q25AccessibilityService.KEY_CHAT_COMPOSER to BackupModule.CHAT_COMPOSER,
         Q25AccessibilityService.KEY_CALCULATOR to BackupModule.CALCULATOR,
         Q25AccessibilityService.KEY_IN_CALL_SHORTCUTS to BackupModule.IN_CALL_SHORTCUTS,

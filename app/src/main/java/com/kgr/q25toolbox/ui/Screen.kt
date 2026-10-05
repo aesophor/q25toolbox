@@ -30,6 +30,7 @@ sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes 
     data object RecentsTweaks : Screen("recents_tweaks", R.string.title_recents_tweaks, R.string.subtitle_recents_tweaks)
     data object AdBlock : Screen("adblock", R.string.title_adblock, R.string.subtitle_adblock)
     data object Gestures : Screen("gestures", R.string.title_gestures, R.string.subtitle_gestures)
+    data object ImeCompat : Screen("ime_compat", R.string.title_ime_compat, R.string.subtitle_ime_compat)
     data object ZygiskDetach : Screen("zygisk_detach", R.string.title_zygisk_detach, R.string.subtitle_zygisk_detach)
 
     val title: String @Composable get() = stringResource(titleRes)
@@ -61,6 +62,7 @@ val keyboardScreens = listOf(
     Screen.ChatComposer,
     Screen.CalculatorInput,
     Screen.ImeSuggestions,
+    Screen.ImeCompat,
     Screen.InCallShortcuts,
 )
 
@@ -112,5 +114,7 @@ fun Screen.availableOn(rom: Rom?): Boolean = when (this) {
     Screen.CallProximitySleep -> rom == Rom.LINEAGE
     // The always-on BenOS watchdog stays hidden (it degraded SystemUI); the Lineage screen-off listener is safe to show.
     Screen.Dt2w -> rom == Rom.LINEAGE
+    // A LineageOS-specific fix for the BlackBerry keyboard on the Q25 (see ImeCompat).
+    Screen.ImeCompat -> rom == Rom.LINEAGE
     else -> true
 }

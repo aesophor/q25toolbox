@@ -173,6 +173,7 @@ private fun DetailHost(screen: Screen, onBack: () -> Unit) {
         Screen.AdBlock -> AdBlockScreen(onBack)
         Screen.ZygiskDetach -> ZygiskDetachScreen(onBack)
         Screen.Gestures -> GesturesScreen(onBack)
+        Screen.ImeCompat -> ImeCompatScreen(onBack)
     }
 }
 

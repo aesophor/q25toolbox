@@ -357,10 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força el reinici de la SystemUI per aplicar un canvi pendent</string>
     <string name="settings_quick_access_notifications_title">Accés a les notificacions</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual per a les Notificacions tipus ticker si la concessió amb root no s\'ha aplicat</string>
-    <string name="whats_new_title">Q25 Toolbox v4.1.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.2</string>
     <string name="whats_new_ok">Entesos</string>
-    <string name="whats_new_headline">La tecla de Recents la pot gestionar Key Mapper (LineageOS), i l\'overlay de Recents es tanca com el de Key2.</string>
-    <string name="whats_new_body">Novetat a LineageOS: un interruptor a Teclat, Key Remapper, \"Deixar la tecla de Recents a una altra app\". La tecla continua remapejada, així que Android l\'ignora, però aquesta app deixa d\'actuar-hi i Key Mapper la veu com a PROG_RED (keycode 183, scancode 580). Allà defineixes les pulsacions curta, doble i llarga (amb vibració). Per obrir l\'overlay de Recents d\'aquesta app des de Key Mapper fes servir Enviar intent, Broadcast, acció com.kgr.q25toolbox.action.RUN, paquet com.kgr.q25toolbox; l\'extra \"action\" (PREVIOUS_APP, HOME, NOTIFICATIONS, FLASHLIGHT...) executa una altra acció. L\'acció Recents de Key Mapper obre l\'Overview del sistema, no aquest overlay.\n\nOverlays de Recents: la sortida ara funciona com a Key2 Toolbox. Al mosaic i la llista l\'overlay espera que l\'app triada sigui al davant abans d\'expandir el tile; a la graella, Enrere o tocar el fons expandeix el tile més recent. L\'entrada no canvia.</string>
+    <string name="whats_new_headline">El teclat de BlackBerry es queda a la seva franja de suggeriments (LineageOS).</string>
+    <string name="whats_new_body">Novetat a LineageOS: Teclat, Franja del teclat BlackBerry. El teclat complet en pantalla de vegades substituïa la franja de suggeriments. La causa: el teclat apunta a un SDK antic, així que en aquesta pantalla quadrada Android li lliura una configuració amb la barra d\'estat restada de l\'alçada, que es llegeix com a horitzontal, i mostra el teclat complet en horitzontal. L\'interruptor activa l\'override per app d\'Android OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION només per al teclat, de manera que rep la configuració pròpia del display (vertical). No necessita Xposed. Està desactivat per defecte; activar-lo o desactivar-lo reinicia el teclat un moment.
+
+En les meves proves va aguantar els canvis de mida de pantalla (que abans el trencaven sempre). Altres disparadors i un reinici no es van provar un a un.</string>
     <string name="generic_cancel">Cancel·la</string>
     <string name="settings_backup_restore">Còpia de seguretat i restauració</string>
     <string name="settings_backup_desc">Exporta els ajustos dels mòduls seleccionats a un fitxer JSON, o restaura\'ls des d\'un. La restauració es fusiona amb els teus ajustos actuals — mai esborra el que no és al fitxer.</string>
@@ -574,4 +576,6 @@
     <string name="ime_compat_ok">Actiu: el teclat rep la configuració vertical del display.</string>
     <string name="ime_compat_off">Apagat: el teclat continua rebent la configuració antiga.</string>
     <string name="ime_compat_checking">Comprovant...</string>
+    <string name="title_ime_compat">Franja del teclat BlackBerry (LineageOS)</string>
+    <string name="subtitle_ime_compat">Manté la franja de suggeriments en lloc del teclat complet</string>
 </resources>

@@ -4,6 +4,33 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.1.2] - 2026-10-05
+
+The BlackBerry keyboard stays on its suggestions strip (LineageOS). versionCode 37 → 38.
+
+### Added
+
+- **Keyboard, BlackBerry keyboard strip** (LineageOS only, off by default). Turns on Android's per-app compat change
+  `OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION` for `com.blackberry.keyboard` (`am compat enable`; turning it off
+  runs `am compat reset`). Both restart the keyboard once. The app checks the real state first and acts only when it
+  differs from the switch, and re-applies the switch whenever the accessibility service starts. No Xposed.
+
+### Fixed
+
+- **The full on-screen keyboard replacing the suggestions strip.** Cause: the keyboard targets SDK 27, so Android gives
+  its process a configuration with the status bar taken off the height (597 x 569 dp), which on the square screen
+  reads as landscape, and the keyboard shows its full keyboard when it is landscape (its code exempts only a device
+  whose `Build.DEVICE` is `venice`; here it is `Q25`). With the switch on, the process gets the display's own
+  configuration (597 x 597 dp, portrait). Measured on the device: without it, a display-size round trip broke the
+  strip every time (three of three); with it, the keyboard's process and window stayed at portrait through two round
+  trips. Other triggers were not tested one by one; survival across a reboot was not verified.
+- Wrong guesses dropped during the investigation, for the record: a redundant `wm size reset` at service start is
+  harmless (a no-op reset does not break the strip), and changing `show_ime_with_hard_keyboard` does not repair it.
+
+### Changed
+
+- README: the keyboard issue is now explained (cause, fix, what is untested).
+
 ## [4.1.1] - 2026-10-04
 
 The Recents key can be left to Key Mapper, and the Recents overlays exit like Key2's. versionCode 36 → 37.

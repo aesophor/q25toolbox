@@ -357,10 +357,12 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Fuerza el reinicio de la SystemUI para aplicar un cambio pendiente</string>
     <string name="settings_quick_access_notifications_title">Acceso a notificaciones</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual para las Notificaciones tipo ticker si la concesión con root no se aplicó</string>
-    <string name="whats_new_title">Q25 Toolbox v4.1.1</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.2</string>
     <string name="whats_new_ok">Entendido</string>
-    <string name="whats_new_headline">La tecla de Recientes puede gestionarla Key Mapper (LineageOS), y el overlay de Recientes se cierra como el de Key2.</string>
-    <string name="whats_new_body">Novedad en LineageOS: un interruptor en Teclado, Key Remapper, \"Dejar la tecla de Recientes a otra app\". La tecla sigue remapeada, así que Android la ignora, pero esta app deja de actuar sobre ella y Key Mapper la ve como PROG_RED (keycode 183, scancode 580). Allí defines las pulsaciones corta, doble y larga (con vibración). Para abrir el overlay de Recientes de esta app desde Key Mapper usa Enviar intent, Broadcast, acción com.kgr.q25toolbox.action.RUN, paquete com.kgr.q25toolbox; el extra \"action\" (PREVIOUS_APP, HOME, NOTIFICATIONS, FLASHLIGHT...) ejecuta otra acción. La acción Recientes de Key Mapper abre el Overview del sistema, no este overlay.\n\nOverlays de Recientes: la salida ahora funciona como en Key2 Toolbox. En el mosaico y la lista el overlay espera a que la app elegida esté delante antes de expandir el tile; en la rejilla, Atrás o tocar el fondo expande el tile más reciente. La entrada no cambia.</string>
+    <string name="whats_new_headline">El teclado de BlackBerry se queda en su franja de sugerencias (LineageOS).</string>
+    <string name="whats_new_body">Novedad en LineageOS: Teclado, Franja del teclado BlackBerry. El teclado completo en pantalla a veces sustituía a la franja de sugerencias. La causa: el teclado apunta a un SDK antiguo, así que en esta pantalla cuadrada Android le entrega una configuración con la barra de estado restada de la altura, que se lee como horizontal, y muestra el teclado completo en horizontal. El interruptor activa el override por app de Android OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION solo para el teclado, de modo que recibe la configuración propia del display (vertical). No necesita Xposed. Está desactivado por defecto; activarlo o desactivarlo reinicia el teclado un momento.
+
+En mis pruebas aguantó los cambios de tamaño de pantalla (que antes lo rompían siempre). Otros disparadores y un reinicio no se probaron uno a uno.</string>
     <string name="generic_cancel">Cancelar</string>
     <string name="settings_backup_restore">Copia de seguridad y restauración</string>
     <string name="settings_backup_desc">Exporta los ajustes de los módulos seleccionados a un archivo JSON, o restáuralos desde uno. La restauración se fusiona con tus ajustes actuales — nunca borra lo que no está en el archivo.</string>
@@ -574,4 +576,6 @@
     <string name="ime_compat_ok">Activo: el teclado recibe la configuración vertical del display.</string>
     <string name="ime_compat_off">Apagado: el teclado sigue recibiendo la configuración antigua.</string>
     <string name="ime_compat_checking">Comprobando...</string>
+    <string name="title_ime_compat">Franja del teclado BlackBerry (LineageOS)</string>
+    <string name="subtitle_ime_compat">Mantiene la franja de sugerencias en vez del teclado completo</string>
 </resources>

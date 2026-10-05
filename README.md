@@ -70,6 +70,7 @@ Six bottom-bar sections. "ROM" says where the entry is shown.
 | | Per-app keyboard block | root, accessibility | all |
 | | Chat Enter-to-send, calculator keys | accessibility | all |
 | | IME suggestion shortcuts, in-call shortcuts | accessibility | all |
+| | BlackBerry keyboard strip | root | LineageOS |
 | Screen | Extra dimming, per-app display scaling | root | all |
 | | Recents UI Layout | root, accessibility | all (LSPosed part: BenOS/ZinwaOS) |
 | | **Edge Gestures** | accessibility; LSPosed for the native bottom gesture | all |
@@ -124,22 +125,20 @@ Facts below were verified on a Q25 running LineageOS 23 (Android 16, kernel
   intercepts them and opens the PIN pad with `wm dismiss-keyguard`.
 - **Hidden on LineageOS:** BesLoudness (MediaTek HAL parameter), call screen
   recovery, the always-on DT2W watchdog.
-- **Known issue, not explained.** With the BlackBerry keyboard
-  (`com.blackberry.keyboard`, AA001.021Q25P) the full on-screen keyboard
-  sometimes appears instead of the suggestions-only strip. Observed together
-  with reinstalling this app (the system logs "Input method reinstalling" for
-  `Q25PassthroughIme`), but a causal link is not established: the strip is 148 px
-  tall and the full keyboard 469 px in `dumpsys input_method`, with identical
-  settings. Disabling and re-enabling the keyboard in the input method settings
-  restored the strip. Observed in both states, with the same window frame: the
-  keyboard's window reports a landscape configuration in the failing state (569 dp
-  high against 597 dp wide on the square screen, the status bar taking 34 px) and
-  a portrait one (597 dp) in the good state. The keyboard's code (decompiled from
-  the installed APK) treats landscape as "show the full keyboard" on every device
-  except one whose `Build.DEVICE` is `venice`; here it is `Q25`. That is a
-  correlation plus a code path, not a controlled test; whether BenOS reports
-  `venice` is unverified.
-
+- **BlackBerry keyboard shows its full on-screen keyboard (fixed in 4.1.2).** With the BlackBerry keyboard
+  (`com.blackberry.keyboard`, AA001.021Q25P) the full keyboard sometimes replaced the suggestions strip (469 px
+  against 148 px in `dumpsys input_method`). Cause, from the keyboard's decompiled code and AOSP
+  (android16-release): the keyboard shows the full keyboard when its configuration is landscape
+  (`Build.DEVICE != "venice" && orientation == LANDSCAPE`; here `Build.DEVICE` is `Q25`). It targets SDK 27, so
+  `ConfigurationContainer.applySizeOverrideIfNeeded` gives its process the legacy configuration with the status bar
+  (34 px) taken off the height: 597 x 569 dp, landscape on the square screen, while the display itself reports
+  597 x 597 dp. Apps that target SDK 35 or later never get that. A display-size round trip (the per-app scaling, or
+  `wm size`) reproduced it every time. The framework has a per-app switch for it, the overridable compat change
+  `OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION`; **Keyboard, BlackBerry keyboard strip** turns it on for that one
+  package (`am compat enable`, which restarts the keyboard once) and checks the real state before acting. No Xposed.
+  Measured: with it on, the keyboard's process and window stay at `h597dp port` through display-size round trips.
+  Not tested: every other possible trigger one by one, and survival across a reboot (the app re-applies the switch
+  whenever the accessibility service starts).
 ## Edge Gestures
 
 `GestureStripsController`, `EdgeSwipe`, `GestureArrowView`,
