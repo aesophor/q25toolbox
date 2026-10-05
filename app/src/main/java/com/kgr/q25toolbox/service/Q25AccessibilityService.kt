@@ -240,6 +240,11 @@ class Q25AccessibilityService : AccessibilityService() {
         if (key == KEY_SCALING_APPS) {
             reconcileScaling()
         }
+        if (key == com.kgr.q25toolbox.modules.ResolutionHotkey.KEY_ENABLED &&
+            !com.kgr.q25toolbox.modules.ResolutionHotkey.isEnabled(this)) {
+            hotkeyResolution = null // switched off while a hotkey resolution is active: go back
+            reconcileScaling()
+        }
         if (key == KEY_CALL_PROXIMITY_SLEEP) reconcileCallProximity()
         if (key.startsWith(GestureSettings.KEY_PREFIX)) {
             GestureStripsController.reconcile(this)
@@ -468,12 +473,24 @@ class Q25AccessibilityService : AccessibilityService() {
      * native size when it has no scaling entry), if it differs from what we last
      * pushed. Runs `wm size` on the worker thread.
      */
+    // Resolution chosen with the global hotkey (null = none). It wins over the per-app targets and survives the screen
+    // turning off, until the hotkey steps back to the default; teardown still resets it (restoreScaling).
+    @Volatile private var hotkeyResolution: AppScalingController.Res? = null
+    // Key of a hotkey press we consumed, so its release and auto-repeats are swallowed too.
+    private var hotkeyKeyDown = -1
+    private var hotkeyLongFired = false
+    private val hotkeyLongPress = Runnable { if (hotkeyKeyDown != -1) { hotkeyLongFired = true; cycleResolution() } }
+
     private fun reconcileScaling() {
-        val desired = foregroundPkg
-            ?.let { AppScalingController.entries(this)[it] }
+        val desired = hotkeyResolution
+            ?: foregroundPkg?.let { AppScalingController.entries(this)[it] }
             ?: AppScalingController.NATIVE
         if (desired.encode() == currentScaleKey) return
-        if (!resolvingScale.compareAndSet(false, true)) return // already in-flight, skip
+        if (!resolvingScale.compareAndSet(false, true)) {
+            // A change is in flight: try again shortly instead of losing this one (a hotkey press must not be dropped).
+            mainHandler.postDelayed({ reconcileScaling() }, 250)
+            return
+        }
         currentScaleKey = desired.encode()
         worker.execute {
             try {
@@ -485,7 +502,26 @@ class Q25AccessibilityService : AccessibilityService() {
     }
 
     /** Restore the native resolution, run synchronously on teardown. */
+    /** Hotkey pressed: go to the next resolution of the list, or back to the default after the last one. */
+    private fun cycleResolution() {
+        val next = com.kgr.q25toolbox.modules.ResolutionHotkey.next(
+            com.kgr.q25toolbox.modules.ResolutionHotkey.list(this), hotkeyResolution)
+        hotkeyResolution = next
+        reconcileScaling()
+        if (com.kgr.q25toolbox.modules.ResolutionHotkey.vibrate(this)) {
+            val v = com.kgr.q25toolbox.modules.GestureSettings.vibration(this)
+            GestureStripsController.vibrate(this, v.actionMs, v.strengthPct)
+        }
+        android.widget.Toast.makeText(
+            this,
+            getString(com.kgr.q25toolbox.R.string.res_hotkey_toast, next?.let { "${it.w}x${it.h}" } ?: getString(com.kgr.q25toolbox.R.string.res_hotkey_default)),
+            android.widget.Toast.LENGTH_SHORT,
+        ).show()
+    }
+
     private fun restoreScaling() {
+        mainHandler.removeCallbacks(hotkeyLongPress)
+        hotkeyResolution = null
         if (currentScaleKey == AppScalingController.NATIVE.encode()) return
         currentScaleKey = AppScalingController.NATIVE.encode()
         resolvingScale.set(true)
@@ -635,6 +671,37 @@ class Q25AccessibilityService : AccessibilityService() {
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return false
         val kc = event.keyCode
+
+        // Global resolution hotkey. Swallows the press, its auto-repeats and its release. Not on the lockscreen.
+        // Only the physical keyboard: events we inject ourselves (below) arrive with a negative device id.
+        if (event.deviceId >= 0 && kc == hotkeyKeyDown) {
+            if (event.action == KeyEvent.ACTION_UP) {
+                hotkeyKeyDown = -1
+                mainHandler.removeCallbacks(hotkeyLongPress)
+                val hk = com.kgr.q25toolbox.modules.ResolutionHotkey
+                // Released before the long press: type the key after all, if asked to (the press was swallowed).
+                if (!hotkeyLongFired && hk.press(this) == com.kgr.q25toolbox.modules.ResolutionHotkey.Press.LONG && hk.tapPass(this)) {
+                    val cmd = hk.reinjectCommand(hk.combo(this))
+                    worker.execute { try { RootShell.run(cmd) } catch (_: Throwable) { } }
+                }
+            }
+            return true
+        }
+        if (event.deviceId >= 0 && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 &&
+            com.kgr.q25toolbox.modules.ResolutionHotkey.isEnabled(this) && !isDeviceLocked() &&
+            com.kgr.q25toolbox.modules.ResolutionHotkey.combo(this).matches(event.metaState, kc)
+        ) {
+            hotkeyKeyDown = kc
+            hotkeyLongFired = false
+            // SHORT acts at once. LONG waits for the key to be held. The press is swallowed either way; a quick tap in LONG
+            // mode is typed again on release when the user asked for that (see above).
+            if (com.kgr.q25toolbox.modules.ResolutionHotkey.press(this) == com.kgr.q25toolbox.modules.ResolutionHotkey.Press.SHORT) {
+                cycleResolution()
+            } else {
+                mainHandler.postDelayed(hotkeyLongPress, com.kgr.q25toolbox.modules.ResolutionHotkey.LONG_MS)
+            }
+            return true
+        }
 
         // The Recents key is left to another app (Key Mapper): do nothing with it here. It still arrives as PROG_RED
         // (the keylayout remap keeps the system from opening its Overview), and every accessibility service sees it.

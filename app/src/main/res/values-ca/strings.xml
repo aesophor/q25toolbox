@@ -569,4 +569,19 @@
     <string name="recents_key_title">Tecla de Recents</string>
     <string name="recents_key_external">Deixar la tecla de Recents a una altra app (Key Mapper)</string>
     <string name="recents_key_external_desc">La tecla continua remapejada, així que Android no hi fa res, però aquesta app deixa d\'actuar-hi. Key Mapper la veu llavors com a PROG_RED (keycode 183, scancode 580, qualsevol dispositiu): crea el trigger amb aquesta tecla i defineix-hi les pulsacions curta, doble i llarga. Per obrir l\'overlay de Recents d\'aquesta app des de Key Mapper fes servir l\'acció Enviar intent, tipus Broadcast, amb el component com.kgr.q25toolbox / com.kgr.q25toolbox.service.RunActionReceiver i sense extres (per defecte és l\'overlay de Recents). L\'extra action amb un valor com PREVIOUS_APP, HOME, NOTIFICATIONS o FLASHLIGHT executa una altra acció dels Gestos de vora. Necessita el servei d\'accessibilitat i s\'ignora a la pantalla de bloqueig.</string>
+    <string name="res_hotkey_title">Drecera de resolució</string>
+    <string name="res_hotkey_desc">Una combinació de tecles que canvia tota la pantalla a una resolució i, en prémer-la de nou, torna a la de per defecte. Amb diverses resolucions, cada pulsació passa a la següent i la que segueix l\'última torna a la de per defecte. Té prioritat sobre les resolucions per app fins que tornis enrere.</string>
+    <string name="res_hotkey_combo">Combinació: %1$s</string>
+    <string name="res_hotkey_key">Tecla</string>
+    <string name="res_hotkey_list">Resolucions, en ordre (toca per treure)</string>
+    <string name="res_hotkey_add">Afegeix</string>
+    <string name="res_hotkey_empty">Afegeix una resolució a la qual canviar.</string>
+    <string name="res_hotkey_note">La pulsació es consumeix aquí, però altres apps d\'accessibilitat (Key Mapper) la continuen veient: si tens la mateixa combinació assignada allà, actuen les dues, així que esborra-les. Amb la pulsació llarga, un toc ràpid també s\'empassa; l\'interruptor de dalt el torna a escriure en deixar anar, una mica tard, així que si escrius ràpid just després podria arribar desordenat. No actua a la pantalla de bloqueig. La pantalla es queda a la resolució triada en apagar-se, i torna a la de per defecte si el servei d\'accessibilitat es reinicia.</string>
+    <string name="res_hotkey_toast">Resolució: %1$s</string>
+    <string name="res_hotkey_default">per defecte</string>
+    <string name="res_hotkey_press_title">Pulsació</string>
+    <string name="res_hotkey_press_short">Pulsació curta</string>
+    <string name="res_hotkey_press_long">Pulsació llarga (mantenir 0,5 s)</string>
+    <string name="res_hotkey_vibrate">Vibrar en actuar</string>
+    <string name="res_hotkey_tap_pass">Un toc ràpid escriu la tecla (es reenvia com a combinació de tecles, uns 75 ms tard; necessita root)</string>
 </resources>

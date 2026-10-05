@@ -569,4 +569,19 @@
     <string name="recents_key_title">Tecla de Recientes</string>
     <string name="recents_key_external">Dejar la tecla de Recientes a otra app (Key Mapper)</string>
     <string name="recents_key_external_desc">La tecla sigue remapeada, así que Android no hace nada con ella, pero esta app deja de actuar sobre ella. Key Mapper la ve entonces como PROG_RED (keycode 183, scancode 580, cualquier dispositivo): crea el trigger con esa tecla y define ahí las pulsaciones corta, doble y larga. Para abrir el overlay de Recientes de esta app desde Key Mapper usa la acción Enviar intent, tipo Broadcast, con el componente com.kgr.q25toolbox / com.kgr.q25toolbox.service.RunActionReceiver y sin extras (por defecto es el overlay de Recientes). El extra action con un valor como PREVIOUS_APP, HOME, NOTIFICATIONS o FLASHLIGHT ejecuta otra acción de los Gestos de borde. Necesita el servicio de accesibilidad y se ignora en la pantalla de bloqueo.</string>
+    <string name="res_hotkey_title">Atajo de resolución</string>
+    <string name="res_hotkey_desc">Una combinación de teclas que cambia toda la pantalla a una resolución y, al pulsarla de nuevo, vuelve a la de por defecto. Con varias resoluciones, cada pulsación pasa a la siguiente y la que sigue a la última vuelve a la de por defecto. Tiene prioridad sobre las resoluciones por app hasta que vuelvas atrás.</string>
+    <string name="res_hotkey_combo">Combinación: %1$s</string>
+    <string name="res_hotkey_key">Tecla</string>
+    <string name="res_hotkey_list">Resoluciones, en orden (toca para quitar)</string>
+    <string name="res_hotkey_add">Añadir</string>
+    <string name="res_hotkey_empty">Añade una resolución a la que cambiar.</string>
+    <string name="res_hotkey_note">La pulsación se consume aquí, pero otras apps de accesibilidad (Key Mapper) la siguen viendo: si tienes la misma combinación asignada allí, actúan las dos, así que bórralas. Con la pulsación larga, un toque rápido también se traga; el interruptor de arriba lo vuelve a escribir al soltar, algo tarde, así que si escribes rápido justo después podría llegar desordenado. No actúa en la pantalla de bloqueo. La pantalla se queda en la resolución elegida al apagarse, y vuelve a la de por defecto si el servicio de accesibilidad se reinicia.</string>
+    <string name="res_hotkey_toast">Resolución: %1$s</string>
+    <string name="res_hotkey_default">por defecto</string>
+    <string name="res_hotkey_press_title">Pulsación</string>
+    <string name="res_hotkey_press_short">Pulsación corta</string>
+    <string name="res_hotkey_press_long">Pulsación larga (mantener 0,5 s)</string>
+    <string name="res_hotkey_vibrate">Vibrar al actuar</string>
+    <string name="res_hotkey_tap_pass">Un toque rápido escribe la tecla (se reenvía como combinación de teclas, unos 75 ms tarde; necesita root)</string>
 </resources>
