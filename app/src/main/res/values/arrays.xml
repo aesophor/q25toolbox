@@ -5,7 +5,5 @@
     <string-array name="xposed_scope">
         <item>com.android.launcher3</item>
         <item>org.lineageos.trebuchet</item>
-        <!-- KeyboardCompatHookInit: keeps the BlackBerry keyboard on its suggestions strip (LineageOS). -->
-        <item>com.blackberry.keyboard</item>
     </string-array>
 </resources>

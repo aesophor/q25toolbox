@@ -1,18 +1,31 @@
 package com.kgr.q25toolbox.modules
 
 import android.content.Context
+import android.util.Log
 import com.kgr.q25toolbox.core.RootShell
-import com.kgr.q25toolbox.modules.RecentsTweaksController.HookHealth
 import com.kgr.q25toolbox.service.Q25AccessibilityService
-import com.kgr.q25toolbox.xposed.KeyboardCompatHookInit
 
 /**
- * App side of [KeyboardCompatHookInit] (LineageOS only): the switch, the Settings.Global flag the hook reads in the
- * keyboard's process, a proof-of-life check, and a keyboard restart (the hook applies once per keyboard process).
+ * Keeps the BlackBerry keyboard (com.blackberry.keyboard) on its suggestions strip on the Q25's LineageOS (LineageOS
+ * only; no Xposed needed).
+ *
+ * Cause, verified on the device and in AOSP (android16-release): the keyboard shows its full on-screen keyboard
+ * when its configuration says LANDSCAPE (its code: `Build.DEVICE != "venice" && orientation == LANDSCAPE`). On the
+ * Q25's square 720x720 screen, `ConfigurationContainer.applySizeOverrideIfNeeded` gives a process that targets an
+ * old SDK (the keyboard: targetSdk 27) the legacy configuration with the status bar (34 px) taken off the height:
+ * 597 x 569 dp, which is landscape, although the display itself is 597 x 597 dp (portrait). Apps that target
+ * SDK 35+ ("insets decoupled configuration" enforced) never get that. The framework offers a per-app switch for it,
+ * the overridable compat change [CHANGE]; turning it on for the keyboard gives it the display's own configuration
+ * (portrait) for good. Measured: with it on, a display-size round trip (which broke the strip every time without
+ * it) leaves the keyboard's process and window at `h597dp port`.
+ *
+ * `am compat enable` restarts the app's process, so [apply] checks the current state first and only acts on a change.
  */
 object ImeCompat {
 
     const val KEY_ENABLED = "ime_compat_enabled"
+    const val PKG = "com.blackberry.keyboard"
+    const val CHANGE = "OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION"
 
     fun isEnabled(context: Context) =
         context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ENABLED, false)
@@ -21,26 +34,34 @@ object ImeCompat {
         context.getSharedPreferences(Q25AccessibilityService.PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ENABLED, on).apply()
     }
 
-    /** Writes the Settings.Global flag the hook reads from the saved switch (root; blocking: off the main thread). */
-    fun sync(context: Context) {
-        RootShell.run("settings put global ${KeyboardCompatHookInit.PREF_ON} ${if (isEnabled(context)) 1 else 0}")
-    }
-
-    /** Where the hook leaves its proof of life: inside the keyboard's own `files/` dir. Pure, for tests. */
-    internal fun statePath() = "/data/user/0/${KeyboardCompatHookInit.PKG}/files/${KeyboardCompatHookInit.STATE_FILE}"
-
     /**
-     * OK if the hook has applied in the installed keyboard build (the file records its versionCode); UNKNOWN if it
-     * has not run yet (switch off, module not enabled for the keyboard, or keyboard not restarted). Blocking (root).
+     * Whether [dump] (the `dumpsys platform_compat` line of [CHANGE]) says the override is on for [pkg], e.g.
+     * `ChangeId(327313645; name=...; disabled; packageOverrides={com.blackberry.keyboard=true}; ...; overridable)`.
+     * Pure, for tests.
      */
-    fun health(): HookHealth {
-        val state = RootShell.run(RecentsTweaksController.inGlobalNs("cat ${statePath()} 2>/dev/null")).outString
-        if (state.isBlank()) return HookHealth.UNKNOWN
-        return RecentsTweaksController.parseHandshake(state, RecentsTweaksController.installedVersionCode(KeyboardCompatHookInit.PKG))
+    internal fun parseActive(dump: String, pkg: String = PKG): Boolean {
+        for (line in dump.lineSequence()) {
+            if (!line.contains(CHANGE)) continue
+            val overrides = Regex("""packageOverrides=\{([^}]*)\}""").find(line)?.groupValues?.get(1) ?: continue
+            if (overrides.split(',').any { it.trim() == "$pkg=true" }) return true
+        }
+        return false
     }
 
-    /** Restarts the keyboard's process so the hook (or its removal) takes effect; the system rebinds it on demand. */
-    fun restartKeyboard() {
-        RootShell.run("kill \$(pidof ${KeyboardCompatHookInit.PKG}) 2>/dev/null")
+    /** Whether the override is on right now (root; blocking: off the main thread). */
+    fun isActive(): Boolean = parseActive(RootShell.run("dumpsys platform_compat 2>/dev/null | grep $CHANGE").outString)
+
+    /** What to run to bring the system in line with the switch, or null if it already is. Pure, for tests. */
+    internal fun commandFor(wanted: Boolean, active: Boolean): String? = when {
+        wanted && !active -> "am compat enable $CHANGE $PKG"
+        !wanted && active -> "am compat reset $CHANGE $PKG"
+        else -> null
+    }
+
+    /** Brings the override in line with the saved switch; acts only when they differ (it restarts the keyboard). */
+    fun apply(context: Context) {
+        val cmd = commandFor(isEnabled(context), isActive()) ?: return
+        val res = RootShell.run(cmd)
+        Log.i("Q25Toolbox", "ImeCompat: $cmd -> ${res.outString.trim()}")
     }
 }

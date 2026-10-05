@@ -271,7 +271,7 @@ class Q25AccessibilityService : AccessibilityService() {
         worker.execute {
             enterOpensPinDefault = RomProfile.autoDetectedLineage()
             onLineage = enterOpensPinDefault
-            if (onLineage) try { ImeCompat.sync(this) } catch (_: Throwable) { }
+            if (onLineage) try { ImeCompat.apply(this) } catch (_: Throwable) { }
             // Grid (auto): re-check whether the LSPosed hook works with the launcher that is installed now.
             try { RecentsTweaksController.reconcileGrid(this) } catch (t: Throwable) { Log.e("Q25Toolbox", "reconcileGrid failed", t) }
         }
