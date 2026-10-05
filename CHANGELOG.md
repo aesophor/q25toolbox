@@ -4,6 +4,28 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.1.3] - 2026-10-05
+
+Two features that were finished on their own branches and had not been released. Merged on top of 4.1.2; the result
+builds and passes its unit tests (71 in total). The merge itself was not re-tested on the device beyond installing it and
+checking that the service starts. versionCode 38 → 39.
+
+### Added
+
+- **Resolution hotkey** (Per-app display scaling; off by default). A global key combination steps the whole screen
+  through an ordered list of resolutions and back to the default (with one resolution, a toggle). Combination: left or
+  right Ctrl, Alt, Shift or Meta plus a letter or digit, default Right Shift + R. Short press, or held for 0.5 s; in
+  the held mode a quick tap is typed again on release. It wins over the per-app targets, survives the screen turning
+  off, vibrates (the Edge Gestures pulse) and shows a toast. Included in backups.
+- **Material You colours for the edge-gesture arrow** (Android 12+). Each of the three arrow colours can come from the
+  Material You palette by family and tone, stored as a reference such as `accent1:500` and resolved when a gesture
+  starts, so it follows the wallpaper. A fixed swatch or a hex value clears the reference. Included in backups.
+
+### Notes
+
+- A display-size change is what broke the BlackBerry keyboard's strip before 4.1.2; with the BlackBerry keyboard strip
+  switch on it is safe, so keep it on if you use the resolution hotkey on LineageOS.
+
 ## [4.1.2] - 2026-10-05
 
 The BlackBerry keyboard stays on its suggestions strip (LineageOS). versionCode 37 → 38.

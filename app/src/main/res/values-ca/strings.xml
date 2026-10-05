@@ -357,12 +357,14 @@
     <string name="settings_quick_access_restart_systemui_subtitle">Força el reinici de la SystemUI per aplicar un canvi pendent</string>
     <string name="settings_quick_access_notifications_title">Accés a les notificacions</string>
     <string name="settings_quick_access_notifications_subtitle">Alternativa manual per a les Notificacions tipus ticker si la concessió amb root no s\'ha aplicat</string>
-    <string name="whats_new_title">Q25 Toolbox v4.1.2</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.3</string>
     <string name="whats_new_ok">Entesos</string>
-    <string name="whats_new_headline">El teclat de BlackBerry es queda a la seva franja de suggeriments (LineageOS).</string>
-    <string name="whats_new_body">Novetat a LineageOS: Teclat, Franja del teclat BlackBerry. El teclat complet en pantalla de vegades substituïa la franja de suggeriments. La causa: el teclat apunta a un SDK antic, així que en aquesta pantalla quadrada Android li lliura una configuració amb la barra d\'estat restada de l\'alçada, que es llegeix com a horitzontal, i mostra el teclat complet en horitzontal. L\'interruptor activa l\'override per app d\'Android OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION només per al teclat, de manera que rep la configuració pròpia del display (vertical). No necessita Xposed. Està desactivat per defecte; activar-lo o desactivar-lo reinicia el teclat un moment.
+    <string name="whats_new_headline">Una drecera de resolució, i colors Material You per a la fletxa dels gestos.</string>
+    <string name="whats_new_body">Drecera de resolució (Pantalla, Escalat per app): una combinació de tecles recorre una llista de resolucions i torna a la nativa. Ctrl, Alt, Maj o Meta (esquerra o dreta) més una lletra o dígit; per defecte Maj dreta + R; pulsació curta o mantinguda 0,5 s. Desactivat per defecte.
 
-En les meves proves va aguantar els canvis de mida de pantalla (que abans el trencaven sempre). Altres disparadors i un reinici no es van provar un a un.</string>
+Gestos de vora: els colors de la fletxa ara poden venir de la paleta Material You (Android 12+), així que segueixen el fons de pantalla.
+
+Ambdues es van fusionar des de branques separades i tenen tests unitaris; la build fusionada no es va tornar a provar al dispositiu més enllà d\'instal·lar-la. A LineageOS, deixa activada Teclat, Franja del teclat BlackBerry si fas servir la drecera de resolució: un canvi de mida de pantalla era el que tornava el teclat complet.</string>
     <string name="generic_cancel">Cancel·la</string>
     <string name="settings_backup_restore">Còpia de seguretat i restauració</string>
     <string name="settings_backup_desc">Exporta els ajustos dels mòduls seleccionats a un fitxer JSON, o restaura\'ls des d\'un. La restauració es fusiona amb els teus ajustos actuals — mai esborra el que no és al fitxer.</string>

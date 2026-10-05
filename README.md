@@ -200,7 +200,7 @@ here.
 the finger, turns with the real direction of travel, changes colour once the
 swipe is past its threshold ("release to fire"), and flies off or retracts on
 release. It lives in one full-screen window with `FLAG_NOT_TOUCHABLE`, so it
-never takes a touch. Style, shared by the zones: arrow, idle and active colours,
+never takes a touch. Style, shared by the zones: arrow, idle and active colours (a fixed swatch, a hex value, or on Android 12+ an entry of the Material You palette by family and tone, such as `accent1:500`, kept as a reference and resolved when a gesture starts, so it follows the wallpaper; the saved colour is the fallback),
 size, slide-out distance, opacity, thickness, animation speed, round badge or
 bare arrow, tilt on or off, with a live preview. Defaults: bare white arrow,
 grey idle and black active colours for the badge, 70 % opacity, 50 dp travel.
@@ -351,6 +351,15 @@ leaving and on teardown. Presets follow
 [duc1607/q25-res-changer](https://github.com/duc1607/q25-res-changer) (720x720,
 720x772, 720x960, 720x1280, 720x1440; the SystemUI-breaking 780x780 is omitted)
 plus a custom size. The screen relayouts briefly on each switch.
+
+**Resolution hotkey** (in Per-app display scaling; off by default). A global key combination (left or right Ctrl, Alt,
+Shift or Meta, plus a letter or digit; default Right Shift + R) steps the whole screen through an ordered list of
+resolutions and back to the default; with one resolution it is a toggle. It acts on a short press or when held for
+0.5 s. In the held mode a quick tap is typed again on release (`input keycombination` through root, ignoring events of
+virtual devices so it never reacts to itself). It wins over the per-app targets and survives the screen turning off;
+tearing the service down restores the default. It gives the Edge Gestures vibration pulse and a short toast.
+A display-size change is exactly what used to bring back the BlackBerry keyboard's full keyboard on LineageOS; keep
+the BlackBerry keyboard strip switch on if you use this there.
 
 **BesLoudness** (BenOS/ZinwaOS). Toggles the vendor speaker DSP stage with
 `AudioManager.setParameters("SetBesLoudnessStatus=0/1")`, as the stock Sound

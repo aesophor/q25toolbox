@@ -349,12 +349,14 @@
     <string name="prox_factory_test_button">Launch Factory Test Mode</string>
 
     <!-- Recents UI Tweaks Screen -->
-    <string name="whats_new_title">Q25 Toolbox v4.1.2</string>
+    <string name="whats_new_title">Q25 Toolbox v4.1.3</string>
     <string name="whats_new_ok">Got it</string>
-    <string name="whats_new_headline">The BlackBerry keyboard stays on its suggestions strip (LineageOS).</string>
-    <string name="whats_new_body">New on LineageOS: Keyboard, BlackBerry keyboard strip. The full on-screen keyboard sometimes replaced the suggestions strip. The cause: the keyboard targets an old SDK, so on this square screen Android gives it a configuration with the status bar taken off the height, which reads as landscape, and it shows the full keyboard in landscape. The switch turns on Android\'s per-app override OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION for the keyboard only, so it gets the display\'s own (portrait) configuration. No Xposed needed. It is off by default; turning it on or off restarts the keyboard for a moment.
+    <string name="whats_new_headline">A resolution hotkey, and Material You colours for the gesture arrow.</string>
+    <string name="whats_new_body">Resolution hotkey (Screen, Per-app display scaling): a key combination steps the whole screen through a list of resolutions and back to the default. Left or right Ctrl, Alt, Shift or Meta plus a letter or digit; default Right Shift + R; short press or held 0.5 s. Off by default.
 
-In my tests it held through display-size changes (which used to break it every time). Other triggers and a reboot were not tested one by one.</string>
+Edge gestures: the arrow colours can now come from the Material You palette (Android 12+), so they follow your wallpaper.
+
+Both were merged from separate branches and have unit tests; the merged build was not re-tested on the device beyond installing it. On LineageOS, keep Keyboard, BlackBerry keyboard strip on if you use the resolution hotkey: a screen-size change is what used to bring back the full keyboard.</string>
     <string name="recents_intro">Makes Recents/Overview show two rows of smaller task cards, tablet-style, instead of the stock single row. It runs entirely through an LSPosed hook inside the launcher; this screen only stores the setting and restarts the launcher.</string>
     <string name="recents_section_lsposed">LSPosed needed</string>
     <string name="recents_xposed_ok">LSPosed module active.</string>
