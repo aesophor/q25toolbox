@@ -594,4 +594,19 @@ In my tests it held through display-size changes (which used to break it every t
     <string name="gestures_color_neutral">Neutral</string>
     <string name="gestures_color_neutral_variant">Neutral variant</string>
     <string name="gestures_color_follows">Follows your wallpaper. Pick another colour to stop.</string>
+    <string name="res_hotkey_title">Resolution hotkey</string>
+    <string name="res_hotkey_desc">A key combination that switches the whole screen to a resolution and, pressed again, back to the default. With several resolutions, each press goes to the next one and the press after the last returns to the default. It overrides the per-app targets until you step back.</string>
+    <string name="res_hotkey_combo">Combination: %1$s</string>
+    <string name="res_hotkey_key">Key</string>
+    <string name="res_hotkey_list">Resolutions, in order (tap to remove)</string>
+    <string name="res_hotkey_add">Add</string>
+    <string name="res_hotkey_empty">Add a resolution to switch to.</string>
+    <string name="res_hotkey_note">The press is consumed here, but other accessibility apps (Key Mapper) still see it: if you bound the same combination there, both act, so delete those. With the long press, a quick tap is swallowed too; the switch above types it again on release, slightly late, so fast typing right after it could arrive out of order. Not active on the lockscreen. The screen stays at the chosen resolution after it turns off, and returns to the default if the accessibility service restarts.</string>
+    <string name="res_hotkey_toast">Resolution: %1$s</string>
+    <string name="res_hotkey_default">default</string>
+    <string name="res_hotkey_press_title">Press</string>
+    <string name="res_hotkey_press_short">Short press</string>
+    <string name="res_hotkey_press_long">Long press (hold 0.5 s)</string>
+    <string name="res_hotkey_vibrate">Vibrate when it acts</string>
+    <string name="res_hotkey_tap_pass">A quick tap types the key (re-sent as a key combination, about 75 ms late; needs root)</string>
 </resources>

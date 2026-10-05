@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import com.kgr.q25toolbox.modules.AppScalingController
+import com.kgr.q25toolbox.modules.ResolutionHotkey
 import com.kgr.q25toolbox.modules.AppScalingController.Res
 import com.kgr.q25toolbox.service.isQ25AccessibilityServiceEnabled
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +57,8 @@ fun AppScalingScreen(onBack: () -> Unit) {
     var apps by remember { mutableStateOf<List<InstalledApp>?>(null) }
     var query by remember { mutableStateOf("") }
     var customFor by remember { mutableStateOf<String?>(null) } // pkg awaiting a custom resolution
+    var customForHotkey by remember { mutableStateOf(false) }   // custom resolution to add to the hotkey list
+    var hotkeyListVersion by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         serviceEnabled = isQ25AccessibilityServiceEnabled(context)
@@ -119,6 +122,9 @@ fun AppScalingScreen(onBack: () -> Unit) {
                         )
                     }
                     item(key = "_banner") { AccessibilityServiceBanner(serviceEnabled) }
+                    item(key = "_hotkey") {
+                        ResolutionHotkeyCard(onCustom = { customForHotkey = true }, listVersion = hotkeyListVersion)
+                    }
                     item(key = "_count") {
                         Text(
                             "${resById.size} scaled of ${list.size} apps",
@@ -150,6 +156,20 @@ fun AppScalingScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
+
+    if (customForHotkey) {
+        CustomResolutionDialog(
+            initial = Res(720, 772),
+            onDismiss = { customForHotkey = false },
+            onConfirm = { res ->
+                if (!res.isNative) {
+                    ResolutionHotkey.setList(context, (ResolutionHotkey.list(context) + res).distinct())
+                    hotkeyListVersion++
+                }
+                customForHotkey = false
+            }
+        )
     }
 
     customFor?.let { pkg ->
