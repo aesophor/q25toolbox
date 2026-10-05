@@ -4,6 +4,12 @@ All notable changes to Q25 Toolbox are documented here. This app started as
 a fork of [Key2 Toolbox](https://github.com/kgr17/Key2Toolbox) for the BlackBerry Key2 - entries
 below [1.0-beta1] are inherited history from before the fork.
 
+## [4.1.4] - 2026-10-05
+
+### Fixed
+
+- **Root detection stealth for key remapping**: The hardware key remapping bind mount (`Q25_keyboard.kl`) is now isolated exclusively inside `system_server`'s mount namespace (`nsenter -t $SS_PID -m`) with slave propagation rather than the global master namespace (`su -M`). This prevents root and integrity checkers (such as Native Detector and Duck Detector) from detecting a suspicious mount on `/vendor/usr/keylayout/Q25_keyboard.kl` in untrusted app processes, while EventHub continues to receive the remapped hardware layout seamlessly.
+
 ## [4.1.3] - 2026-10-05
 
 Two features that were finished on their own branches and had not been released. Merged on top of 4.1.2; the result

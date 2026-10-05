@@ -160,14 +160,18 @@ object KeyRemapController {
 
         if (enabled) {
             val script = generateBootScript(if (ctrlEnabled) source else null, rebind, recentsRemap)
+            // Stop any existing remap daemon first
+            RootShell.run("kill \$(pgrep -f key_remap.sh) 2>/dev/null")
+            // Unmount any global/master-namespace mount so all regular apps have a clean mountinfo
+            RootShell.run("su -M -c 'umount -l $SYSTEM_FILE 2>/dev/null ; umount -l $VENDOR_FILE 2>/dev/null'")
             // Write script to /data/adb/service.d/
             RootShell.run("cat << 'EOF' > $BOOT_SCRIPT\n$script\nEOF\nchmod 755 $BOOT_SCRIPT")
-            // Execute the script live using mount-master namespace
-            RootShell.run("su -M -c '$BOOT_SCRIPT'")
+            // Execute the script live in the background
+            RootShell.run("sh $BOOT_SCRIPT &")
             Log.d("KeyRemapController", "Applied remap for ${source.name} and saved boot script (rebind=$rebind)")
         } else {
-            // Delete boot script
-            RootShell.run("rm -f $BOOT_SCRIPT")
+            // Stop daemon and delete boot script
+            RootShell.run("kill \$(pgrep -f key_remap.sh) 2>/dev/null; rm -f $BOOT_SCRIPT")
             // Clean up the mount and reload the keyboard to restore defaults. Unmounts both
             // candidate paths unconditionally (whichever wasn't ever bind-mounted just no-ops)
             // rather than re-resolving which one applies - simpler and just as safe for cleanup.
@@ -179,6 +183,8 @@ object KeyRemapController {
                 "su -M -c '$reload" +
                 "umount -l $SYSTEM_FILE 2>/dev/null" +
                 " ; umount -l $VENDOR_FILE 2>/dev/null" +
+                " ; SS_PID=\$(pidof system_server)" +
+                " ; if [ -n \"\$SS_PID\" ]; then nsenter -t \$SS_PID -m umount -l $SYSTEM_FILE 2>/dev/null; nsenter -t \$SS_PID -m umount -l $VENDOR_FILE 2>/dev/null; fi" +
                 "$reattach" +
                 " ; rm -f $TMP_FILE'"
             )
@@ -217,6 +223,9 @@ object KeyRemapController {
         // literal `$SYS_FILE`/`$SELABEL` for the shell to expand at runtime.
         val sysFileVar = "\$SYS_FILE"
         val selabelVar = "\$SELABEL"
+        val targetPidVar = "\$target_pid"
+        val ssPidVar = "\$SS_PID"
+        val curPidVar = "\$CUR_PID"
         // The column padding between scancode and keycode in the layout file varies with the
         // scancode's digit width (e.g. "54    SHIFT_RIGHT" vs "580   APP_SWITCH"), so match on
         // one-or-more whitespace rather than a fixed run of spaces.
@@ -253,7 +262,7 @@ fi
 # to be available - this can run at boot before either overlay is mounted yet).
 $resolveSysFile
 $unbindBlock
-# Now safe to fully release any stale mount from a previous boot/session
+# Now safe to fully release any stale global mount so master/app namespaces stay clean
 umount -l $sysFileVar 2>/dev/null
 
 # Clean up tmp and copy the now-guaranteed-original file
@@ -276,10 +285,36 @@ fi
 # Label it to match its target partition (system_file or vendor_file) so
 # system_server/EventHub can read it under enforcing.
 chcon $selabelVar $TMP_FILE
+chmod 644 $TMP_FILE
 
-# Bind mount the modified keylayout over the original
-mount --bind $TMP_FILE $sysFileVar
+# Mount ONLY inside system_server's mount namespace so EventHub sees it,
+# but untrusted apps, root detectors, and banking apps have a completely clean /proc/self/mountinfo.
+apply_to_system_server() {
+  target_pid=$1
+  nsenter -t $targetPidVar -m mount --make-slave /vendor 2>/dev/null || nsenter -t $targetPidVar -m mount --make-slave /system 2>/dev/null
+  nsenter -t $targetPidVar -m mount --bind $TMP_FILE $sysFileVar
+}
+
+# Wait for system_server
+while [ -z "$(pidof system_server)" ]; do
+  sleep 1
+done
+SS_PID=$(pidof system_server)
+apply_to_system_server $ssPidVar
 $bindBlock
+
+# Watchdog loop: if system_server ever crashes or restarts (soft reboot),
+# re-apply the bind mount into the new system_server's namespace.
+while true; do
+  sleep 3
+  CUR_PID=$(pidof system_server)
+  if [ -n "$curPidVar" ] && [ "$curPidVar" != "$ssPidVar" ]; then
+    sleep 1
+    apply_to_system_server $curPidVar
+    $bindBlock
+    SS_PID=$curPidVar
+  fi
+done
         """.trimIndent()
     }
 }
