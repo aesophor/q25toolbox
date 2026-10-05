@@ -569,4 +569,11 @@
     <string name="recents_key_title">Tecla de Recents</string>
     <string name="recents_key_external">Deixar la tecla de Recents a una altra app (Key Mapper)</string>
     <string name="recents_key_external_desc">La tecla continua remapejada, així que Android no hi fa res, però aquesta app deixa d\'actuar-hi. Key Mapper la veu llavors com a PROG_RED (keycode 183, scancode 580, qualsevol dispositiu): crea el trigger amb aquesta tecla i defineix-hi les pulsacions curta, doble i llarga. Per obrir l\'overlay de Recents d\'aquesta app des de Key Mapper fes servir l\'acció Enviar intent, tipus Broadcast, amb el component com.kgr.q25toolbox / com.kgr.q25toolbox.service.RunActionReceiver i sense extres (per defecte és l\'overlay de Recents). L\'extra action amb un valor com PREVIOUS_APP, HOME, NOTIFICATIONS o FLASHLIGHT executa una altra acció dels Gestos de vora. Necessita el servei d\'accessibilitat i s\'ignora a la pantalla de bloqueig.</string>
+    <string name="gestures_color_material_you">Colors Material You (tria una família i després un to)</string>
+    <string name="gestures_color_primary">Primari</string>
+    <string name="gestures_color_secondary">Secundari</string>
+    <string name="gestures_color_tertiary">Terciari</string>
+    <string name="gestures_color_neutral">Neutre</string>
+    <string name="gestures_color_neutral_variant">Neutre variant</string>
+    <string name="gestures_color_follows">Segueix el teu fons de pantalla. Tria un altre color per deixar de seguir-lo.</string>
 </resources>

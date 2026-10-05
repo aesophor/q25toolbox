@@ -569,4 +569,11 @@
     <string name="recents_key_title">Tecla de Recientes</string>
     <string name="recents_key_external">Dejar la tecla de Recientes a otra app (Key Mapper)</string>
     <string name="recents_key_external_desc">La tecla sigue remapeada, así que Android no hace nada con ella, pero esta app deja de actuar sobre ella. Key Mapper la ve entonces como PROG_RED (keycode 183, scancode 580, cualquier dispositivo): crea el trigger con esa tecla y define ahí las pulsaciones corta, doble y larga. Para abrir el overlay de Recientes de esta app desde Key Mapper usa la acción Enviar intent, tipo Broadcast, con el componente com.kgr.q25toolbox / com.kgr.q25toolbox.service.RunActionReceiver y sin extras (por defecto es el overlay de Recientes). El extra action con un valor como PREVIOUS_APP, HOME, NOTIFICATIONS o FLASHLIGHT ejecuta otra acción de los Gestos de borde. Necesita el servicio de accesibilidad y se ignora en la pantalla de bloqueo.</string>
+    <string name="gestures_color_material_you">Colores Material You (elige una familia y luego un tono)</string>
+    <string name="gestures_color_primary">Primario</string>
+    <string name="gestures_color_secondary">Secundario</string>
+    <string name="gestures_color_tertiary">Terciario</string>
+    <string name="gestures_color_neutral">Neutro</string>
+    <string name="gestures_color_neutral_variant">Neutro variante</string>
+    <string name="gestures_color_follows">Sigue tu fondo de pantalla. Elige otro color para dejar de seguirlo.</string>
 </resources>

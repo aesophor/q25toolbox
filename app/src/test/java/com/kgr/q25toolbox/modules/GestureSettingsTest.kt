@@ -40,6 +40,19 @@ class GestureSettingsTest {
         assertEquals(12, GestureSettings.pick(Zone.BOTTOM, "thickness_dp", saved::get, 12))
     }
 
+    @Test fun paletteReferencesParseOnlyKnownFamiliesAndTones() {
+        assertEquals("accent1" to 500, GestureSettings.parseMyRef("accent1:500"))
+        assertEquals("neutral2" to 0, GestureSettings.parseMyRef(GestureSettings.myRef("neutral2", 0)))
+        listOf(null, "", "accent1", "accent1:", "accent9:500", "accent1:555", "accent1:500:1", "x").forEach {
+            assertEquals(null, GestureSettings.parseMyRef(it))
+        }
+    }
+
+    @Test fun everyPaletteReferenceKeyIsBackedUp() {
+        val keys = GestureSettings.allKeys().toSet()
+        GestureSettings.COLOR_SLOTS.forEach { assertTrue("gest_arrow_${it}_ref" in keys) }
+    }
+
     @Test fun missingEverywhereGivesTheDefault() {
         assertEquals(28, GestureSettings.pick(Zone.RIGHT, "distance_dp", { _: String -> null as Int? }, 28))
     }

@@ -357,19 +357,73 @@ private val SWATCHES = listOf(
     0xFF43A047, 0xFF00ACC1, 0xFF8E24AA, 0xFFD81B60, 0xFF9E9E9E,
 ).map { it.toInt() }
 
-/** Colour choice: a row of swatches plus a #RRGGBB field (applied once it parses). */
+/** Material You families as ColorBlendr names them. */
+private fun familyLabel(family: String): Int = when (family) {
+    "accent1" -> R.string.gestures_color_primary
+    "accent2" -> R.string.gestures_color_secondary
+    "accent3" -> R.string.gestures_color_tertiary
+    "neutral1" -> R.string.gestures_color_neutral
+    else -> R.string.gestures_color_neutral_variant
+}
+
+/**
+ * Colour choice for one arrow colour [slot]: the Material You palette (Android 12+) as a row of families, each
+ * opening its tonal range to pick a shade from (the choice is stored as a reference, so it follows the wallpaper),
+ * a row of fixed swatches, and a #RRGGBB field (applied once it parses). Picking a swatch or typing a value
+ * clears the palette reference.
+ */
 @Composable
-private fun ColorRow(labelRes: Int, value: Int, onChange: (Int) -> Unit) {
+private fun ColorRow(labelRes: Int, slot: String, value: Int, onChange: (Int) -> Unit) {
+    val context = LocalContext.current
     var hex by remember(value) { mutableStateOf("%06X".format(value and 0xFFFFFF)) }
+    val ref = remember(value) { GestureSettings.colorRef(context, slot) }
+    val parsed = GestureSettings.parseMyRef(ref)
+    var openFamily by remember(slot) { mutableStateOf(parsed?.first) }
+    fun fixed(c: Int) { GestureSettings.setColorRef(context, slot, null); onChange(c or 0xFF000000.toInt()) }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(labelRes), style = MaterialTheme.typography.bodyMedium)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            Text(stringResource(R.string.gestures_color_material_you), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                for (family in GestureSettings.MY_FAMILIES) {
+                    val open = family == openFamily
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            Modifier.size(34.dp).clip(CircleShape)
+                                .background(Color(GestureSettings.myColor(context, family, 500) ?: 0xFF808080.toInt()))
+                                .border(if (open) 3.dp else 1.dp, if (open) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, CircleShape)
+                                .clickable { openFamily = if (open) null else family }
+                        )
+                        Text(stringResource(familyLabel(family)), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+            openFamily?.let { family ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                    for (tone in GestureSettings.MY_TONES) {
+                        val c = GestureSettings.myColor(context, family, tone) ?: continue
+                        val sel = parsed == (family to tone)
+                        Box(
+                            Modifier.size(30.dp).clip(CircleShape).background(Color(c))
+                                .border(if (sel) 3.dp else 1.dp, if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, CircleShape)
+                                .clickable { GestureSettings.setColorRef(context, slot, GestureSettings.myRef(family, tone)); onChange(c) }
+                        )
+                    }
+                }
+            }
+            if (parsed != null) {
+                Text(stringResource(R.string.gestures_color_follows), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
             for (c in SWATCHES) {
-                val sel = (c and 0xFFFFFF) == (value and 0xFFFFFF)
+                val sel = parsed == null && (c and 0xFFFFFF) == (value and 0xFFFFFF)
                 Box(
                     Modifier.size(30.dp).clip(CircleShape).background(Color(c))
                         .border(if (sel) 3.dp else 1.dp, if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, CircleShape)
-                        .clickable { onChange(c or 0xFF000000.toInt()) }
+                        .clickable { fixed(c) }
                 )
             }
         }
@@ -379,7 +433,7 @@ private fun ColorRow(labelRes: Int, value: Int, onChange: (Int) -> Unit) {
             onValueChange = { t ->
                 val clean = t.removePrefix("#").uppercase(Locale.ROOT).filter { it in "0123456789ABCDEF" }.take(6)
                 hex = clean
-                if (clean.length == 6) onChange(clean.toInt(16) or 0xFF000000.toInt())
+                if (clean.length == 6) fixed(clean.toInt(16))
             },
         )
     }
@@ -407,9 +461,9 @@ private fun ArrowStyleCard() {
                     }
                 }
             }
-            ColorRow(R.string.gestures_arrow_color, st.arrowColor) { update(st.copy(arrowColor = it)) }
-            ColorRow(R.string.gestures_arrow_inactive, st.inactiveColor) { update(st.copy(inactiveColor = it)) }
-            ColorRow(R.string.gestures_arrow_active, st.activeColor) { update(st.copy(activeColor = it)) }
+            ColorRow(R.string.gestures_arrow_color, "color", st.arrowColor) { update(st.copy(arrowColor = it)) }
+            ColorRow(R.string.gestures_arrow_inactive, "inactive", st.inactiveColor) { update(st.copy(inactiveColor = it)) }
+            ColorRow(R.string.gestures_arrow_active, "active", st.activeColor) { update(st.copy(activeColor = it)) }
             LabeledSlider(R.string.gestures_arrow_size, st.sizeDp, GestureSettings.ARROW_SIZE_RANGE, "dp", showMm = false) { update(st.copy(sizeDp = it)) }
             LabeledSlider(R.string.gestures_arrow_travel, st.travelDp, GestureSettings.ARROW_TRAVEL_RANGE, "dp", showMm = false) { update(st.copy(travelDp = it)) }
             LabeledSlider(R.string.gestures_arrow_opacity, st.opacityPct, GestureSettings.ARROW_OPACITY_RANGE, "%") { update(st.copy(opacityPct = it)) }
@@ -423,7 +477,7 @@ private fun ArrowStyleCard() {
                 Switch(checked = st.followTilt, onCheckedChange = { update(st.copy(followTilt = it)) })
                 Text(stringResource(R.string.gestures_arrow_tilt))
             }
-            OutlinedButton(onClick = { update(GestureSettings.ArrowStyle()) }) { Text(stringResource(R.string.gestures_arrow_reset)) }
+            OutlinedButton(onClick = { GestureSettings.clearColorRefs(context); update(GestureSettings.ArrowStyle()) }) { Text(stringResource(R.string.gestures_arrow_reset)) }
         }
     }
 }

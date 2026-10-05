@@ -578,4 +578,11 @@
     <string name="recents_key_title">Recents key</string>
     <string name="recents_key_external">Leave the Recents key to another app (Key Mapper)</string>
     <string name="recents_key_external_desc">The key stays remapped, so Android does nothing with it, but this app stops acting on it. Key Mapper then sees it as PROG_RED (keycode 183, scancode 580, any device): make the trigger with that key and set the short, double and long presses there. To open this app\'s Recents overlay from Key Mapper use the action Send intent, type Broadcast, with the component com.kgr.q25toolbox / com.kgr.q25toolbox.service.RunActionReceiver, and no extras (the default is the Recents overlay). The extra action with a value such as PREVIOUS_APP, HOME, NOTIFICATIONS or FLASHLIGHT runs another action of Edge Gestures. Needs the accessibility service, and is ignored on the lockscreen.</string>
+    <string name="gestures_color_material_you">Material You colours (pick a family, then a shade)</string>
+    <string name="gestures_color_primary">Primary</string>
+    <string name="gestures_color_secondary">Secondary</string>
+    <string name="gestures_color_tertiary">Tertiary</string>
+    <string name="gestures_color_neutral">Neutral</string>
+    <string name="gestures_color_neutral_variant">Neutral variant</string>
+    <string name="gestures_color_follows">Follows your wallpaper. Pick another colour to stop.</string>
 </resources>
