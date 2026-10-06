@@ -67,6 +67,7 @@ object SettingsBackup {
     enum class BackupModule(@androidx.annotation.StringRes val labelRes: Int) {
         PIN_KEYBOARD(R.string.title_pin_keyboard),
         IME_BLOCK(R.string.title_ime_block),
+        CURSOR_TAPS(R.string.title_cursor_taps),
         IME_SUGGESTIONS(R.string.title_ime_suggestions),
         CHAT_COMPOSER(R.string.title_chat_composer),
         CALCULATOR(R.string.title_calculator_input),
@@ -98,6 +99,8 @@ object SettingsBackup {
         Q25AccessibilityService.KEY_IME_BLOCK to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_BLOCK_APPS to BackupModule.IME_BLOCK,
         Q25AccessibilityService.KEY_IME_SAVED to BackupModule.IME_BLOCK,
+        Q25AccessibilityService.KEY_CURSOR_TAPS to BackupModule.CURSOR_TAPS,
+        Q25AccessibilityService.KEY_CURSOR_TAPS_APPS to BackupModule.CURSOR_TAPS,
         Q25AccessibilityService.KEY_IME_SUGGESTIONS to BackupModule.IME_SUGGESTIONS,
         ImeCompat.KEY_ENABLED to BackupModule.IME_COMPAT,
         Q25AccessibilityService.KEY_CHAT_COMPOSER to BackupModule.CHAT_COMPOSER,

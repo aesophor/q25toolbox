@@ -15,6 +15,7 @@
     <string name="title_dt2w">Double-tap pour réactiver</string>
     <string name="title_pin_keyboard">PIN sur clavier de verrouillage</string>
     <string name="title_ime_block">Blocage du clavier par application</string>
+    <string name="title_cursor_taps">Appuis du curseur par appli</string>
     <string name="title_chat_composer">Entrée pour envoyer dans les chats</string>
     <string name="title_calculator_input">Touches de calculatrice</string>
     <string name="title_ime_suggestions">Raccourcis de suggestions IME</string>
@@ -33,6 +34,7 @@
     <string name="subtitle_dt2w">Réveille l\'écran avec un double-tap</string>
     <string name="subtitle_pin_keyboard">Saisissez votre code PIN sur les touches matérielles</string>
     <string name="subtitle_ime_block">Envoie les touches directement aux apps choisies</string>
+    <string name="subtitle_cursor_taps">Les clics du trackpad agissent comme des appuis dans les applis choisies</string>
     <string name="subtitle_chat_composer">Entrée envoie, Alt+Entrée nouvelle ligne dans les chats</string>
     <string name="subtitle_calculator_input">Envoie les chiffres et opérateurs à la calculatrice</string>
     <string name="subtitle_ime_suggestions">Ctrl+W/E/R choisit la suggestion 1/2/3 du clavier</string>
@@ -297,6 +299,8 @@
     <string name="ime_block_enable_switch_label">Activer le blocage par application</string>
     <string name="ime_block_selected_count">%1$d sélectionnées sur %2$d applications</string>
     <string name="ime_block_desc">Dans les applications sélectionnées, les touches physiques vont directement à l\'application au lieu de passer par le clavier - pratique pour les jeux. Tant qu\'une application sélectionnée est ouverte, le clavier bascule vers un clavier passthrough qui ne fait rien, puis est restauré à la sortie. Nécessite le root.</string>
+    <string name="cursor_taps_enable_switch_label">Activer les appuis du curseur par appli</string>
+    <string name="cursor_taps_desc">Dans les applis sélectionnées, les clics du curseur du trackpad sont envoyés comme de vrais appuis à la position du curseur - pour les jeux et autres applis qui ignorent les clics de souris (ex. MapleStory M). Cliquer pour appuyer, maintenir pour un appui long, cliquer-glisser pour balayer ; le clic droit fait Retour. Les autres applis gardent le curseur normal. Passez d\'abord le trackpad en mode souris. Nécessite Android 14, sans root.</string>
 
     <!-- Ticker Notifications Screen -->
     <string name="ticker_enable_label">Activer le ticker</string>

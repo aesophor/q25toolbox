@@ -16,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
@@ -34,6 +35,7 @@ import com.kgr.q25toolbox.modules.InputLanguageController
 import com.kgr.q25toolbox.modules.AppScalingController
 import com.kgr.q25toolbox.modules.AutoFocusController
 import com.kgr.q25toolbox.modules.BatteryUsageController
+import com.kgr.q25toolbox.modules.CursorTapController
 import com.kgr.q25toolbox.modules.TickerController
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
@@ -78,6 +80,8 @@ class Q25AccessibilityService : AccessibilityService() {
         const val KEY_LOCKSCREEN_NAV_BLOCK = "lockscreen_nav_block_enabled" // swallow D-pad/Enter/Space/Tab while keyguard is up
         const val KEY_CALL_SCREEN_RECOVERY = "call_screen_recovery_enabled" // force-wake if still dark after a call ends
         const val KEY_LANG_SWITCH = "lang_switch_enabled" // Shift+Space cycles the keyboard's languages
+        const val KEY_CURSOR_TAPS = "cursor_taps_enabled"     // trackpad clicks become touches in selected apps
+        const val KEY_CURSOR_TAPS_APPS = "cursor_taps_apps"   // StringSet of package names
 
 
         // Our do-nothing IME: while it's active, physical key presses go straight
@@ -153,6 +157,7 @@ class Q25AccessibilityService : AccessibilityService() {
                 foregroundPkg = null
                 reconcileScaling()
                 worker.execute { try { Dt2wController.onScreenOff(this@Q25AccessibilityService) } catch (_: Throwable) { } }
+                reconcileCursorTaps()
             }
         }
     }
@@ -236,6 +241,7 @@ class Q25AccessibilityService : AccessibilityService() {
     // True while a Shift+Space we consumed is still held, so its ACTION_UP is swallowed too.
     private var langSwitchConsumedDown = false
     private var prefs: SharedPreferences? = null
+    private val cursorTaps = CursorTapController(this)
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
@@ -254,6 +260,9 @@ class Q25AccessibilityService : AccessibilityService() {
         if (key.startsWith(GestureSettings.KEY_PREFIX)) {
             GestureStripsController.reconcile(this)
             syncNativeBottomGesture()
+        }
+        if (key == KEY_CURSOR_TAPS || key == KEY_CURSOR_TAPS_APPS) {
+            reconcileCursorTaps()
         }
     }
 
@@ -343,6 +352,9 @@ class Q25AccessibilityService : AccessibilityService() {
     private fun lockscreenNavBlockEnabled() = prefs?.getBoolean(KEY_LOCKSCREEN_NAV_BLOCK, false) ?: false
     private fun callScreenRecoveryEnabled() = prefs?.getBoolean(KEY_CALL_SCREEN_RECOVERY, true) ?: true
     private fun langSwitchEnabled() = prefs?.getBoolean(KEY_LANG_SWITCH, false) ?: false
+    private fun cursorTapsEnabled() = prefs?.getBoolean(KEY_CURSOR_TAPS, false) ?: false
+    private fun cursorTapsApps(): Set<String> =
+        prefs?.getStringSet(KEY_CURSOR_TAPS_APPS, emptySet()) ?: emptySet()
 
 
     // ------------------------------------------------------- Foreground tracking
@@ -369,6 +381,7 @@ class Q25AccessibilityService : AccessibilityService() {
                     noEditableWindowId = -1
                     reconcileImeBlock()
                     reconcileScaling()
+                    reconcileCursorTaps()
                 }
             }
         }
@@ -471,6 +484,19 @@ class Q25AccessibilityService : AccessibilityService() {
             }
         }
         return null
+    }
+
+    // ----------------------------------------------------------- Cursor taps
+
+    /** Take over trackpad clicks while a selected app is in front; hand them back otherwise. */
+    private fun reconcileCursorTaps() {
+        val pkg = foregroundPkg
+        cursorTaps.setActive(cursorTapsEnabled() && pkg != null && pkg in cursorTapsApps())
+    }
+
+    // Only delivered while cursor taps are active: no other feature asks for motion events.
+    override fun onMotionEvent(event: MotionEvent) {
+        cursorTaps.onMotionEvent(event)
     }
 
     // --------------------------------------------------------- Per-app scaling
@@ -1553,6 +1579,7 @@ class Q25AccessibilityService : AccessibilityService() {
         GestureStripsController.hide()
         restoreImeBlock()  // never leave the soft keyboard globally suppressed
         restoreScaling()   // never leave the screen stuck at a scaled resolution
+        cursorTaps.setActive(false)
         if (instance === this) instance = null
         return super.onUnbind(intent)
     }

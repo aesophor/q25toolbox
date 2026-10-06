@@ -156,6 +156,7 @@ private fun DetailHost(screen: Screen, onBack: () -> Unit) {
         Screen.Dt2w -> Dt2wScreen(onBack)
         Screen.PinKeyboard -> PinKeyboardScreen(onBack)
         Screen.ImeBlock -> ImeBlockScreen(onBack)
+        Screen.CursorTaps -> CursorTapsScreen(onBack)
         Screen.ChatComposer -> ChatComposerScreen(onBack)
         Screen.CalculatorInput -> CalculatorInputScreen(onBack)
         Screen.BtIdle -> BtIdleScreen(onBack)

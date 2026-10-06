@@ -15,6 +15,7 @@
     <string name="title_dt2w">Doble toque para despertar</string>
     <string name="title_pin_keyboard">PIN en teclado de bloqueo</string>
     <string name="title_ime_block">Bloqueo de teclado por aplicación</string>
+    <string name="title_cursor_taps">Toques de cursor por aplicación</string>
     <string name="title_chat_composer">Enter para enviar en chat</string>
     <string name="title_calculator_input">Teclas de calculadora</string>
     <string name="title_ime_suggestions">Atajos de sugerencias del teclado</string>
@@ -33,6 +34,7 @@
     <string name="subtitle_dt2w">Despierta la pantalla con un doble toque</string>
     <string name="subtitle_pin_keyboard">Escribe tu PIN en las teclas de hardware</string>
     <string name="subtitle_ime_block">Envía las teclas directamente a las apps elegidas</string>
+    <string name="subtitle_cursor_taps">Los clics del trackpad actúan como toques en las apps elegidas</string>
     <string name="subtitle_chat_composer">Enter envía, Alt+Enter nueva línea en chats</string>
     <string name="subtitle_calculator_input">Envía números y operadores a la calculadora</string>
     <string name="subtitle_ime_suggestions">Ctrl+W/E/R elige la sugerencia 1/2/3 del teclado</string>
@@ -297,6 +299,8 @@
     <string name="ime_block_enable_switch_label">Habilitar bloqueo por app</string>
     <string name="ime_block_selected_count">%1$d seleccionadas de %2$d aplicaciones</string>
     <string name="ime_block_desc">En las aplicaciones seleccionadas, las pulsaciones de teclas físicas van directas a la app en lugar de pasar por el teclado - útil para juegos. Mientras una app seleccionada esté abierta, el IME cambia a un teclado de paso sin función, que se restaura al salir. Necesita root.</string>
+    <string name="cursor_taps_enable_switch_label">Activar toques de cursor por aplicación</string>
+    <string name="cursor_taps_desc">En las apps seleccionadas, los clics del cursor del trackpad se envían como toques reales en la posición del cursor, para juegos y otras apps que ignoran los clics del ratón (p. ej. MapleStory M). Clic para tocar, mantener para pulsación larga, clic y arrastrar para deslizar; clic derecho vuelve atrás. Las demás apps mantienen el cursor normal. Pon antes el trackpad en modo ratón. Requiere Android 14, sin root.</string>
 
     <!-- Ticker Notifications Screen -->
     <string name="ticker_enable_label">Activar ticker</string>

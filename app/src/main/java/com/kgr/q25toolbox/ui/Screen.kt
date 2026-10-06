@@ -14,6 +14,7 @@ sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes 
     data object Dt2w : Screen("dt2w", R.string.title_dt2w, R.string.subtitle_dt2w)
     data object PinKeyboard : Screen("pin_keyboard", R.string.title_pin_keyboard, R.string.subtitle_pin_keyboard)
     data object ImeBlock : Screen("ime_block", R.string.title_ime_block, R.string.subtitle_ime_block)
+    data object CursorTaps : Screen("cursor_taps", R.string.title_cursor_taps, R.string.subtitle_cursor_taps)
     data object ChatComposer : Screen("chat_composer", R.string.title_chat_composer, R.string.subtitle_chat_composer)
     data object CalculatorInput : Screen("calculator_input", R.string.title_calculator_input, R.string.subtitle_calculator_input)
     data object BtIdle : Screen("bt_idle", R.string.title_bt_idle, R.string.subtitle_bt_idle)
@@ -61,6 +62,7 @@ val keyboardScreens = listOf(
     Screen.KeyRemap,
     Screen.PinKeyboard,
     Screen.ImeBlock,
+    Screen.CursorTaps,
     Screen.ChatComposer,
     Screen.CalculatorInput,
     Screen.ImeSuggestions,
