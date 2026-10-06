@@ -15,6 +15,7 @@
     <string name="title_dt2w">Dubbeltikken om te wekken</string>
     <string name="title_pin_keyboard">Lockscreen PIN op toetsenbord</string>
     <string name="title_ime_block">Toetsenbordblokkering per app</string>
+    <string name="title_fine_volume">Fijne volumestappen</string>
     <string name="title_cursor_taps">Cursortikken per app</string>
     <string name="title_chat_composer">Chat Enter-om-te-verzenden</string>
     <string name="title_calculator_input">Rekenmachinetoetsen</string>
@@ -35,6 +36,7 @@
     <string name="subtitle_dt2w">Scherm wekken met twee tikken</string>
     <string name="subtitle_pin_keyboard">Typ je pincode op hardwaretoetsen</string>
     <string name="subtitle_ime_block">Toetsaanslagen direct naar gekozen apps sturen</string>
+    <string name="subtitle_fine_volume">Volumetoetsen regelen mediavolume in kleinere stappen</string>
     <string name="subtitle_cursor_taps">Trackpadklikken werken als aanrakingen in gekozen apps</string>
     <string name="subtitle_chat_composer">Enter verzendt, Alt+Enter nieuwe regel in chat-apps</string>
     <string name="subtitle_calculator_input">Cijfer- en operatortoetsen doorsturen naar de rekenmachine</string>
@@ -301,6 +303,9 @@
     <string name="ime_block_enable_switch_label">Blokkering per app inschakelen</string>
     <string name="ime_block_selected_count">%1$d geselecteerd van %2$d apps</string>
     <string name="ime_block_desc">In de geselecteerde apps gaan fysieke toetsaanslagen rechtstreeks naar de app in plaats van via het toetsenbord - handig voor games. Zolang een geselecteerde app open is, schakelt de IME naar een niets-doende passthrough-toetsenbord, dat bij het verlaten wordt hersteld. Vereist root.</string>
+    <string name="fine_volume_enabled_label">Fijne volumestappen inschakelen</string>
+    <string name="fine_volume_steps_label">Substappen per volumestap (%1$d stappen in totaal)</string>
+    <string name="fine_volume_desc">De volumetoetsen wijzigen het mediavolume in fijnere stappen dan de 15 van het systeem. Elke systeemstap wordt opgedeeld met een globale audioversterking, en het percentage verschijnt boven de volumeschuif van het systeem. Houd een toets ingedrukt om door te gaan. Tijdens gesprekken, beltonen en alarmen werken de toetsen zoals gewoonlijk. Wordt het volume elders gewijzigd (de systeemschuif, een andere app) of verandert het uitvoerapparaat, dan springt het terug naar hele stappen. Geen root nodig.</string>
     <string name="cursor_taps_enable_switch_label">Cursortikken per app inschakelen</string>
     <string name="cursor_taps_desc">In de geselecteerde apps worden trackpadklikken als echte aanrakingen op de cursorpositie verstuurd - voor games en andere apps die muisklikken negeren (bijv. MapleStory M). Klik om te tikken, houd vast om lang te drukken, klik en sleep om te vegen; rechtsklik gaat terug. Andere apps houden de normale muiscursor. Zet het trackpad eerst in muismodus. Vereist Android 14, geen root.</string>
 

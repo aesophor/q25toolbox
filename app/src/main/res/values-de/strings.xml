@@ -15,6 +15,7 @@
     <string name="title_dt2w">Doppeltippen zum Aufwecken</string>
     <string name="title_pin_keyboard">Sperrbildschirm-PIN auf Tastatur</string>
     <string name="title_ime_block">Tastatursperre pro App</string>
+    <string name="title_fine_volume">Feine Lautstärkestufen</string>
     <string name="title_cursor_taps">Cursor-Tippen pro App</string>
     <string name="title_chat_composer">Eingabetaste zum Senden in Chats</string>
     <string name="title_calculator_input">Taschenrechnertasten</string>
@@ -34,6 +35,7 @@
     <string name="subtitle_dt2w">Weckt den Bildschirm mit einem Doppeltippen auf</string>
     <string name="subtitle_pin_keyboard">Geben Sie Ihre PIN über die Hardwaretasten ein</string>
     <string name="subtitle_ime_block">Sendet Tastendrücke direkt an die gewählten Apps</string>
+    <string name="subtitle_fine_volume">Lautstärketasten ändern die Medienlautstärke feiner</string>
     <string name="subtitle_cursor_taps">Trackpad-Klicks wirken in gewählten Apps als Berührung</string>
     <string name="subtitle_chat_composer">Eingabe sendet, Alt+Eingabe neue Zeile in Chat-Apps</string>
     <string name="subtitle_calculator_input">Leitet Zahlen- und Operatortasten an den Taschenrechner weiter</string>
@@ -299,6 +301,9 @@
     <string name="ime_block_enable_switch_label">Blockierung pro App aktivieren</string>
     <string name="ime_block_selected_count">%1$d von %2$d Apps ausgewählt</string>
     <string name="ime_block_desc">In den ausgewählten Apps gehen physische Tastendrücke direkt an die App statt über die Tastatur - praktisch für Spiele. Solange eine ausgewählte App geöffnet ist, wird die Eingabemethode auf eine Do-nothing-Passthrough-Tastatur umgeschaltet und beim Verlassen wiederhergestellt. Benötigt Root.</string>
+    <string name="fine_volume_enabled_label">Feine Lautstärkestufen aktivieren</string>
+    <string name="fine_volume_steps_label">Zwischenstufen pro Lautstärkestufe (insgesamt %1$d Stufen)</string>
+    <string name="fine_volume_desc">Die Lautstärketasten ändern die Medienlautstärke in feineren Stufen als die 15 des Systems. Jede Systemstufe wird durch eine globale Audioverstärkung unterteilt, und der Prozentwert erscheint über dem System-Lautstärkeregler. Taste gedrückt halten, um weiterzuschalten. Bei Anrufen, Klingeln und Weckern funktionieren die Tasten wie gewohnt. Wird die Lautstärke anderswo geändert (Systemregler, andere App) oder wechselt das Ausgabegerät, springt sie auf ganze Stufen zurück. Kein Root nötig.</string>
     <string name="cursor_taps_enable_switch_label">Cursor-Tippen pro App aktivieren</string>
     <string name="cursor_taps_desc">In den gewählten Apps werden Trackpad-Klicks als echte Berührungen an der Cursorposition gesendet - für Spiele und andere Apps, die Mausklicks ignorieren (z. B. MapleStory M). Klicken zum Tippen, halten zum langen Drücken, klicken und ziehen zum Wischen; Rechtsklick geht zurück. Andere Apps behalten den normalen Mauszeiger. Stelle das Trackpad zuerst auf den Mausmodus. Benötigt Android 14, kein Root.</string>
 

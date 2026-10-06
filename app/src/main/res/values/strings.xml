@@ -15,6 +15,7 @@
     <string name="title_dt2w">Double-Tap to Wake</string>
     <string name="title_pin_keyboard">Lockscreen PIN on Keyboard</string>
     <string name="title_ime_block">Per-App Keyboard Block</string>
+    <string name="title_fine_volume">Fine Volume Steps</string>
     <string name="title_cursor_taps">Per-App Cursor Taps</string>
     <string name="title_chat_composer">Chat Enter-to-Send</string>
     <string name="title_calculator_input">Calculator Keys</string>
@@ -37,6 +38,7 @@
     <string name="subtitle_dt2w">Wake screen with a double tap</string>
     <string name="subtitle_pin_keyboard">Type your PIN on hardware keys</string>
     <string name="subtitle_ime_block">Send keys straight to chosen apps</string>
+    <string name="subtitle_fine_volume">Volume keys move media volume in smaller steps</string>
     <string name="subtitle_cursor_taps">Trackpad clicks act as touches in chosen apps</string>
     <string name="subtitle_chat_composer">Enter sends, Alt+Enter newline in chat apps</string>
     <string name="subtitle_calculator_input">Route number &amp; operator keys to the calculator</string>
@@ -311,6 +313,9 @@
     <string name="ime_block_enable_switch_label">Enable per-app block</string>
     <string name="ime_block_selected_count">%1$d selected of %2$d apps</string>
     <string name="ime_block_desc">In the selected apps, physical key presses go straight to the app instead of through the keyboard - handy for games. While a selected app is open the IME is switched to a do-nothing passthrough keyboard, then restored on the way out. Needs root.</string>
+    <string name="fine_volume_enabled_label">Enable fine volume steps</string>
+    <string name="fine_volume_steps_label">Sub-steps per volume step (%1$d steps in total)</string>
+    <string name="fine_volume_desc">The volume keys change media volume in finer steps than the system\'s 15. Each system step is split by a global audio gain, and the percentage is shown above the system volume slider. Hold a key to keep stepping. During calls, ringing and alarms the keys work as usual. If the volume is changed elsewhere (the system slider, another app) or the output device changes, it snaps back to whole steps. No root needed.</string>
     <string name="cursor_taps_enable_switch_label">Enable per-app cursor taps</string>
     <string name="cursor_taps_desc">In the selected apps, trackpad cursor clicks are sent as real touches at the cursor position - for games and other apps that ignore mouse clicks (e.g. MapleStory M). Click to tap, hold to long-press, click and drag to swipe; right-click goes Back. Other apps keep the normal mouse cursor. Set the trackpad to mouse mode first. Needs Android 14, no root.</string>
 

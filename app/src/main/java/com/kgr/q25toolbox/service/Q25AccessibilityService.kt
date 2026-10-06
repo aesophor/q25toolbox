@@ -36,6 +36,7 @@ import com.kgr.q25toolbox.modules.AppScalingController
 import com.kgr.q25toolbox.modules.AutoFocusController
 import com.kgr.q25toolbox.modules.BatteryUsageController
 import com.kgr.q25toolbox.modules.CursorTapController
+import com.kgr.q25toolbox.modules.FineVolumeController
 import com.kgr.q25toolbox.modules.TickerController
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
@@ -82,6 +83,8 @@ class Q25AccessibilityService : AccessibilityService() {
         const val KEY_LANG_SWITCH = "lang_switch_enabled" // Shift+Space cycles the keyboard's languages
         const val KEY_CURSOR_TAPS = "cursor_taps_enabled"     // trackpad clicks become touches in selected apps
         const val KEY_CURSOR_TAPS_APPS = "cursor_taps_apps"   // StringSet of package names
+        const val KEY_FINE_VOLUME = "fine_volume_enabled"     // volume keys move media volume in sub-steps
+        const val KEY_FINE_VOLUME_STEPS = "fine_volume_steps" // Int, sub-steps per system volume step
 
 
         // Our do-nothing IME: while it's active, physical key presses go straight
@@ -242,6 +245,7 @@ class Q25AccessibilityService : AccessibilityService() {
     private var langSwitchConsumedDown = false
     private var prefs: SharedPreferences? = null
     private val cursorTaps = CursorTapController(this)
+    private val fineVolume = FineVolumeController(this)
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
@@ -263,6 +267,9 @@ class Q25AccessibilityService : AccessibilityService() {
         }
         if (key == KEY_CURSOR_TAPS || key == KEY_CURSOR_TAPS_APPS) {
             reconcileCursorTaps()
+        }
+        if (key == KEY_FINE_VOLUME || key == KEY_FINE_VOLUME_STEPS) {
+            reconcileFineVolume()
         }
     }
 
@@ -320,6 +327,7 @@ class Q25AccessibilityService : AccessibilityService() {
         worker.execute { TickerController.syncSystemState(this) }
 
         reconcileCallProximity()
+        reconcileFineVolume()
 
         registerReceiver(screenOffReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
@@ -497,6 +505,16 @@ class Q25AccessibilityService : AccessibilityService() {
     // Only delivered while cursor taps are active: no other feature asks for motion events.
     override fun onMotionEvent(event: MotionEvent) {
         cursorTaps.onMotionEvent(event)
+    }
+
+    // ----------------------------------------------------------- Fine volume
+
+    private fun reconcileFineVolume() {
+        val p = prefs
+        fineVolume.setActive(
+            p?.getBoolean(KEY_FINE_VOLUME, false) ?: false,
+            p?.getInt(KEY_FINE_VOLUME_STEPS, FineVolumeController.DEFAULT_SUBDIVISIONS) ?: FineVolumeController.DEFAULT_SUBDIVISIONS,
+        )
     }
 
     // --------------------------------------------------------- Per-app scaling
@@ -704,6 +722,8 @@ class Q25AccessibilityService : AccessibilityService() {
     override fun onKeyEvent(event: KeyEvent?): Boolean {
         if (event == null) return false
         val kc = event.keyCode
+
+        if (fineVolume.onKeyEvent(event)) return true
 
         // Global resolution hotkey. Swallows the press, its auto-repeats and its release. Not on the lockscreen.
         // Only the physical keyboard: events we inject ourselves (below) arrive with a negative device id.
@@ -1580,6 +1600,7 @@ class Q25AccessibilityService : AccessibilityService() {
         restoreImeBlock()  // never leave the soft keyboard globally suppressed
         restoreScaling()   // never leave the screen stuck at a scaled resolution
         cursorTaps.setActive(false)
+        fineVolume.setActive(false, FineVolumeController.DEFAULT_SUBDIVISIONS)
         if (instance === this) instance = null
         return super.onUnbind(intent)
     }

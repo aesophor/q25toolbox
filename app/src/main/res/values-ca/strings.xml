@@ -15,6 +15,7 @@
     <string name="title_dt2w">Doble toc per despertar</string>
     <string name="title_pin_keyboard">PIN en teclat de bloqueig</string>
     <string name="title_ime_block">Bloqueig de teclat per aplicació</string>
+    <string name="title_fine_volume">Passos de volum fins</string>
     <string name="title_cursor_taps">Tocs del cursor per aplicació</string>
     <string name="title_chat_composer">Enter per enviar al xat</string>
     <string name="title_calculator_input">Tecles de calculadora</string>
@@ -34,6 +35,7 @@
     <string name="subtitle_dt2w">Desperta la pantalla amb un doble toc</string>
     <string name="subtitle_pin_keyboard">Escriu el teu PIN a les tecles de maquinari</string>
     <string name="subtitle_ime_block">Envia les tecles directament a les apps triades</string>
+    <string name="subtitle_fine_volume">Les tecles de volum ajusten el multimèdia més fi</string>
     <string name="subtitle_cursor_taps">Els clics del trackpad actuen com a tocs a les apps triades</string>
     <string name="subtitle_chat_composer">Enter envia, Alt+Enter nova línia als xats</string>
     <string name="subtitle_calculator_input">Envia números i operadors a la calculadora</string>
@@ -299,6 +301,9 @@
     <string name="ime_block_enable_switch_label">Habilita el bloqueig per aplicació</string>
     <string name="ime_block_selected_count">%1$d seleccionades de %2$d aplicacions</string>
     <string name="ime_block_desc">A les aplicacions seleccionades, les pulsacions de tecles físiques van directament a l’aplicació en lloc de passar pel teclat - útil per a jocs. Mentre una aplicació seleccionada estigui oberta, l’IME canvia a un teclat de pas sense funció, que es restaura en sortir. Necessita root.</string>
+    <string name="fine_volume_enabled_label">Activa els passos de volum fins</string>
+    <string name="fine_volume_steps_label">Subpassos per pas de volum (%1$d passos en total)</string>
+    <string name="fine_volume_desc">Les tecles de volum canvien el volum multimèdia en passos més fins que els 15 del sistema. Cada pas del sistema es divideix amb un guany d\'àudio global, i el percentatge apareix damunt del control de volum del sistema. Mantén una tecla premuda per continuar. Durant trucades, timbres i alarmes les tecles funcionen com sempre. Si el volum es canvia en un altre lloc (el control del sistema, una altra app) o canvia la sortida d\'àudio, torna a passos sencers. Sense root.</string>
     <string name="cursor_taps_enable_switch_label">Activa els tocs del cursor per aplicació</string>
     <string name="cursor_taps_desc">A les apps seleccionades, els clics del cursor del trackpad s\'envien com a tocs reals a la posició del cursor, per a jocs i altres apps que ignoren els clics del ratolí (p. ex. MapleStory M). Clic per tocar, mantén premut per a una pulsació llarga, clic i arrossega per lliscar; el clic dret torna enrere. Les altres apps mantenen el cursor normal. Posa primer el trackpad en mode ratolí. Requereix Android 14, sense root.</string>
 

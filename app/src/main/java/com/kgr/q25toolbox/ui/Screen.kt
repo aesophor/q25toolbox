@@ -21,6 +21,7 @@ sealed class Screen(val route: String, @StringRes val titleRes: Int, @StringRes 
     data object LocationIdle : Screen("location_idle", R.string.title_location_idle, R.string.subtitle_location_idle)
     data object Telemetry : Screen("telemetry", R.string.title_telemetry, R.string.subtitle_telemetry)
     data object ExtraDim : Screen("extra_dim", R.string.title_extra_dim, R.string.subtitle_extra_dim)
+    data object FineVolume : Screen("fine_volume", R.string.title_fine_volume, R.string.subtitle_fine_volume)
     data object BesLoudness : Screen("besloudness", R.string.title_besloudness, R.string.subtitle_besloudness)
     data object AppScaling : Screen("app_scaling", R.string.title_app_scaling, R.string.subtitle_app_scaling)
     data object AutoFocus : Screen("auto_focus", R.string.title_auto_focus, R.string.subtitle_auto_focus)
@@ -88,6 +89,7 @@ val systemScreens = listOf(
     // screen code and the daemon script are kept in the repo in case this
     // is revisited with a different approach.
     Screen.BesLoudness,
+    Screen.FineVolume,
     Screen.AutoFocus,
     Screen.CallScreenRecovery,
     Screen.CallProximitySleep,

@@ -15,6 +15,7 @@
     <string name="title_dt2w">Toque duplo para despertar</string>
     <string name="title_pin_keyboard">PIN no teclado de bloqueio</string>
     <string name="title_ime_block">Bloqueio de teclado por app</string>
+    <string name="title_fine_volume">Passos de volume finos</string>
     <string name="title_cursor_taps">Toques do cursor por app</string>
     <string name="title_chat_composer">Enter para enviar no chat</string>
     <string name="title_calculator_input">Teclas da calculadora</string>
@@ -34,6 +35,7 @@
     <string name="subtitle_dt2w">Desperta a tela com um toque duplo</string>
     <string name="subtitle_pin_keyboard">Digite seu PIN nas teclas de hardware</string>
     <string name="subtitle_ime_block">Envia as teclas diretamente para os apps escolhidos</string>
+    <string name="subtitle_fine_volume">As teclas de volume ajustam a mídia mais finamente</string>
     <string name="subtitle_cursor_taps">Os cliques do trackpad funcionam como toques nas apps escolhidas</string>
     <string name="subtitle_chat_composer">Enter envia, Alt+Enter nova linha nos chats</string>
     <string name="subtitle_calculator_input">Envia números e operadores para a calculadora</string>
@@ -299,6 +301,9 @@
     <string name="ime_block_enable_switch_label">Ativar bloqueio por aplicativo</string>
     <string name="ime_block_selected_count">%1$d selecionados de %2$d aplicativos</string>
     <string name="ime_block_desc">Nos aplicativos selecionados, as teclas físicas vão direto para o aplicativo em vez de passar pelo teclado - útil para jogos. Enquanto um aplicativo selecionado estiver aberto, o IME muda para um teclado passthrough que não faz nada, sendo restaurado ao sair. Requer root.</string>
+    <string name="fine_volume_enabled_label">Ativar passos de volume finos</string>
+    <string name="fine_volume_steps_label">Subpassos por passo de volume (%1$d passos no total)</string>
+    <string name="fine_volume_desc">As teclas de volume mudam o volume de mídia em passos mais finos que os 15 do sistema. Cada passo do sistema é dividido por um ganho de áudio global, e a percentagem aparece acima do controlo de volume do sistema. Mantenha uma tecla pressionada para continuar. Em chamadas, toques e alarmes as teclas funcionam normalmente. Se o volume for alterado noutro lugar (o controlo do sistema, outra app) ou a saída de áudio mudar, volta a passos inteiros. Sem root.</string>
     <string name="cursor_taps_enable_switch_label">Ativar toques do cursor por app</string>
     <string name="cursor_taps_desc">Nas apps selecionadas, os cliques do cursor do trackpad são enviados como toques reais na posição do cursor - para jogos e outras apps que ignoram cliques do rato (ex. MapleStory M). Clique para tocar, mantenha para toque longo, clique e arraste para deslizar; o clique direito volta atrás. As outras apps mantêm o cursor normal. Coloque primeiro o trackpad em modo rato. Requer Android 14, sem root.</string>
 
