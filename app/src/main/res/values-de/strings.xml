@@ -295,7 +295,7 @@
 
     <!-- Chat Enter-to-Send Screen -->
     <string name="chat_composer_enabled_label">Aktiviert</string>
-    <string name="chat_composer_desc">In unterstützten Chat- und Messaging-Apps sendet Enter die Nachricht und Alt+Enter (oder Umschalt+Enter) fügt eine neue Zeile ein - so sendet eine physische Enter-Taste, statt einen Zeilenumbruch einzufügen. Funktioniert in Messages, WhatsApp, Telegram, Signal, Element/Matrix, Mattermost, Wallapop, ChatGPT und Perplexity. Kein Root nötig - nutzt nur den Bedienungshilfen-Dienst.</string>
+    <string name="chat_composer_desc">In unterstützten Chat- und Messaging-Apps sendet Enter die Nachricht und Alt+Enter (oder Umschalt+Enter) fügt eine neue Zeile ein - so sendet eine physische Enter-Taste, statt einen Zeilenumbruch einzufügen. Funktioniert in Messages, WhatsApp, Telegram, Signal, Instagram, Threads, LINE, Facebook, Messenger, Element/Matrix, Mattermost, Wallapop, ChatGPT und Perplexity. Kein Root nötig - nutzt nur den Bedienungshilfen-Dienst.</string>
 
     <!-- Per-App Keyboard Block Screen -->
     <string name="ime_block_enable_switch_label">Blockierung pro App aktivieren</string>

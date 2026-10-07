@@ -297,7 +297,7 @@
 
     <!-- Chat Enter-to-Send Screen -->
     <string name="chat_composer_enabled_label">Ingeschakeld</string>
-    <string name="chat_composer_desc">Druk in ondersteunde chat- en berichten-apps op Enter om het bericht te versturen en Alt+Enter (of Shift+Enter) om een nieuwe regel toe te voegen - zo verstuurt een fysieke Enter in plaats van een regeleinde in te voegen. Werkt in Messages, WhatsApp, Telegram, Signal, Element/Matrix, Mattermost, Wallapop, ChatGPT en Perplexity. Geen root nodig - gebruikt alleen de toegankelijkheidsservice.</string>
+    <string name="chat_composer_desc">Druk in ondersteunde chat- en berichten-apps op Enter om het bericht te versturen en Alt+Enter (of Shift+Enter) om een nieuwe regel toe te voegen - zo verstuurt een fysieke Enter in plaats van een regeleinde in te voegen. Werkt in Messages, WhatsApp, Telegram, Signal, Instagram, Threads, LINE, Facebook, Messenger, Element/Matrix, Mattermost, Wallapop, ChatGPT en Perplexity. Geen root nodig - gebruikt alleen de toegankelijkheidsservice.</string>
 
     <!-- Per-App Keyboard Block Screen -->
     <string name="ime_block_enable_switch_label">Blokkering per app inschakelen</string>

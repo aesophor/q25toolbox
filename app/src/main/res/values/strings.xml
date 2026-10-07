@@ -307,7 +307,7 @@
 
     <!-- Chat Enter-to-Send Screen -->
     <string name="chat_composer_enabled_label">Enabled</string>
-    <string name="chat_composer_desc">In supported chat and messaging apps, press Enter to send the message and Alt+Enter (or Shift+Enter) to add a new line - so a physical Enter posts instead of inserting a linebreak. Works in Messages, WhatsApp, Telegram, Signal, Element/Matrix, Mattermost, Wallapop, ChatGPT and Perplexity. No root needed - uses the accessibility service only.</string>
+    <string name="chat_composer_desc">In supported chat and messaging apps, press Enter to send the message and Alt+Enter (or Shift+Enter) to add a new line - so a physical Enter posts instead of inserting a linebreak. Works in Messages, WhatsApp, Telegram, Signal, Instagram, Threads, LINE, Facebook, Messenger, Element/Matrix, Mattermost, Wallapop, ChatGPT and Perplexity. No root needed - uses the accessibility service only.</string>
 
     <!-- Per-App Keyboard Block Screen -->
     <string name="ime_block_enable_switch_label">Enable per-app block</string>

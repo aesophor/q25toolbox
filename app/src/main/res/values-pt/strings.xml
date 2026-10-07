@@ -295,7 +295,7 @@
 
     <!-- Chat Enter-to-Send Screen -->
     <string name="chat_composer_enabled_label">Ativado</string>
-    <string name="chat_composer_desc">Em aplicativos de chat e mensagens compatíveis, pressione Enter para enviar a mensagem e Alt+Enter (ou Shift+Enter) para adicionar uma nova linha - assim um Enter físico envia em vez de inserir uma quebra de linha. Funciona no Mensagens, WhatsApp, Telegram, Signal, Element/Matrix, Mattermost, Wallapop, ChatGPT e Perplexity. Não requer root - usa apenas o serviço de acessibilidade.</string>
+    <string name="chat_composer_desc">Em aplicativos de chat e mensagens compatíveis, pressione Enter para enviar a mensagem e Alt+Enter (ou Shift+Enter) para adicionar uma nova linha - assim um Enter físico envia em vez de inserir uma quebra de linha. Funciona no Mensagens, WhatsApp, Telegram, Signal, Instagram, Threads, LINE, Facebook, Messenger, Element/Matrix, Mattermost, Wallapop, ChatGPT e Perplexity. Não requer root - usa apenas o serviço de acessibilidade.</string>
 
     <!-- Per-App Keyboard Block Screen -->
     <string name="ime_block_enable_switch_label">Ativar bloqueio por aplicativo</string>
